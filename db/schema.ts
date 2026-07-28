@@ -1,0 +1,11 @@
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+
+export const records = sqliteTable("records", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  section: text("section").notNull(),
+  title: text("title").notNull(),
+  subtitle: text("subtitle").notNull().default(""),
+  data: text("data").notNull().default("{}"),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
