@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import sheetData from "./sheet-data.json";
 
 type Section = "products" | "points" | "pharmacies" | "payments" | "faq";
 type RecordItem = {
@@ -10,6 +11,10 @@ type RecordItem = {
   subtitle: string;
   data: Record<string, string>;
 };
+
+type ImportableSection = Exclude<Section, "payments">;
+
+const SOURCE_SHEET_URL = "https://docs.google.com/spreadsheets/d/18DC7Df9OCFtrbj5FmZUVcLTwC0hg_2lYnNDFjrpMSaU/edit?gid=1909559648#gid=1909559648";
 
 const menus: { id: "home" | Section; label: string; short: string }[] = [
   { id: "home", label: "Overview", short: "OV" },
@@ -21,87 +26,64 @@ const menus: { id: "home" | Section; label: string; short: string }[] = [
 ];
 
 const channelFields = [
-  ["pharmacy", "Pharmacy"],
-  ["shopee", "Shopee"],
-  ["website", "Website"],
-  ["facebook", "Facebook"],
+  ["facebook", "FB", "facebookPwp"],
+  ["website", "Website", "websitePwp"],
+  ["shopee", "Shopee", ""],
+  ["pharmacy", "Pharmacy", ""],
 ] as const;
 
-const initialRecords: RecordItem[] = [
+const paymentRecords: RecordItem[] = [
   {
-    id: 1,
-    section: "products",
-    title: "DrSmile Oral Care Product",
-    subtitle: "Website catalogue",
-    data: { sku: "DRS-001", alacart: "RM 0.00", pwp: "RM 0.00", pharmacy: "—", shopee: "—", website: "—", facebook: "—", status: "Verify from website" },
-  },
-  {
-    id: 2,
-    section: "points",
-    title: "Welcome Reward",
-    subtitle: "Customer redemption",
-    data: { points: "100 pts", value: "RM 5", terms: "One redemption per receipt", status: "Active" },
-  },
-  {
-    id: 3,
-    section: "pharmacies",
-    title: "Add your first pharmacy",
-    subtitle: "Malaysia",
-    data: { phone: "—", address: "Edit this item with the full shop address", state: "—" },
-  },
-  {
-    id: 4,
+    id: 1001,
     section: "payments",
     title: "Bank Transfer",
     subtitle: "Manual payment",
     data: { details: "Add bank name and account number", link: "", qrUrl: "", status: "Available" },
   },
   {
-    id: 5,
+    id: 1002,
     section: "payments",
     title: "Touch ’n Go",
     subtitle: "QR payment",
     data: { details: "Upload TNG QR", link: "", qrUrl: "", status: "Available" },
   },
   {
-    id: 6,
+    id: 1003,
     section: "payments",
     title: "Credit Card",
     subtitle: "Payex",
     data: { details: "Create a secure card payment link in Payex", link: "", qrUrl: "", portal: "https://portal.payex.io/AutoPayments", status: "Available" },
   },
   {
-    id: 7,
+    id: 1004,
     section: "payments",
     title: "Atome Pay",
     subtitle: "Buy now, pay later",
     data: { details: "Create an Atome payment link", link: "", qrUrl: "", portal: "https://portal.atome.my/main/dashboard", status: "Available" },
   },
   {
-    id: 8,
+    id: 1005,
     section: "payments",
     title: "Shopee Pay",
     subtitle: "QR payment",
     data: { details: "Upload ShopeePay QR", link: "", qrUrl: "", status: "Available" },
   },
   {
-    id: 9,
+    id: 1006,
     section: "payments",
     title: "Cash on Delivery",
     subtitle: "COD",
     data: { details: "Confirm delivery area and fee before order", link: "", qrUrl: "", status: "Available" },
   },
-  {
-    id: 10,
-    section: "faq",
-    title: "How do I update an answer?",
-    subtitle: "Dashboard",
-    data: { answer: "Open this item, choose Edit, update the answer and save. Your team will see the latest version.", category: "General", source: "Google Sheet" },
-  },
+];
+
+const initialRecords: RecordItem[] = [
+  ...(sheetData.records as RecordItem[]),
+  ...paymentRecords,
 ];
 
 const blankBySection: Record<Section, RecordItem> = {
-  products: { id: 0, section: "products", title: "", subtitle: "", data: { sku: "", alacart: "", pwp: "", pharmacy: "", shopee: "", website: "", facebook: "", status: "Active" } },
+  products: { id: 0, section: "products", title: "", subtitle: "", data: { sku: "", alacart: "", pharmacy: "", shopee: "", website: "", websitePwp: "", facebook: "", facebookPwp: "", status: "Active" } },
   points: { id: 0, section: "points", title: "", subtitle: "", data: { points: "", value: "", terms: "", status: "Active" } },
   pharmacies: { id: 0, section: "pharmacies", title: "", subtitle: "", data: { phone: "", address: "", state: "" } },
   payments: { id: 0, section: "payments", title: "", subtitle: "", data: { details: "", link: "", qrUrl: "", portal: "", status: "Available" } },
@@ -122,6 +104,119 @@ function copyText(value: string, label: string, setToast: (value: string) => voi
   setToast(`${label} copied`);
 }
 
+function parseDelimited(text: string) {
+  const delimiter = text.includes("\t") ? "\t" : ",";
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let cell = "";
+  let quoted = false;
+
+  for (let index = 0; index < text.length; index += 1) {
+    const character = text[index];
+    if (character === '"') {
+      if (quoted && text[index + 1] === '"') {
+        cell += '"';
+        index += 1;
+      } else {
+        quoted = !quoted;
+      }
+    } else if (character === delimiter && !quoted) {
+      row.push(cell.trim());
+      cell = "";
+    } else if ((character === "\n" || character === "\r") && !quoted) {
+      if (character === "\r" && text[index + 1] === "\n") index += 1;
+      row.push(cell.trim());
+      if (row.some(Boolean)) rows.push(row);
+      row = [];
+      cell = "";
+    } else {
+      cell += character;
+    }
+  }
+  row.push(cell.trim());
+  if (row.some(Boolean)) rows.push(row);
+  return rows;
+}
+
+function rm(value = "") {
+  const clean = value.trim();
+  if (!clean || clean === "-") return "—";
+  return /^\d+(\.\d+)?$/.test(clean) ? `RM ${clean}` : clean;
+}
+
+function importRows(section: ImportableSection, text: string): Omit<RecordItem, "id">[] {
+  const rows = parseDelimited(text);
+  if (!rows.length) return [];
+
+  if (section === "products") {
+    const start = rows.findIndex((row) => row[0]?.toLowerCase() === "items");
+    return rows.slice(Math.max(start + 2, 0)).filter((row) => row[0]).map((row) => ({
+      section,
+      title: row[0],
+      subtitle: "Google Sheet",
+      data: {
+        sku: row[1] || "—",
+        alacart: rm(row[2]),
+        facebook: rm(row[3]),
+        facebookPwp: rm(row[4]),
+        website: rm(row[5]),
+        websitePwp: rm(row[6]),
+        shopee: rm(row[7]),
+        pharmacy: rm(row[8]),
+        status: "Sheet",
+      },
+    }));
+  }
+
+  if (section === "points") {
+    const start = rows.findIndex((row) => row[0]?.toLowerCase() === "items");
+    return rows.slice(Math.max(start + 1, 0)).filter((row) => row[0] && row[1]).map((row) => ({
+      section,
+      title: row[0],
+      subtitle: "Point Redeem",
+      data: { points: `${row[1]} points`, value: "Redeem reward", terms: "Based on DrSmile Point Redeem sheet", status: "Active" },
+    }));
+  }
+
+  if (section === "pharmacies") {
+    const start = rows.findIndex((row) => row[0]?.toLowerCase() === "city");
+    return rows.slice(Math.max(start + 1, 0)).filter((row) => row[1]).map((row) => ({
+      section,
+      title: row[1],
+      subtitle: row[0],
+      data: { address: row[2], postcode: row[3], phone: row[4], state: row[0] },
+    }));
+  }
+
+  const questions = rows
+    .map((row, index) => ({ index, values: row.filter(Boolean) }))
+    .filter(({ values }) => values[0]?.startsWith("Q:") && values[1]);
+
+  return questions.map((question, questionIndex) => {
+    const end = questions[questionIndex + 1]?.index ?? rows.length;
+    const answerParts: string[] = [];
+    rows.slice(question.index + 1, end).forEach((row) => {
+      const values = row.filter(Boolean);
+      if (!values.length || values[0] === "Save Reply:" || values[0].startsWith("Q:")) return;
+      if (values[0] === "A:" || values[0] === "问:" || values[0].startsWith("Step")) {
+        answerParts.push(values.slice(1).join(" "));
+      } else if (answerParts.length && values.join(" ").length > 5) {
+        answerParts.push(values.join(" "));
+      }
+    });
+    return {
+      section,
+      title: question.values[1],
+      subtitle: "Customer FAQ",
+      data: {
+        answer: answerParts.filter(Boolean).join("\n") || "Answer pending in source sheet",
+        category: "Product & oral care",
+        source: "DrSmile Dashboard Google Sheet",
+      },
+    };
+  });
+}
+
 export default function Home() {
   const [active, setActive] = useState<"home" | Section>("home");
   const [records, setRecords] = useState<RecordItem[]>(initialRecords);
@@ -130,6 +225,7 @@ export default function Home() {
   const [toast, setToast] = useState("");
   const [saving, setSaving] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
+  const [importing, setImporting] = useState<ImportableSection | null>(null);
 
   useEffect(() => {
     fetch("/api/records")
@@ -249,10 +345,19 @@ export default function Home() {
                 <p>{pageCopy[active].description}</p>
               </div>
               <div className="heading-actions">
-                {active === "faq" && <a className="secondary-button" href="https://docs.google.com/spreadsheets/d/1ZD5AVEsnUGld4OPlEVESpjuINQ8Q3QopSdYCjamhtKU/edit?gid=483265670#gid=483265670" target="_blank" rel="noreferrer">Open source sheet ↗</a>}
+                {active !== "payments" && <a className="secondary-button" href={SOURCE_SHEET_URL} target="_blank" rel="noreferrer">Open Sheet ↗</a>}
+                {active !== "payments" && <button className="secondary-button import-button" onClick={() => setImporting(active)}>⇧ Import data</button>}
                 <button className="primary-button" onClick={() => setEditing(structuredClone(blankBySection[active]))}>＋ Add item</button>
               </div>
             </div>
+
+            {active !== "payments" && (
+              <div className="sheet-note">
+                <span className="sheet-mark">GS</span>
+                <div><strong>Imported from DrSmile Dashboard</strong><small>Copy rows from the matching Google Sheet tab and use Import data anytime.</small></div>
+                <span>{records.filter((record) => record.section === active).length} records</span>
+              </div>
+            )}
 
             {active === "payments" && <PaymentStudio setToast={setToast} />}
 
@@ -285,6 +390,14 @@ export default function Home() {
           setToast={setToast}
         />
       )}
+      {importing && (
+        <ImportModal
+          section={importing}
+          onClose={() => setImporting(null)}
+          setRecords={setRecords}
+          setToast={setToast}
+        />
+      )}
       {toast && <div className="toast"><span>✓</span>{toast}</div>}
       {mobileMenu && <button className="menu-backdrop" onClick={() => setMobileMenu(false)} aria-label="Close menu" />}
     </div>
@@ -303,9 +416,9 @@ function Overview({ records, navigate, setToast }: { records: RecordItem[]; navi
     <section className="page overview">
       <div className="welcome">
         <div>
-          <p className="eyebrow">Monday · DrSmile workspace</p>
+          <p className="eyebrow">Google Sheet powered · DrSmile workspace</p>
           <h1>Everything your team needs,<br /><span>ready for every order.</span></h1>
-          <p>Pricing, pharmacy contacts, payment tools and customer answers — all in one shared place.</p>
+          <p>123 product, reward, pharmacy and FAQ records imported from your team sheet — searchable and easy to copy.</p>
         </div>
         <div className="welcome-art">
           <span className="orb orb-one" /><span className="orb orb-two" />
@@ -327,7 +440,7 @@ function Overview({ records, navigate, setToast }: { records: RecordItem[]; navi
         <div className="panel quick-panel">
           <div className="panel-heading"><div><p className="eyebrow">Shortcuts</p><h2>Quick actions</h2></div></div>
           <div className="quick-grid">
-            <button onClick={() => navigate("products")}><span>PR</span><strong>Check pricing</strong><small>Compare channel prices</small></button>
+            <button onClick={() => navigate("products")}><span>PR</span><strong>Check pricing</strong><small>Compare price and PWP</small></button>
             <button onClick={() => navigate("pharmacies")}><span>PH</span><strong>Find pharmacy</strong><small>Copy address or phone</small></button>
             <button onClick={() => navigate("payments")}><span>PY</span><strong>Create payment</strong><small>Atome or Payex portal</small></button>
             <button onClick={() => navigate("faq")}><span>FQ</span><strong>Find an answer</strong><small>Search team FAQ</small></button>
@@ -353,8 +466,8 @@ function RecordCard({ item, setEditing, removeItem, setToast }: { item: RecordIt
     return (
       <article className="record-card product-card">
         <div className="card-top"><span className="record-avatar">DS</span><div><h3>{item.title}</h3><p>{item.data.sku || item.subtitle}</p></div><CardMenu item={item} setEditing={setEditing} removeItem={removeItem} /></div>
-        <div className="price-highlight"><span>Ala carte</span><strong>{item.data.alacart || "—"}</strong><small>PWP {item.data.pwp || "—"}</small></div>
-        <div className="channel-grid">{channelFields.map(([key, label]) => <div key={key}><span>{label}</span><strong>{item.data[key] || "—"}</strong></div>)}</div>
+        <div className="price-highlight"><span>Ala carte</span><strong>{item.data.alacart || "—"}</strong><small>{item.data.sku || "No SKU"}</small></div>
+        <div className="channel-grid">{channelFields.map(([key, label, pwpKey]) => <div key={key}><span>{label}</span><strong>{item.data[key] || "—"}</strong>{pwpKey && item.data[pwpKey] && item.data[pwpKey] !== "—" && <small>PWP {item.data[pwpKey]}</small>}</div>)}</div>
         <div className="card-footer"><span className="status-chip">{item.data.status || "Active"}</span><button onClick={() => copyText(`${item.title} — ${item.data.alacart}`, "Price", setToast)}>Copy price</button></div>
       </article>
     );
@@ -364,7 +477,7 @@ function RecordCard({ item, setEditing, removeItem, setToast }: { item: RecordIt
       <article className="record-card pharmacy-card">
         <div className="card-top"><span className="record-avatar">＋</span><div><h3>{item.title}</h3><p>{item.subtitle || item.data.state}</p></div><CardMenu item={item} setEditing={setEditing} removeItem={removeItem} /></div>
         <div className="contact-row"><span>Phone</span><strong>{item.data.phone || "—"}</strong><button onClick={() => copyText(item.data.phone, "Phone number", setToast)}>Copy</button></div>
-        <div className="address-block"><span>Full address</span><p>{item.data.address || "—"}</p><button onClick={() => copyText(item.data.address, "Address", setToast)}>Copy full address</button></div>
+        <div className="address-block"><span>Full address {item.data.postcode ? `· ${item.data.postcode}` : ""}</span><p>{item.data.address || "—"}</p><button onClick={() => copyText(item.data.address, "Address", setToast)}>Copy full address</button></div>
       </article>
     );
   }
@@ -385,14 +498,14 @@ function RecordCard({ item, setEditing, removeItem, setToast }: { item: RecordIt
   if (item.section === "faq") {
     return (
       <article className="record-card faq-card">
-        <div className="faq-number">Q</div><div className="faq-content"><span>{item.data.category || item.subtitle}</span><h3>{item.title}</h3><p>{item.data.answer}</p><button onClick={() => copyText(item.data.answer, "Answer", setToast)}>Copy answer</button></div><CardMenu item={item} setEditing={setEditing} removeItem={removeItem} />
+        <div className="faq-number">Q</div><div className="faq-content"><span>{item.data.category || item.subtitle}</span><h3>{item.title}</h3><details><summary>View answer</summary><p>{item.data.answer}</p></details><button onClick={() => copyText(item.data.answer, "Answer", setToast)}>Copy answer</button></div><CardMenu item={item} setEditing={setEditing} removeItem={removeItem} />
       </article>
     );
   }
   return (
     <article className="record-card point-card">
       <div className="card-top"><span className="record-avatar">PT</span><div><h3>{item.title}</h3><p>{item.subtitle}</p></div><CardMenu item={item} setEditing={setEditing} removeItem={removeItem} /></div>
-      <div className="point-value"><strong>{item.data.points || "—"}</strong><span>{item.data.value || "—"}</span></div>
+      <div className="point-value"><strong>{item.data.points || "—"}</strong><span>Redeem</span></div>
       <p>{item.data.terms}</p><div className="card-footer"><span className="status-chip">{item.data.status || "Active"}</span><button onClick={() => copyText(`${item.title}: ${item.data.points} = ${item.data.value}. ${item.data.terms}`, "Reward details", setToast)}>Copy details</button></div>
     </article>
   );
@@ -421,10 +534,92 @@ function PaymentStudio({ setToast }: { setToast: (value: string) => void }) {
   );
 }
 
+function ImportModal({
+  section,
+  onClose,
+  setRecords,
+  setToast,
+}: {
+  section: ImportableSection;
+  onClose: () => void;
+  setRecords: React.Dispatch<React.SetStateAction<RecordItem[]>>;
+  setToast: (value: string) => void;
+}) {
+  const [text, setText] = useState("");
+  const [busy, setBusy] = useState(false);
+  const parsed = useMemo(() => importRows(section, text), [section, text]);
+
+  async function readFile(file?: File) {
+    if (!file) return;
+    setText(await file.text());
+  }
+
+  async function submitImport(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!parsed.length) {
+      setToast("No matching rows found");
+      return;
+    }
+    setBusy(true);
+    try {
+      const response = await fetch("/api/records", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ mode: "replace", section, records: parsed }),
+      });
+      if (!response.ok) throw new Error();
+      const payload = await response.json();
+      setRecords((current) => [
+        ...current.filter((record) => record.section !== section),
+        ...payload.records,
+      ]);
+      setToast(`${payload.records.length} records imported`);
+      onClose();
+    } catch {
+      setToast("Import could not be saved");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="modal-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
+      <form className="modal import-modal" onSubmit={submitImport}>
+        <div className="modal-heading">
+          <div><p className="eyebrow">Quick sheet import</p><h2>Import {menus.find((menu) => menu.id === section)?.label}</h2></div>
+          <button type="button" onClick={onClose} aria-label="Close">×</button>
+        </div>
+        <ol className="import-steps">
+          <li>Open the matching tab in Google Sheets.</li>
+          <li>Select the table, copy it, then paste below.</li>
+          <li>Check the item count and replace this section.</li>
+        </ol>
+        <textarea
+          className="import-area"
+          value={text}
+          onChange={(event) => setText(event.target.value)}
+          placeholder="Paste copied Google Sheet rows here…"
+          autoFocus
+        />
+        <label className="file-import"><span>or choose a CSV / TSV file</span><input type="file" accept=".csv,.tsv,.txt,text/csv,text/tab-separated-values" onChange={(event) => readFile(event.target.files?.[0])} /></label>
+        <div className="import-preview">
+          <span>Preview</span>
+          <strong>{parsed.length} {parsed.length === 1 ? "record" : "records"} ready</strong>
+          <small>{parsed.slice(0, 3).map((item) => item.title).join(" · ") || "Paste data to preview"}</small>
+        </div>
+        <div className="modal-actions">
+          <button type="button" onClick={onClose}>Cancel</button>
+          <button className="primary-button" type="submit" disabled={!parsed.length || busy}>{busy ? "Importing…" : `Replace with ${parsed.length} records`}</button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
 function EditModal({ item, setItem, onClose, onSave, saving, setToast }: { item: RecordItem; setItem: (item: RecordItem) => void; onClose: () => void; onSave: (event: FormEvent<HTMLFormElement>) => void; saving: boolean; setToast: (value: string) => void }) {
   const [uploading, setUploading] = useState(false);
   const fields: Record<Section, [string, string, "text" | "textarea"][]> = {
-    products: [["sku", "SKU", "text"], ["alacart", "Ala carte price", "text"], ["pwp", "PWP price", "text"], ["pharmacy", "Pharmacy promo price", "text"], ["shopee", "Shopee promo price", "text"], ["website", "Website promo price", "text"], ["facebook", "Facebook promo price", "text"], ["status", "Status", "text"]],
+    products: [["sku", "SKU", "text"], ["alacart", "Ala carte price", "text"], ["facebook", "FB price", "text"], ["facebookPwp", "FB PWP", "text"], ["website", "Website price", "text"], ["websitePwp", "Website PWP", "text"], ["shopee", "Shopee price", "text"], ["pharmacy", "Pharmacy price", "text"], ["status", "Status", "text"]],
     points: [["points", "Points required", "text"], ["value", "Reward value", "text"], ["terms", "Terms", "textarea"], ["status", "Status", "text"]],
     pharmacies: [["phone", "Phone number", "text"], ["address", "Full address", "textarea"], ["state", "State", "text"]],
     payments: [["details", "Payment instructions", "textarea"], ["link", "Payment link", "text"], ["portal", "Portal link", "text"], ["status", "Status", "text"]],

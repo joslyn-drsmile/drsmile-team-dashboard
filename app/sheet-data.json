@@ -1,0 +1,1549 @@
+{
+  "records": [
+    {
+      "id": 1,
+      "section": "products",
+      "title": "美白牙粉 + Free 1 x 牙刷",
+      "subtitle": "Google Sheet",
+      "data": {
+        "sku": "Package A",
+        "alacart": "RM 108",
+        "facebook": "RM 108",
+        "facebookPwp": "—",
+        "website": "—",
+        "websitePwp": "—",
+        "shopee": "—",
+        "pharmacy": "RM 108",
+        "status": "Sheet"
+      }
+    },
+    {
+      "id": 2,
+      "section": "products",
+      "title": "2 美白牙粉 + Free 2 x 牙刷",
+      "subtitle": "Google Sheet",
+      "data": {
+        "sku": "2D",
+        "alacart": "—",
+        "facebook": "RM 158",
+        "facebookPwp": "—",
+        "website": "—",
+        "websitePwp": "—",
+        "shopee": "RM 160",
+        "pharmacy": "RM 158",
+        "status": "Sheet"
+      }
+    },
+    {
+      "id": 3,
+      "section": "products",
+      "title": "3 美白牙粉 + Free 3 x 牙刷",
+      "subtitle": "Google Sheet",
+      "data": {
+        "sku": "—",
+        "alacart": "—",
+        "facebook": "—",
+        "facebookPwp": "—",
+        "website": "—",
+        "websitePwp": "—",
+        "shopee": "—",
+        "pharmacy": "RM 198",
+        "status": "Sheet"
+      }
+    },
+    {
+      "id": 4,
+      "section": "products",
+      "title": "4 美白牙粉 + Free 4 x 牙刷",
+      "subtitle": "Google Sheet",
+      "data": {
+        "sku": "4D",
+        "alacart": "—",
+        "facebook": "RM 258",
+        "facebookPwp": "—",
+        "website": "—",
+        "websitePwp": "—",
+        "shopee": "—",
+        "pharmacy": "RM 198",
+        "status": "Sheet"
+      }
+    },
+    {
+      "id": 5,
+      "section": "products",
+      "title": "美白牙粉",
+      "subtitle": "Google Sheet",
+      "data": {
+        "sku": "YF",
+        "alacart": "—",
+        "facebook": "—",
+        "facebookPwp": "—",
+        "website": "RM 108",
+        "websitePwp": "—",
+        "shopee": "RM 126.49",
+        "pharmacy": "—",
+        "status": "Sheet"
+      }
+    },
+    {
+      "id": 6,
+      "section": "products",
+      "title": "First Trial",
+      "subtitle": "Google Sheet",
+      "data": {
+        "sku": "YF2",
+        "alacart": "—",
+        "facebook": "RM 138",
+        "facebookPwp": "—",
+        "website": "—",
+        "websitePwp": "—",
+        "shopee": "—",
+        "pharmacy": "—",
+        "status": "Sheet"
+      }
+    },
+    {
+      "id": 7,
+      "section": "products",
+      "title": "完整美白疗程",
+      "subtitle": "Google Sheet",
+      "data": {
+        "sku": "LH",
+        "alacart": "RM 337",
+        "facebook": "RM 188",
+        "facebookPwp": "—",
+        "website": "—",
+        "websitePwp": "—",
+        "shopee": "RM 182.4",
+        "pharmacy": "—",
+        "status": "Sheet"
+      }
+    },
+    {
+      "id": 8,
+      "section": "products",
+      "title": "𝐏𝐀𝐏⁺ 焕白牙贴",
+      "subtitle": "Google Sheet",
+      "data": {
+        "sku": "GT",
+        "alacart": "RM 99",
+        "facebook": "—",
+        "facebookPwp": "RM 39",
+        "website": "RM 99",
+        "websitePwp": "RM 59",
+        "shopee": "RM 109",
+        "pharmacy": "—",
+        "status": "Sheet"
+      }
+    },
+    {
+      "id": 9,
+      "section": "products",
+      "title": "美白精华",
+      "subtitle": "Google Sheet",
+      "data": {
+        "sku": "JH",
+        "alacart": "RM 99",
+        "facebook": "RM 59",
+        "facebookPwp": "RM 39",
+        "website": "RM 99",
+        "websitePwp": "RM 79",
+        "shopee": "—",
+        "pharmacy": "—",
+        "status": "Sheet"
+      }
+    },
+    {
+      "id": 10,
+      "section": "products",
+      "title": "Dr Smile 软毛牙刷",
+      "subtitle": "Google Sheet",
+      "data": {
+        "sku": "YS",
+        "alacart": "RM 39",
+        "facebook": "RM 19",
+        "facebookPwp": "RM 19",
+        "website": "RM 31",
+        "websitePwp": "RM 19",
+        "shopee": "RM 37.2",
+        "pharmacy": "—",
+        "status": "Sheet"
+      }
+    },
+    {
+      "id": 11,
+      "section": "products",
+      "title": "蜂胶茶树油漱口水",
+      "subtitle": "Google Sheet",
+      "data": {
+        "sku": "CMW",
+        "alacart": "RM 99",
+        "facebook": "—",
+        "facebookPwp": "RM 39",
+        "website": "RM 59",
+        "websitePwp": "RM 39",
+        "shopee": "RM 59",
+        "pharmacy": "—",
+        "status": "Sheet"
+      }
+    },
+    {
+      "id": 12,
+      "section": "products",
+      "title": "西柚漱口水",
+      "subtitle": "Google Sheet",
+      "data": {
+        "sku": "XYCMW",
+        "alacart": "—",
+        "facebook": "—",
+        "facebookPwp": "RM 39",
+        "website": "RM 59",
+        "websitePwp": "RM 39",
+        "shopee": "—",
+        "pharmacy": "—",
+        "status": "Sheet"
+      }
+    },
+    {
+      "id": 13,
+      "section": "products",
+      "title": "葡萄漱口水",
+      "subtitle": "Google Sheet",
+      "data": {
+        "sku": "PTCMW",
+        "alacart": "—",
+        "facebook": "—",
+        "facebookPwp": "RM 39",
+        "website": "RM 59",
+        "websitePwp": "RM 39",
+        "shopee": "—",
+        "pharmacy": "—",
+        "status": "Sheet"
+      }
+    },
+    {
+      "id": 14,
+      "section": "products",
+      "title": "4盒牙线棒",
+      "subtitle": "Google Sheet",
+      "data": {
+        "sku": "YXB SET",
+        "alacart": "RM 39",
+        "facebook": "—",
+        "facebookPwp": "RM 19",
+        "website": "—",
+        "websitePwp": "—",
+        "shopee": "—",
+        "pharmacy": "—",
+        "status": "Sheet"
+      }
+    },
+    {
+      "id": 15,
+      "section": "products",
+      "title": "防水洗漱包",
+      "subtitle": "Google Sheet",
+      "data": {
+        "sku": "Wash Bag",
+        "alacart": "RM 39",
+        "facebook": "—",
+        "facebookPwp": "RM 19",
+        "website": "—",
+        "websitePwp": "—",
+        "shopee": "—",
+        "pharmacy": "—",
+        "status": "Sheet"
+      }
+    },
+    {
+      "id": 16,
+      "section": "products",
+      "title": "2瓶杀菌漱口水",
+      "subtitle": "Google Sheet",
+      "data": {
+        "sku": "SKS SET",
+        "alacart": "RM 39",
+        "facebook": "—",
+        "facebookPwp": "RM 19",
+        "website": "—",
+        "websitePwp": "—",
+        "shopee": "—",
+        "pharmacy": "—",
+        "status": "Sheet"
+      }
+    },
+    {
+      "id": 17,
+      "section": "products",
+      "title": "高订香薰",
+      "subtitle": "Google Sheet",
+      "data": {
+        "sku": "RD",
+        "alacart": "RM 39",
+        "facebook": "—",
+        "facebookPwp": "RM 29",
+        "website": "—",
+        "websitePwp": "—",
+        "shopee": "—",
+        "pharmacy": "—",
+        "status": "Sheet"
+      }
+    },
+    {
+      "id": 18,
+      "section": "products",
+      "title": "化妆包",
+      "subtitle": "Google Sheet",
+      "data": {
+        "sku": "HZB",
+        "alacart": "RM 129",
+        "facebook": "—",
+        "facebookPwp": "RM 39",
+        "website": "RM 129",
+        "websitePwp": "RM 39",
+        "shopee": "—",
+        "pharmacy": "—",
+        "status": "Sheet"
+      }
+    },
+    {
+      "id": 19,
+      "section": "products",
+      "title": "Drsmile tote bag",
+      "subtitle": "Google Sheet",
+      "data": {
+        "sku": "tote bag",
+        "alacart": "RM 239",
+        "facebook": "—",
+        "facebookPwp": "RM 129",
+        "website": "RM 239",
+        "websitePwp": "RM 59",
+        "shopee": "—",
+        "pharmacy": "—",
+        "status": "Sheet"
+      }
+    },
+    {
+      "id": 20,
+      "section": "products",
+      "title": "Mug",
+      "subtitle": "Google Sheet",
+      "data": {
+        "sku": "—",
+        "alacart": "RM 129",
+        "facebook": "—",
+        "facebookPwp": "RM 129",
+        "website": "RM 109",
+        "websitePwp": "—",
+        "shopee": "—",
+        "pharmacy": "—",
+        "status": "Sheet"
+      }
+    },
+    {
+      "id": 21,
+      "section": "products",
+      "title": "漱口水礼盒 1 Set",
+      "subtitle": "Google Sheet",
+      "data": {
+        "sku": "CLH",
+        "alacart": "RM 177",
+        "facebook": "RM 129",
+        "facebookPwp": "—",
+        "website": "RM 129",
+        "websitePwp": "—",
+        "shopee": "—",
+        "pharmacy": "—",
+        "status": "Sheet"
+      }
+    },
+    {
+      "id": 22,
+      "section": "products",
+      "title": "漱口水礼盒 2 Set",
+      "subtitle": "Google Sheet",
+      "data": {
+        "sku": "CLH",
+        "alacart": "RM 354",
+        "facebook": "RM 199",
+        "facebookPwp": "—",
+        "website": "RM 199",
+        "websitePwp": "—",
+        "shopee": "—",
+        "pharmacy": "—",
+        "status": "Sheet"
+      }
+    },
+    {
+      "id": 23,
+      "section": "products",
+      "title": "漱口水礼盒 3 Set",
+      "subtitle": "Google Sheet",
+      "data": {
+        "sku": "CLH",
+        "alacart": "RM 531",
+        "facebook": "RM 258",
+        "facebookPwp": "—",
+        "website": "RM 258",
+        "websitePwp": "—",
+        "shopee": "—",
+        "pharmacy": "—",
+        "status": "Sheet"
+      }
+    },
+    {
+      "id": 100,
+      "section": "points",
+      "title": "美白牙粉",
+      "subtitle": "Point Redeem",
+      "data": {
+        "points": "500 points",
+        "value": "Redeem reward",
+        "terms": "Based on DrSmile Point Redeem sheet",
+        "status": "Active"
+      }
+    },
+    {
+      "id": 101,
+      "section": "points",
+      "title": "化妆包",
+      "subtitle": "Point Redeem",
+      "data": {
+        "points": "600 points",
+        "value": "Redeem reward",
+        "terms": "Based on DrSmile Point Redeem sheet",
+        "status": "Active"
+      }
+    },
+    {
+      "id": 102,
+      "section": "points",
+      "title": "云朵托特包",
+      "subtitle": "Point Redeem",
+      "data": {
+        "points": "900 points",
+        "value": "Redeem reward",
+        "terms": "Based on DrSmile Point Redeem sheet",
+        "status": "Active"
+      }
+    },
+    {
+      "id": 103,
+      "section": "points",
+      "title": "𝐏𝐀𝐏⁺ 焕白牙贴",
+      "subtitle": "Point Redeem",
+      "data": {
+        "points": "390 points",
+        "value": "Redeem reward",
+        "terms": "Based on DrSmile Point Redeem sheet",
+        "status": "Active"
+      }
+    },
+    {
+      "id": 104,
+      "section": "points",
+      "title": "Dr Smile 软毛牙刷 x2",
+      "subtitle": "Point Redeem",
+      "data": {
+        "points": "180 points",
+        "value": "Redeem reward",
+        "terms": "Based on DrSmile Point Redeem sheet",
+        "status": "Active"
+      }
+    },
+    {
+      "id": 105,
+      "section": "points",
+      "title": "蜂胶茶树油漱口水",
+      "subtitle": "Point Redeem",
+      "data": {
+        "points": "350 points",
+        "value": "Redeem reward",
+        "terms": "Based on DrSmile Point Redeem sheet",
+        "status": "Active"
+      }
+    },
+    {
+      "id": 106,
+      "section": "points",
+      "title": "西柚漱口水",
+      "subtitle": "Point Redeem",
+      "data": {
+        "points": "350 points",
+        "value": "Redeem reward",
+        "terms": "Based on DrSmile Point Redeem sheet",
+        "status": "Active"
+      }
+    },
+    {
+      "id": 107,
+      "section": "points",
+      "title": "葡萄漱口水",
+      "subtitle": "Point Redeem",
+      "data": {
+        "points": "350 points",
+        "value": "Redeem reward",
+        "terms": "Based on DrSmile Point Redeem sheet",
+        "status": "Active"
+      }
+    },
+    {
+      "id": 108,
+      "section": "points",
+      "title": "马克杯",
+      "subtitle": "Point Redeem",
+      "data": {
+        "points": "450 points",
+        "value": "Redeem reward",
+        "terms": "Based on DrSmile Point Redeem sheet",
+        "status": "Active"
+      }
+    },
+    {
+      "id": 200,
+      "section": "pharmacies",
+      "title": "IT Good Pharmacy",
+      "subtitle": "Kuala Lumpur",
+      "data": {
+        "phone": "011-56218133",
+        "address": "D3-0-31, OUG Parklane, Off Jalan Puchong, Jalan 1/152, Kuala Lumpur, Wilayah Persekutuan Kuala Lumpur",
+        "postcode": "58200",
+        "state": "Kuala Lumpur"
+      }
+    },
+    {
+      "id": 201,
+      "section": "pharmacies",
+      "title": "A Plus Pharmacy",
+      "subtitle": "Kuala Lumpur",
+      "data": {
+        "phone": "011-21109053",
+        "address": "11G, Jalan Perdana 4/5, Pandan Perdana, Kuala Lumpur, Wilayah Persekutuan Kuala Lumpur",
+        "postcode": "55300",
+        "state": "Kuala Lumpur"
+      }
+    },
+    {
+      "id": 202,
+      "section": "pharmacies",
+      "title": "Urban Health Pharmacy",
+      "subtitle": "Kuala Lumpur",
+      "data": {
+        "phone": "012-4216707",
+        "address": "80, Jalan Metro Perdana Barat 3, Taman Usahawan Kepong, Kuala Lumpur, Wilayah Persekutuan Kuala Lumpur",
+        "postcode": "52100",
+        "state": "Kuala Lumpur"
+      }
+    },
+    {
+      "id": 203,
+      "section": "pharmacies",
+      "title": "Kedai Ubat Hong Ning",
+      "subtitle": "Sungai Buloh",
+      "data": {
+        "phone": "012-2365577",
+        "address": "No. 20, Jalan PJU 10/3C, Desa Aman Puri, Sungai Buloh, Selangor",
+        "postcode": "52100",
+        "state": "Sungai Buloh"
+      }
+    },
+    {
+      "id": 204,
+      "section": "pharmacies",
+      "title": "Leo Pharmacy",
+      "subtitle": "Batu Caves",
+      "data": {
+        "phone": "03-61775357",
+        "address": "27, Jalan SG 1/3, Taman Sri Gombak, Batu Caves, Selangor",
+        "postcode": "68100",
+        "state": "Batu Caves"
+      }
+    },
+    {
+      "id": 205,
+      "section": "pharmacies",
+      "title": "Great Leo Medic",
+      "subtitle": "Klang",
+      "data": {
+        "phone": "03-51665075",
+        "address": "34, Jalan Dato Yusuf Shahbudin 29, Taman Sentosa, Klang, Selangor",
+        "postcode": "41200",
+        "state": "Klang"
+      }
+    },
+    {
+      "id": 206,
+      "section": "pharmacies",
+      "title": "Medicare Ampang",
+      "subtitle": "Ampang",
+      "data": {
+        "phone": "018-9477164",
+        "address": "No. 36, Jalan Wawasan Ampang 2/6, Bandar Baru Ampang, Ampang, Selangor",
+        "postcode": "68000",
+        "state": "Ampang"
+      }
+    },
+    {
+      "id": 207,
+      "section": "pharmacies",
+      "title": "Sunway Multicare Pharmacy",
+      "subtitle": "Cheras",
+      "data": {
+        "phone": "011-62653889",
+        "address": "No. 59, Jalan Damai Perdana 1/9B, Bandar Damai Perdana, Cheras, Selangor",
+        "postcode": "43200",
+        "state": "Cheras"
+      }
+    },
+    {
+      "id": 208,
+      "section": "pharmacies",
+      "title": "Pharmhouse Setia Taipan",
+      "subtitle": "Setia Alam",
+      "data": {
+        "phone": "03-58860530",
+        "address": "No. 37-G, Jalan Setia Prima S U13/S, Setia Alam, Shah Alam, Selangor",
+        "postcode": "40170",
+        "state": "Setia Alam"
+      }
+    },
+    {
+      "id": 209,
+      "section": "pharmacies",
+      "title": "Well Pharmacy Mutiara Rini",
+      "subtitle": "Johor Bahru (Skudai)",
+      "data": {
+        "phone": "013-9324300",
+        "address": "No. 93, Jalan Utama 34, Taman Mutiara Rini, Skudai, Johor",
+        "postcode": "81300",
+        "state": "Johor Bahru (Skudai)"
+      }
+    },
+    {
+      "id": 210,
+      "section": "pharmacies",
+      "title": "Well Pharmacy Austin Crest",
+      "subtitle": "Johor Bahru",
+      "data": {
+        "phone": "019-3709102",
+        "address": "No. 47, Jalan Jaya Putra 7/6, Bandar Jaya Putra, Johor Bahru, Johor",
+        "postcode": "81100",
+        "state": "Johor Bahru"
+      }
+    },
+    {
+      "id": 211,
+      "section": "pharmacies",
+      "title": "Well Pharmacy Bukit Indah",
+      "subtitle": "Iskandar Puteri",
+      "data": {
+        "phone": "010-5805580",
+        "address": "No. 36, Jalan Indah 8/15, Taman Bukit Indah, Iskandar Puteri, Johor",
+        "postcode": "79100",
+        "state": "Iskandar Puteri"
+      }
+    },
+    {
+      "id": 212,
+      "section": "pharmacies",
+      "title": "Well Pharmacy Gelang Patah",
+      "subtitle": "Gelang Patah",
+      "data": {
+        "phone": "012-4233688",
+        "address": "No. 8-01, Jalan Nusaria 11/6, Taman Nusantara, Gelang Patah, Johor",
+        "postcode": "81550",
+        "state": "Gelang Patah"
+      }
+    },
+    {
+      "id": 213,
+      "section": "pharmacies",
+      "title": "Well Pharmacy Eco Botanic",
+      "subtitle": "Iskandar Puteri",
+      "data": {
+        "phone": "019-9125580",
+        "address": "No. 36, Jalan Eko Botani 3/2, Taman Eko Botani, Iskandar Puteri, Johor",
+        "postcode": "79100",
+        "state": "Iskandar Puteri"
+      }
+    },
+    {
+      "id": 214,
+      "section": "pharmacies",
+      "title": "Well Pharmacy Kulai",
+      "subtitle": "Kulai",
+      "data": {
+        "phone": "019-5601889",
+        "address": "No. 11, Jalan Kenanga 29/6, Bandar Indahpura, Kulai, Johor",
+        "postcode": "81000",
+        "state": "Kulai"
+      }
+    },
+    {
+      "id": 215,
+      "section": "pharmacies",
+      "title": "ZX Pharmacy",
+      "subtitle": "Johor Bahru",
+      "data": {
+        "phone": "010-3787612",
+        "address": "No. 15, Jalan Harmonium 23/13, Taman Desa Tebrau, Johor Bahru, Johor",
+        "postcode": "81100",
+        "state": "Johor Bahru"
+      }
+    },
+    {
+      "id": 216,
+      "section": "pharmacies",
+      "title": "9 Nine Pharmacy",
+      "subtitle": "Segamat",
+      "data": {
+        "phone": "011-10950199",
+        "address": "No. 11, Jalan PKY 2, Pusat Komersial Yayasan, Segamat, Johor",
+        "postcode": "85000",
+        "state": "Segamat"
+      }
+    },
+    {
+      "id": 217,
+      "section": "pharmacies",
+      "title": "SY Pharmacy (Taman Batu Pahat)",
+      "subtitle": "Batu Pahat",
+      "data": {
+        "phone": "017-8593138",
+        "address": "No. 59-2, Jalan Balau, Taman Batu Pahat, Batu Pahat, Johor",
+        "postcode": "83000",
+        "state": "Batu Pahat"
+      }
+    },
+    {
+      "id": 218,
+      "section": "pharmacies",
+      "title": "SY Pharmacy (Taman Batu Pahat)",
+      "subtitle": "Batu Pahat",
+      "data": {
+        "phone": "017-7308138",
+        "address": "No. 59-2, Jalan Balau, Taman Batu Pahat, Batu Pahat, Johor",
+        "postcode": "83000",
+        "state": "Batu Pahat"
+      }
+    },
+    {
+      "id": 219,
+      "section": "pharmacies",
+      "title": "SY Pharmacy (Taman Megah)",
+      "subtitle": "Batu Pahat",
+      "data": {
+        "phone": "012-6638138",
+        "address": "No. 9, Jalan Megah 1, Taman Megah, Batu Pahat, Johor",
+        "postcode": "83000",
+        "state": "Batu Pahat"
+      }
+    },
+    {
+      "id": 220,
+      "section": "pharmacies",
+      "title": "The One Pharmacy",
+      "subtitle": "Kluang",
+      "data": {
+        "phone": "011-51375985",
+        "address": "No. 11, Ground Floor, Jalan Langsat, Taman Suria, Kluang, Johor",
+        "postcode": "86000",
+        "state": "Kluang"
+      }
+    },
+    {
+      "id": 221,
+      "section": "pharmacies",
+      "title": "Farmasi Big Tree",
+      "subtitle": "Melaka",
+      "data": {
+        "phone": "011-56564972",
+        "address": "No. 49-G, Jalan Tun Perak, Taman Lam Sing, Melaka",
+        "postcode": "75300",
+        "state": "Melaka"
+      }
+    },
+    {
+      "id": 222,
+      "section": "pharmacies",
+      "title": "Renture Wellness Centre",
+      "subtitle": "Seremban",
+      "data": {
+        "phone": "010-2388222",
+        "address": "No. 48-G, Jalan KS 5, Kepayang Sentral, Seremban, Negeri Sembilan",
+        "postcode": "70200",
+        "state": "Seremban"
+      }
+    },
+    {
+      "id": 223,
+      "section": "pharmacies",
+      "title": "Publico Pharmacy",
+      "subtitle": "Ipoh",
+      "data": {
+        "phone": "011-62722747",
+        "address": "No. 32B, Jalan Tokong, Taman Hoover, Ipoh, Perak",
+        "postcode": "31650",
+        "state": "Ipoh"
+      }
+    },
+    {
+      "id": 224,
+      "section": "pharmacies",
+      "title": "I-Health Pharmacy",
+      "subtitle": "Ipoh",
+      "data": {
+        "phone": "011-56566323",
+        "address": "No. 9, Jalan Wira Jaya, Taman Ipoh Jaya Timur 1, Ipoh, Perak",
+        "postcode": "31350",
+        "state": "Ipoh"
+      }
+    },
+    {
+      "id": 225,
+      "section": "pharmacies",
+      "title": "Sin Yong Sen",
+      "subtitle": "Taiping",
+      "data": {
+        "phone": "016-5044818",
+        "address": "No. 130, Jalan Dato Kamaruddin, Taman Sening, Taiping, Perak",
+        "postcode": "34000",
+        "state": "Taiping"
+      }
+    },
+    {
+      "id": 226,
+      "section": "pharmacies",
+      "title": "MedsPro Pharmacy",
+      "subtitle": "Tanjung Tokong",
+      "data": {
+        "phone": "016-2521788",
+        "address": "Vantage B-G-3, Jalan Seri Tanjung Pinang 1, Tanjung Tokong, Pulau Pinang",
+        "postcode": "10470",
+        "state": "Tanjung Tokong"
+      }
+    },
+    {
+      "id": 227,
+      "section": "pharmacies",
+      "title": "Farmasi Chong (Juru)",
+      "subtitle": "Juru",
+      "data": {
+        "phone": "011-28235522",
+        "address": "No. 716, Jalan Juru, Taman Duku, Bukit Mertajam, Pulau Pinang",
+        "postcode": "14000",
+        "state": "Juru"
+      }
+    },
+    {
+      "id": 228,
+      "section": "pharmacies",
+      "title": "Farmasi Chong (Simpang Ampat)",
+      "subtitle": "Simpang Ampat",
+      "data": {
+        "phone": "011-28785522",
+        "address": "No. 10, Jalan Keruing, Kawasan Perniagaan Simpang Ampat, Pulau Pinang",
+        "postcode": "14100",
+        "state": "Simpang Ampat"
+      }
+    },
+    {
+      "id": 229,
+      "section": "pharmacies",
+      "title": "Farmasi Chong (Bertam Ria)",
+      "subtitle": "Kepala Batas",
+      "data": {
+        "phone": "011-28325522",
+        "address": "No. 1 & 3, Lorong Bertam Ria 2, Taman Bertam Ria, Kepala Batas, Pulau Pinang",
+        "postcode": "13200",
+        "state": "Kepala Batas"
+      }
+    },
+    {
+      "id": 230,
+      "section": "pharmacies",
+      "title": "Farmasi Chong (Sungai Dua)",
+      "subtitle": "Butterworth",
+      "data": {
+        "phone": "011-28335522",
+        "address": "No. 36, Jalan Perniagaan Sungai Dua, Pusat Perniagaan Sungai Dua, Butterworth, Pulau Pinang",
+        "postcode": "13800",
+        "state": "Butterworth"
+      }
+    },
+    {
+      "id": 231,
+      "section": "pharmacies",
+      "title": "Farmasi Chong (Ong Yi How)",
+      "subtitle": "Butterworth",
+      "data": {
+        "phone": "010-2879522",
+        "address": "No. 7388, Jalan Ong Yi How, Butterworth, Pulau Pinang",
+        "postcode": "13400",
+        "state": "Butterworth"
+      }
+    },
+    {
+      "id": 232,
+      "section": "pharmacies",
+      "title": "Farmasi Chong (Kepala Batas)",
+      "subtitle": "Kepala Batas",
+      "data": {
+        "phone": "018-2239522",
+        "address": "No. 15, Jalan Dagangan 10, Pusat Perniagaan Kepala Batas, Kepala Batas, Pulau Pinang",
+        "postcode": "13200",
+        "state": "Kepala Batas"
+      }
+    },
+    {
+      "id": 233,
+      "section": "pharmacies",
+      "title": "Farmasi Lee",
+      "subtitle": "Kuantan",
+      "data": {
+        "phone": "09-5676933",
+        "address": "B-622, Ground Floor, Jalan Air Putih, Kuantan, Pahang",
+        "postcode": "25300",
+        "state": "Kuantan"
+      }
+    },
+    {
+      "id": 234,
+      "section": "pharmacies",
+      "title": "Q10 Pharmacy",
+      "subtitle": "Miri",
+      "data": {
+        "phone": "011-10241024",
+        "address": "Lot 2185, Ground Floor, Marina Square Phase 2, Jalan Marina Utama, Miri, Sarawak",
+        "postcode": "98000",
+        "state": "Miri"
+      }
+    },
+    {
+      "id": 235,
+      "section": "pharmacies",
+      "title": "Brightway Pharmacy",
+      "subtitle": "Miri",
+      "data": {
+        "phone": "016-6736908",
+        "address": "Lot 1708, Ground Floor, Pelita Commercial Centre, Jalan Miri-Pujut, Miri, Sarawak",
+        "postcode": "98000",
+        "state": "Miri"
+      }
+    },
+    {
+      "id": 236,
+      "section": "pharmacies",
+      "title": "True Label Pharmacy",
+      "subtitle": "Miri",
+      "data": {
+        "phone": "012-8855936",
+        "address": "Lot 1945, Ground Floor, Permyjaya Commercial Centre, Jalan Tudan, Miri, Sarawak",
+        "postcode": "98000",
+        "state": "Miri"
+      }
+    },
+    {
+      "id": 237,
+      "section": "pharmacies",
+      "title": "SHiNE Pharmacy",
+      "subtitle": "Kuching",
+      "data": {
+        "phone": "016-4169553",
+        "address": "Sublot 13, Ground Floor, Song Plaza, Jalan Song, Kuching, Sarawak",
+        "postcode": "93350",
+        "state": "Kuching"
+      }
+    },
+    {
+      "id": 238,
+      "section": "pharmacies",
+      "title": "Bright Pharmacy",
+      "subtitle": "Bintulu",
+      "data": {
+        "phone": "016-8976046",
+        "address": "Lot 271, Ground Floor, Medan Jaya Commercial Centre, Bintulu, Sarawak",
+        "postcode": "97000",
+        "state": "Bintulu"
+      }
+    },
+    {
+      "id": 239,
+      "section": "pharmacies",
+      "title": "Unicare Pharmacy (Teku)",
+      "subtitle": "Sibu",
+      "data": {
+        "phone": "013-9925813",
+        "address": "No. 15, Ground Floor, Teku Commercial Centre, Jalan Teku, Sibu, Sarawak",
+        "postcode": "96000",
+        "state": "Sibu"
+      }
+    },
+    {
+      "id": 240,
+      "section": "pharmacies",
+      "title": "Unicare Pharmacy (Hanns)",
+      "subtitle": "Sibu",
+      "data": {
+        "phone": "013-9865813",
+        "address": "Hanns Commercial Centre, Jalan Wong King Huo, Sibu, Sarawak",
+        "postcode": "96000",
+        "state": "Sibu"
+      }
+    },
+    {
+      "id": 241,
+      "section": "pharmacies",
+      "title": "Unicare CSH",
+      "subtitle": "Sibu",
+      "data": {
+        "phone": "019-2595813",
+        "address": "No. 8, CSH Commercial Centre, Jalan Tun Ahmad Zaidi Adruce, Sibu, Sarawak",
+        "postcode": "96000",
+        "state": "Sibu"
+      }
+    },
+    {
+      "id": 242,
+      "section": "pharmacies",
+      "title": "Unicare Wonderful",
+      "subtitle": "Sibu",
+      "data": {
+        "phone": "013-5785813",
+        "address": "Wonderful Commercial Centre, Jalan Tun Zaidi, Sibu, Sarawak",
+        "postcode": "96000",
+        "state": "Sibu"
+      }
+    },
+    {
+      "id": 243,
+      "section": "pharmacies",
+      "title": "Unicare Unicity",
+      "subtitle": "Sibu",
+      "data": {
+        "phone": "019-5895813",
+        "address": "Unicity Commercial Centre, Jalan Salim, Sibu, Sarawak",
+        "postcode": "96000",
+        "state": "Sibu"
+      }
+    },
+    {
+      "id": 244,
+      "section": "pharmacies",
+      "title": "Megacare Pharmacy",
+      "subtitle": "Kota Kinabalu",
+      "data": {
+        "phone": "011-57793089",
+        "address": "Lot G-31, Ground Floor, Plaza Shell, Jalan Tunku Abdul Rahman, Kota Kinabalu, Sabah",
+        "postcode": "88000",
+        "state": "Kota Kinabalu"
+      }
+    },
+    {
+      "id": 300,
+      "section": "faq",
+      "title": "可以直接代替牙膏使用？",
+      "subtitle": "Customer FAQ",
+      "data": {
+        "answer": "对的 dear 我们的益生菌牙粉是可以直接代替牙膏哦🥰\n⚠️ 但是我们建议一开始先配合牙膏一起使用，就是剂了牙膏，然后再沾一点牙粉来刷，效果也是很好哦🥰\n等习惯了后再 完全单独使用牙粉都没问题💕\n而且我们的益生菌牙粉 其实就是像用牙膏一样而已，只是形式上不一样🥰 而且安全标准 和 审核 标准都是跟 牙膏一样， 拥有 KKM认证才能推出🥰 所以可以放心使用💕",
+        "category": "Product & oral care",
+        "source": "DrSmile Dashboard Google Sheet"
+      }
+    },
+    {
+      "id": 301,
+      "section": "faq",
+      "title": "小孩可以用吗？",
+      "subtitle": "Customer FAQ",
+      "data": {
+        "answer": "只要超过10岁的小孩都可以开始单独使用我们的大白牙牙粉了哦🥰小过的话，我们是建议要配合牙膏一起使就可以了💕\n就是剂了牙膏，然后沾一点牙粉一起刷，效果也是非常好💕 因为小孩成长过程的牙齿比较容易蛀，需要含氟比较高的牙膏去防止蛀牙哦❤️",
+        "category": "Product & oral care",
+        "source": "DrSmile Dashboard Google Sheet"
+      }
+    },
+    {
+      "id": 302,
+      "section": "faq",
+      "title": "可以用多久？",
+      "subtitle": "Customer FAQ",
+      "data": {
+        "answer": "一罐50g 可以用2-3个月，长短取决于每一次的用量。一般我们的顾客都是每2-3个月回购一次的🥰",
+        "category": "Product & oral care",
+        "source": "DrSmile Dashboard Google Sheet"
+      }
+    },
+    {
+      "id": 303,
+      "section": "faq",
+      "title": "会反弹吗？如果停用了 牙齿会变回黄吗？",
+      "subtitle": "Customer FAQ",
+      "data": {
+        "answer": "是不会有反弹效果的蛤 Dear💕 因为我们的益生菌牙粉是真正帮你溶解和刷掉原本粘在你牙齿上的色素，做到去黄还原美白的效果🥰\n❌不是使用化学漂白剂，或刺激物来漂白牙齿的颜色。 \n而且是可代替牙膏的，酱它就可以帮你刷掉每一天吃的食物色素，不让色素黄牙有机会黏在我们的牙齿上哦🥰\n不过后期停用后是需要自身做好保养+清洁的部分的哦，因为牙齿黄或是口腔问题很多时候都是因为生活饮食习惯导致的\n然后我们要拿到生产认证是一定要经过测试，不能对牙齿 造成任何 刮痕 （不能伤害 珐琅质/牙釉质）\n才能推出的哦🥰",
+        "category": "Product & oral care",
+        "source": "DrSmile Dashboard Google Sheet"
+      }
+    },
+    {
+      "id": 304,
+      "section": "faq",
+      "title": "漱口条是什么？",
+      "subtitle": "Customer FAQ",
+      "data": {
+        "answer": "这个是随身漱口条，一盒20条，可以随身携带出门，放包包。每一次吃完饭后就可以即刻漱口，把食物残渣，细菌冲掉。最重要的是，不让食物色素有机会沉浮在你的牙齿，不止可以杜绝牙黄，也可以清新你的口腔❤️\n收到货后问的\n这个是我们送给dear的一个特别礼物🎁 是随身漱口条哦dear🥰\n可以随身携带出门，放包包。每一次吃完饭后就可以即刻漱口，把食物残渣，细菌冲掉。最重要的是，不让食物色素有机会沉浮在你的牙齿，不止可以杜绝牙黄，也可以清新你的口腔❤️",
+        "category": "Product & oral care",
+        "source": "DrSmile Dashboard Google Sheet"
+      }
+    },
+    {
+      "id": 305,
+      "section": "faq",
+      "title": "什么是美白牙贴？",
+      "subtitle": "Customer FAQ",
+      "data": {
+        "answer": "我们的 美白牙贴就像面膜一样，是用来敷在牙齿上的。主要功能就是通过酵素活性物，去软化那些顽固的污垢，然后再配上我们的【去黄亮白益生菌牙粉】，更容易刷走我们的牙黄，美白牙齿。\nOur whitening strips are just like a mask. It is used to apply on the teeth. The main function is to soften those stubborn dirt through enzyme active substances, and then match with our [Big White Teeth tooth powder], it is easier to brush away our yellow teeth and whiten our teeth.\n效果是非常立竿见影的，我们有超多的顾客都是试了一个疗程就看到明显的变白了。 一盒有7对，2天一次，一次30分钟，撕下后，就配上大白牙牙粉去刷，一个疗程大概是1个月哦🥰 详细的教学和使用过程会在售后发一个更详细的给你哦💕\nThe effect is very immediate. Many of our customers have seen obvious whitening after trying a course of treatment. There are 7 pairs in a box, once every 2 days, 30 minutes each time, after tearing off, use white tooth powder to brush, a course of treatment is about 1 month    The detailed teaching and use process will be sent after-sales service🥰",
+        "category": "Product & oral care",
+        "source": "DrSmile Dashboard Google Sheet"
+      }
+    },
+    {
+      "id": 306,
+      "section": "faq",
+      "title": "牙贴怎样用？",
+      "subtitle": "Customer FAQ",
+      "data": {
+        "answer": "就是一贴片 撕下来 然后贴合在牙齿 上下的\n然后等待一个半小时 撕掉就可以刷牙了🥰\n详细的视频教学 也是会售后发给你哦💕",
+        "category": "Product & oral care",
+        "source": "DrSmile Dashboard Google Sheet"
+      }
+    },
+    {
+      "id": 307,
+      "section": "faq",
+      "title": "真的会白吗？",
+      "subtitle": "Customer FAQ",
+      "data": {
+        "answer": "Dear 我们对我们的产品非常有信心哦，因为至今我们已经帮助了很多顾客去改善他们的牙齿，牙龈健康，这些都是他们的feedback。我们相信效果你也一定会喜欢💕\n那么 Dear 要不要趁优惠帮你安排一套呢😍😍",
+        "category": "Product & oral care",
+        "source": "DrSmile Dashboard Google Sheet"
+      }
+    },
+    {
+      "id": 308,
+      "section": "faq",
+      "title": "只是了解一下",
+      "subtitle": "Customer FAQ",
+      "data": {
+        "answer": "明白的🥰 很多顾客一开始也是蛮犹豫的。不过尝试后都会来跟我们说，效果很susprise 😌\n因为我们价格很划算，一罐用了1个月半，还有半罐，大人小孩也能用（只要不会误吞的年龄）最重要的是，大白牙🦷的牙粉，还有改善牙龈和口腔的成分，消肿，改善牙龈流血，而且还有益生菌🥰\n我们对我们的产品非常有信心哦，因为至今我们已经帮助了很多顾客去改善他们的牙齿，牙龈健康，这些都是他们的feedback。我们相信效果你也一定会喜欢💕\n期待dear的消息哦💕",
+        "category": "Product & oral care",
+        "source": "DrSmile Dashboard Google Sheet"
+      }
+    },
+    {
+      "id": 309,
+      "section": "faq",
+      "title": "牙龈有点萎缩，是否可以帮到呢！",
+      "subtitle": "Customer FAQ",
+      "data": {
+        "answer": "先了解顾客多严重？\n你好dear, 这里和你了解一下你目前的口腔情况哦, 方便拍个照给我吗？我可以帮你做个初步诊断哦💕\n如果顾客回答不严重的 可以回复，严重的 比如有牙周炎，牙齿松动 ，马上建议就医\n是有机会帮助改善的哦 dear🥰\n其实牙龈萎缩的因素非常多，但是最常见的就是 【平时刷牙刷不干净】 / 【用的牙膏/牙刷】 不对，没有办法清除牙根上的细菌。\n长年累月的累积，导致有【牙结石/牙周炎】牙周组织破坏，牙槽骨吸收以后，附着在牙槽骨上的牙龈也就随着向牙根方向萎缩，我们的牙龈开始萎缩。\n只要不是太过严重的牙龈萎缩，通过我们的益生菌美白牙粉 是有机会可以改善的哦🥰\n因为我们的益生菌美白牙粉，用有7种独家的天然草药成分🌿，非常有效的可以【消炎，杀菌】并且去除 牙菌斑 和 牙结石\n只要这些因素去除，然后加上我们的牙槽骨还健康的话，牙龈是会自己生回的哦💕\n但是如果已经是严重的，dear 我们会建议马上就医哦\n情况 1 : 不是很严重\n好的dear，看了你的情况和我们一些顾客的情况相识 属于有机会改善的\n就是尽可能保持干净 让牙龈健康回来哦\n发 review + 牙龈萎缩顾客video\ndear 可以看看这些顾客用了过后给我们的真实好评哦！ 😍\n情况 2 : 严重\ndear 你的情况属于比较严重的，老实说是没办法做到根治，只能保持干净 不让情况更加糟糕+恶化\n如果有其他卖家和你说可以改善肯定100%骗你 所以要注意哦\n不过dear，我们也有顾客用了过后牙龈修复好的案例哦！我们本来是没有帮助牙龈问题的，但是5年内确实陆陆续续有顾客和我们报喜用了过后有牙龈修复的效果\n发 review + 牙龈萎缩顾客video\n如果dear是已经看过医生，还是没有解决方法的话可以试试看我们的产品哦，总好过放着不理对吗🙏",
+        "category": "Product & oral care",
+        "source": "DrSmile Dashboard Google Sheet"
+      }
+    },
+    {
+      "id": 310,
+      "section": "faq",
+      "title": "牙龈发炎可以用吗？",
+      "subtitle": "Customer FAQ",
+      "data": {
+        "answer": "可以的哟 dear 💗 因为我们的益生菌美白牙粉里面有消炎的成分，你可以使用看看之后再和我们反馈 😊",
+        "category": "Product & oral care",
+        "source": "DrSmile Dashboard Google Sheet"
+      }
+    },
+    {
+      "id": 311,
+      "section": "faq",
+      "title": "会不会磨顺/弄坏牙齿的表面吗？",
+      "subtitle": "Customer FAQ",
+      "data": {
+        "answer": "对的哦 dear，我们的大白牙牙粉的颗粒度是在1000目的，面粉是90目。 而且是一定要经过测试，不能照成牙齿（牙釉质/珐琅质）任何刮痕，才可以认证推出的哦。🥰\n而且大白牙牙粉 其实就是像用牙膏一样而已，只是形式上不一样🥰 而且安全标准 和 审核 标准都是跟 牙膏一样， 拥有 KKM认证才能推出🥰 所以可以放心使用💕",
+        "category": "Product & oral care",
+        "source": "DrSmile Dashboard Google Sheet"
+      }
+    },
+    {
+      "id": 312,
+      "section": "faq",
+      "title": "素食者能用吗？",
+      "subtitle": "Customer FAQ",
+      "data": {
+        "answer": "我们的牙粉是素食者友善的 💚。\n虽然成分中含有珍珠粉，但请放心，它并非来源于活体珍珠采集，而是使用可持续矿物基成分，在不影响动物福利的前提下，为牙齿提供美白与再矿化的功效。\n\n我们始终坚持以安全、负责任的标准，确保产品适合素食者安心使用。",
+        "category": "Product & oral care",
+        "source": "DrSmile Dashboard Google Sheet"
+      }
+    },
+    {
+      "id": 313,
+      "section": "faq",
+      "title": "单单牙粉多少钱？",
+      "subtitle": "Customer FAQ",
+      "data": {
+        "answer": "dear其实这里的价格都是牙粉的价钱来的哦 💕 现在优惠期间才有多送赠品 🥰\n接着发shortcut  (price wm/price em)",
+        "category": "Product & oral care",
+        "source": "DrSmile Dashboard Google Sheet"
+      }
+    },
+    {
+      "id": 314,
+      "section": "faq",
+      "title": "会不会用了没有效果，没有变白？",
+      "subtitle": "Customer FAQ",
+      "data": {
+        "answer": "Dear你好🥰 我们这里有收到你的询问，也了解dear的顾虑\n因为我们的牙粉不是漂白剂， 也不是刺激性药物 所以它不是马上见效的。因为是通过天然美白成分去【溶解】和【刷走】黑黄色素， 达到美白效果的 快慢要看个人牙齿污垢污渍的顽固性，每一个人的牙齿口腔状况都不一样。\n这边想和亲说的是 因为每个人的生活环境都不一样 所以是没有一定的见效时间的\n而且牙粉的效果不是马上白那种的 是通过一点一点的去除色素和污渍白的，也可能亲是每天看着自己牙齿的人 所以就算已经有变白了，您也察觉不到，可以试试拍个对比图来观察 🥰\n【如果顾客还是不满意】\n这边方便了解一下亲平常是不是也会时常吃喝色素重的食物呢，比如咖啡，茶等等。因为色素每天都会粘在牙齿上，所以有时候旧的黄色素还没清楚，新的旧黏上去，所以会需要一点时间哦dear🥰 一时也没能察觉出来\n好的亲，这边理解了亲的状况了😥 很遗憾我们的产品没有达到您的预期，但是还是感恩亲给予的真实回馈，我们虚心接受，也会更努力提升和研发一款能够适合所有人使用的去黄亮白牙粉，希望亲之后给我们一个机会，尝试看看我们的新产品💪🏻\n若 回复 - 2 效果\n亲  完全明白你的心情，市场上有很多产品，但是真的不知道哪一个才有效。 但是可以看看这些我们很多顾客的feedback哦🥰\nDear 我们对我们的产品非常有信心哦，因为至今我们已经帮助了很多顾客去改善他们的牙齿，牙龈健康，我们相信效果你也一定会喜欢💕",
+        "category": "Product & oral care",
+        "source": "DrSmile Dashboard Google Sheet"
+      }
+    },
+    {
+      "id": 315,
+      "section": "faq",
+      "title": "牙齿不平整可以用牙贴吗？",
+      "subtitle": "Customer FAQ",
+      "data": {
+        "answer": "可以的dear💕 尽量去贴到牙齿表面就可以了 如果还是不服帖的话建议贴之前可以用剪刀剪出缺口 这样牙贴就可以更灵活的去贴到每颗牙齿 🥰",
+        "category": "Product & oral care",
+        "source": "DrSmile Dashboard Google Sheet"
+      }
+    },
+    {
+      "id": 316,
+      "section": "faq",
+      "title": "牙周炎的问题（但是不要看医生）",
+      "subtitle": "Customer FAQ",
+      "data": {
+        "answer": "理解dear，明白有些人会害怕看医生。 牙周炎最严重的情况，就是开始牙齿松动，脱落，而且牙龈流血严重。\n虽然我们的益生菌美白牙粉有 草药成分可以消炎杀菌，但并不是药物。因为如果牙周炎一般情况，医生都会直接给药物治疗哦 🥹\n因为我们也有顾客已经是牙周炎，但是因为不想看医生，听信了一些产品可以帮助改善，但是反而最后错过了最佳的就医时间 🥹\n所以我们都会让顾客知道，可以的话先去看医生。 如果顾客是担心医药费太贵的话，可以去政府医院的，不止费用便宜，而且医生也是很有经验的。但是如果是害怕的话，就要家人多多鼓励和陪伴。其实没有想象的糟糕 ，就医一定是必要的🥰\n但是 如果真的在劝说不懂的情况下，首先可以要求顾客一定要先照顾好口腔为什么，不让病情持续恶化。 认真刷牙，加漱口水 可以抑制细菌不剧烈增加。",
+        "category": "Product & oral care",
+        "source": "DrSmile Dashboard Google Sheet"
+      }
+    },
+    {
+      "id": 317,
+      "section": "faq",
+      "title": "牙周炎 看医生了 可是不会好",
+      "subtitle": "Customer FAQ",
+      "data": {
+        "answer": "dear的严重是大概到什么程度呢，牙齿松动，牙龈流血严重吗\ndear 其实我们的益生菌牙粉的成分，跟普通牙膏还是很大的相识，只是形态不一样而已，我们有添加了自家的草药成分和益生菌。不是说不能用牙粉，实际上是可以更好的消炎杀菌的，只是因为粉状 对牙周炎患者可能会比较刺激，所以我们才建议不使用。\n不过dear可以试试看配合牙膏一起使用，这样不会到很刺激，然后接下来一定要好好刷牙，加多用漱口水。 保持口腔的健康，因为我们也理解你所说的状况。",
+        "category": "Product & oral care",
+        "source": "DrSmile Dashboard Google Sheet"
+      }
+    },
+    {
+      "id": 318,
+      "section": "faq",
+      "title": "牙粉怎样用？",
+      "subtitle": "Customer FAQ",
+      "data": {
+        "answer": "我们的大白牙【去黄亮白益生菌牙粉】 非常的容易使用哦🥰\n\n只需要弄湿牙刷🪥，甩掉水滴💧（不用太湿），然后沾一沾大白牙牙粉，就可以开始刷牙了。\n\n完全可以代替牙膏使用，早晚使用都没用问题哦🥰\n\n详细教学 也会在售后发给你哦🥰\ndear 如果弄到水的部分有结块 不影响的话可以继续使用 如果影响使用的话 dear可以把结块拿掉了再使用哦💕",
+        "category": "Product & oral care",
+        "source": "DrSmile Dashboard Google Sheet"
+      }
+    },
+    {
+      "id": 319,
+      "section": "faq",
+      "title": "有帮助去除口臭或口腔问题吗？",
+      "subtitle": "Customer FAQ",
+      "data": {
+        "answer": "可以的dear🥰！ 因为我们的益生菌牙粉，不止可以美白，最重要的是它的杀菌消炎能力 可以去除牙菌斑，杜绝牙结石，这些都是到底口腔异味的其中因数哦🥰\n加上我们的牙粉是有益生菌的，也能帮助我们的口腔调节菌落平衡，也是杜绝口腔异味的形成方法之一🥰",
+        "category": "Product & oral care",
+        "source": "DrSmile Dashboard Google Sheet"
+      }
+    },
+    {
+      "id": 320,
+      "section": "faq",
+      "title": "什么是天生牙黄？",
+      "subtitle": "Customer FAQ",
+      "data": {
+        "answer": "“天生牙黄” 的意思是牙齿本身的牙釉质颜色就比较偏黄哦🫶✨\n\n这种通常和遗传、体质或者牙釉质天生比较薄有关呀🥺💕\n所以它不是外面的牙渍或色素问题，不能像烟渍、咖啡渍那样完全刷掉哦✨",
+        "category": "Product & oral care",
+        "source": "DrSmile Dashboard Google Sheet"
+      }
+    },
+    {
+      "id": 321,
+      "section": "faq",
+      "title": "天生黄牙可以解决/改善吗？ 小时候就已经黄牙了可以改善吗？",
+      "subtitle": "Customer FAQ",
+      "data": {
+        "answer": "先问情况，知道越多越好判断是否说服顾客下单\nQ1: 先问什么时候开始发现黄牙的？\nQ2: 是因为什么导致的呢？ 是因为药物导致的吗？\n（一定要等顾客回复后）可以照着下面的回复\n如果是在小时候 12岁牙齿成型之前，因为药物 or 氟导致的 那么这个就真的没办法\n但是如果是因为长期饮食色素重度没有照顾好牙齿，那么还是有机会改善的。但是dear一定要知道，这会需要更多的时间看到效果哦\n要给知道 No time 要顾客有耐心，需要更长时间才能得到改善。\n因为通常这种情况顾客的黄牙问题就是很久了，色素污渍都是比较顽固的，需要更多的时间才可以去除，要建立顾客的心理准备，不要让顾客错认可以很快看到效果\n所以如果顾客有意愿购买，可以试试建议拿配套2 以上开始，1 是可以用比较久来看到效果，2 是有酵素美白牙贴\n如果顾客真的是不可以的（12岁前 天生or 药物导致的黄牙 ）\n那么一定要给知道比较难改善\n但是还是要给顾客知道我们的牙粉还是对他有帮助的\n因为每天都还是会进食，食物色素就有机会粘在我们的牙齿上。我们的牙粉对分解和刷出 额外的食物色素是很有效果的，不让黄牙问题更恶化，这个信心是通过很多顾客的feedback得来的。\n所以dear 还是可以试试看",
+        "category": "Product & oral care",
+        "source": "DrSmile Dashboard Google Sheet"
+      }
+    },
+    {
+      "id": 322,
+      "section": "faq",
+      "title": "你们家的牙粉 跟CICI的有什么差别",
+      "subtitle": "Customer FAQ",
+      "data": {
+        "answer": "dear 我们的益生菌美白牙粉，里面不止有天然地有效【去除污渍色素】的成分，还有7种草药成分有效杀菌消炎，止血的功效哦。 可以让口腔更健康🥰 而且味道不只是薄荷味道，还有柠檬香味哦，顾客都非常喜欢。\n我们也是全马唯一拥有 KKM 和轻工业牙膏检测检验认证的益生菌美白牙粉🥰\ndear 也可以在pharmay 买到哦 目前我们已经上架50+家pharmacy",
+        "category": "Product & oral care",
+        "source": "DrSmile Dashboard Google Sheet"
+      }
+    },
+    {
+      "id": 323,
+      "section": "faq",
+      "title": "为什么刷了牙粉会牙龈流血?",
+      "subtitle": "Customer FAQ",
+      "data": {
+        "answer": "dear 你好 虽然我们没有遇过这样的情况，但是不担心，这里可以跟您了解一下情况来更好的帮助您吗？🥰\n请问dear是刷牙的时候，牙龈的哪里流血呢？是牙缝流血吗？还是dear有牙周炎，牙周病的情况吗？\n好的 理解dear😊\n\n牙龈流血的情况不一定是用了牙粉才导致的，而是可能之前就存在，只是因为清洁力度提升，才让您发现了这个问题。很多人去牙医洗牙后，也会出现短暂的牙龈出血，这并不是因为洗牙伤害了牙龈，而是牙菌斑堆积已久，清洁后牙龈正在适应和修复。\n\n💡 可能的原因：\n1️⃣ 牙菌斑或牙结石 – 牙菌斑长期堆积，导致牙龈发炎、脆弱，清洁加强时容易出血。\n2️⃣ 刷牙力度或方式 – 过度用力或使用硬毛牙刷可能会刺激牙龈。\n3️⃣ 营养或健康因素 – 维生素C缺乏、熬夜、压力大等，也可能导致牙龈更容易出血。\n\n✅ 建议您：\n✔️ 使用软毛牙刷，轻柔刷牙，不要过度用力。\n✔️ 持续使用，一般几天后牙龈适应了，流血情况会减少。\n✔️ 搭配牙线或漱口水，减少牙菌斑，保持牙龈健康。\n\n我们的牙粉是温和配方，不会伤害牙龈，许多顾客在适应后，牙龈健康反而有所改善哦！🥰 您可以先观察几天，若有疑问欢迎随时联系！💬✨",
+        "category": "Product & oral care",
+        "source": "DrSmile Dashboard Google Sheet"
+      }
+    },
+    {
+      "id": 324,
+      "section": "faq",
+      "title": "牙粉可以帮助牙龈流血吗？",
+      "subtitle": "Customer FAQ",
+      "data": {
+        "answer": "如果牙龈流血是因为牙菌斑、牙结石和细菌堆积引起的话😊\n保持口腔清洁后，很多顾客都会觉得牙龈状态有慢慢改善哦🫶",
+        "category": "Product & oral care",
+        "source": "DrSmile Dashboard Google Sheet"
+      }
+    },
+    {
+      "id": 325,
+      "section": "faq",
+      "title": "唇边敏感可以用吗啊？",
+      "subtitle": "Customer FAQ",
+      "data": {
+        "answer": "Answer pending in source sheet",
+        "category": "Product & oral care",
+        "source": "DrSmile Dashboard Google Sheet"
+      }
+    },
+    {
+      "id": 326,
+      "section": "faq",
+      "title": "牙齿有轻微脱矿症状可以改善吗？",
+      "subtitle": "Customer FAQ",
+      "data": {
+        "answer": "dear 如果是牙齿轻微脱矿的问题的话🥺\n我们的益生菌美白牙粉是没有办法改善脱矿情况的哦🫶\n因为脱矿属于牙齿珐琅质的问题呀，会比较建议给牙医检查和做针对性的护理会比较好💕\n如果只是日常口腔清洁和保养的话是可以使用的哦😊🫶\n\n不过它会比较偏向帮助保持口腔卫生、减少牙渍和牙菌斑堆积✨\n并不能改善牙齿脱矿本身的问题呀🥺💕",
+        "category": "Product & oral care",
+        "source": "DrSmile Dashboard Google Sheet"
+      }
+    },
+    {
+      "id": 327,
+      "section": "faq",
+      "title": "为什么味道不一样了？是不是改变配方了？",
+      "subtitle": "Customer FAQ",
+      "data": {
+        "answer": "Dear 真的很不好意思啊 配方方面没有改变哦🫶\n可能因为我们的牙粉里面是由植物萃取的成分✨\n有时候不同季节、原料状态或批次，味道和使用感受上可能会有一点点差别呀 🥺\n所以如果 dear 这次下单后还是觉得和之前使用感受差别很大也可以直接联系我们，我们会帮你处理和安排更换哦💕",
+        "category": "Product & oral care",
+        "source": "DrSmile Dashboard Google Sheet"
+      }
+    },
+    {
+      "id": 328,
+      "section": "faq",
+      "title": "什么是牙菌斑？",
+      "subtitle": "Customer FAQ",
+      "data": {
+        "answer": "Answer pending in source sheet",
+        "category": "Product & oral care",
+        "source": "DrSmile Dashboard Google Sheet"
+      }
+    },
+    {
+      "id": 329,
+      "section": "faq",
+      "title": "什么是牙结石？",
+      "subtitle": "Customer FAQ",
+      "data": {
+        "answer": "Answer pending in source sheet",
+        "category": "Product & oral care",
+        "source": "DrSmile Dashboard Google Sheet"
+      }
+    },
+    {
+      "id": 330,
+      "section": "faq",
+      "title": "牙龈敏感 是怎样来的？",
+      "subtitle": "Customer FAQ",
+      "data": {
+        "answer": "牙龈敏感很多时候都是因为牙菌斑、牙结石和细菌长期堆积刺激牙龈导致的呀🥺🫶\n\n如果平时刷牙太大力、牙龈发炎，或者牙龈开始萎缩，也会让牙齿和牙龈变得比较敏感哦💕\n\n所以有时候吃太冷、太热，或者刷牙时就会容易酸酸不舒服呀🥺",
+        "category": "Product & oral care",
+        "source": "DrSmile Dashboard Google Sheet"
+      }
+    },
+    {
+      "id": 331,
+      "section": "faq",
+      "title": "为什么会牙齿敏感？",
+      "subtitle": "Customer FAQ",
+      "data": {
+        "answer": "牙齿敏感通常是因为牙龈萎缩、牙釉质磨损或牙根暴露，导致冷热刺激容易直接传达到牙神经。",
+        "category": "Product & oral care",
+        "source": "DrSmile Dashboard Google Sheet"
+      }
+    },
+    {
+      "id": 332,
+      "section": "faq",
+      "title": "为什么牙缝会越来越大？",
+      "subtitle": "Customer FAQ",
+      "data": {
+        "answer": "牙缝变大通常与牙龈萎缩有关。当牙龈退缩后，原本被牙龈覆盖的位置露出来，就会看起来牙缝越来越明显。",
+        "category": "Product & oral care",
+        "source": "DrSmile Dashboard Google Sheet"
+      }
+    },
+    {
+      "id": 333,
+      "section": "faq",
+      "title": "为什么洗牙后牙缝变大？",
+      "subtitle": "Customer FAQ",
+      "data": {
+        "answer": "洗牙后牙缝变明显，通常是因为原本堵住牙缝的牙结石被清除后，牙齿原本真实的状态显现出来。",
+        "category": "Product & oral care",
+        "source": "DrSmile Dashboard Google Sheet"
+      }
+    },
+    {
+      "id": 334,
+      "section": "faq",
+      "title": "牙齿脱矿是什么？",
+      "subtitle": "Customer FAQ",
+      "data": {
+        "answer": "牙齿脱矿是牙齿表层矿物质流失的情况，常见表现是牙齿出现白斑、粗糙感或敏感。这属于珐琅质问题，需要针对性护理。",
+        "category": "Product & oral care",
+        "source": "DrSmile Dashboard Google Sheet"
+      }
+    },
+    {
+      "id": 335,
+      "section": "faq",
+      "title": "为什么会口臭？",
+      "subtitle": "Customer FAQ",
+      "data": {
+        "answer": "口臭常见原因包括牙菌斑堆积、食物残留、蛀牙、牙结石、舌苔过厚或牙龈发炎。部分人也可能与肠胃问题有关。",
+        "category": "Product & oral care",
+        "source": "DrSmile Dashboard Google Sheet"
+      }
+    },
+    {
+      "id": 336,
+      "section": "faq",
+      "title": "为什么会有牙结石？",
+      "subtitle": "Customer FAQ",
+      "data": {
+        "answer": "当牙菌斑长期没有清洁干净时，会慢慢吸收口水中的矿物质并钙化，最后形成牙结石。",
+        "category": "Product & oral care",
+        "source": "DrSmile Dashboard Google Sheet"
+      }
+    },
+    {
+      "id": 337,
+      "section": "faq",
+      "title": "牙齿脱矿可以改善吗？",
+      "subtitle": "Customer FAQ",
+      "data": {
+        "answer": "牙齿脱矿属于珐琅质矿物流失的问题，通常需要牙医做针对性护理哦🥺\n我们的牙粉会比较偏向帮助日常口腔清洁和保养，并不能改善脱矿本身的问题🫶",
+        "category": "Product & oral care",
+        "source": "DrSmile Dashboard Google Sheet"
+      }
+    },
+    {
+      "id": 338,
+      "section": "faq",
+      "title": "牙粉有没有 Fluoride？",
+      "subtitle": "Customer FAQ",
+      "data": {
+        "answer": "我们的益生菌美白牙粉是没有 Fluoride 成分的哦😊\n它主要帮助保持口腔清洁、减少牙菌斑和牙渍堆积✨",
+        "category": "Product & oral care",
+        "source": "DrSmile Dashboard Google Sheet"
+      }
+    },
+    {
+      "id": 339,
+      "section": "faq",
+      "title": "牙粉会不会导致牙齿敏感？",
+      "subtitle": "Customer FAQ",
+      "data": {
+        "answer": "不会的哦，因为我们的牙粉不含漂白剂和刺激性化学成分，属于比较温和的护理型产品😊\n不过如果本身牙齿已经比较敏感，建议一开始少量使用或搭配牙膏一起使用会比较好✨",
+        "category": "Product & oral care",
+        "source": "DrSmile Dashboard Google Sheet"
+      }
+    },
+    {
+      "id": 340,
+      "section": "faq",
+      "title": "牙粉适合牙龈萎缩吗？",
+      "subtitle": "Customer FAQ",
+      "data": {
+        "answer": "如果已经有牙龈萎缩情况的话，牙粉主要是帮助日常护理和保持口腔清洁哦✨\n不过牙龈萎缩属于牙龈问题，还是建议让牙医检查一下会比较安心🥺",
+        "category": "Product & oral care",
+        "source": "DrSmile Dashboard Google Sheet"
+      }
+    },
+    {
+      "id": 341,
+      "section": "faq",
+      "title": "牙粉可以帮助口臭吗？",
+      "subtitle": "Customer FAQ",
+      "data": {
+        "answer": "如果口臭是因为口腔细菌、牙菌斑或食物残留导致的话✨\n我们的牙粉可以帮助保持口腔清洁和改善口气哦😊\n不过如果是肠胃问题引起的口臭，就不属于口腔护理范围了🥺",
+        "category": "Product & oral care",
+        "source": "DrSmile Dashboard Google Sheet"
+      }
+    },
+    {
+      "id": 342,
+      "section": "faq",
+      "title": "牙粉可以帮助牙结石吗？",
+      "subtitle": "Customer FAQ",
+      "data": {
+        "answer": "牙粉会比较偏向帮助减少牙菌斑和牙垢堆积✨\n如果已经形成比较硬的牙结石，通常还是建议洗牙处理会比较好哦😊",
+        "category": "Product & oral care",
+        "source": "DrSmile Dashboard Google Sheet"
+      }
+    },
+    {
+      "id": 343,
+      "section": "faq",
+      "title": "牙粉可以帮助牙菌斑吗？",
+      "subtitle": "Customer FAQ",
+      "data": {
+        "answer": "可以的哦，因为牙菌斑主要是细菌和食物残留长期堆积形成的😊\n保持口腔清洁后，可以帮助减少牙菌斑堆积✨",
+        "category": "Product & oral care",
+        "source": "DrSmile Dashboard Google Sheet"
+      }
+    },
+    {
+      "id": 344,
+      "section": "faq",
+      "title": "有补牙材料可以美白吗？",
+      "subtitle": "Customer FAQ",
+      "data": {
+        "answer": "补牙材料、假牙或牙套这些通常是不能像真牙一样被美白到的哦🥺 因为材质不同呀✨\n不过还是可以帮助清洁表面和减少黄渍堆积😊",
+        "category": "Product & oral care",
+        "source": "DrSmile Dashboard Google Sheet"
+      }
+    },
+    {
+      "id": 345,
+      "section": "faq",
+      "title": "牙龈萎缩还能恢复吗？",
+      "subtitle": "Customer FAQ",
+      "data": {
+        "answer": "如果是轻微牙龈问题，保持口腔清洁和护理后，牙龈状态有机会慢慢稳定下来哦😊\n不过如果已经是明显牙龈萎缩，一般很难完全长回原本状态，建议尽早给牙医检查会比较好🫶",
+        "category": "Product & oral care",
+        "source": "DrSmile Dashboard Google Sheet"
+      }
+    }
+  ]
+}

@@ -1,4 +1,5 @@
 import { env } from "cloudflare:workers";
+import sheetData from "../../sheet-data.json";
 
 type IncomingRecord = {
   id?: number;
@@ -9,16 +10,12 @@ type IncomingRecord = {
 };
 
 const seeds: IncomingRecord[] = [
-  { section: "products", title: "DrSmile Oral Care Product", subtitle: "Website catalogue", data: { sku: "DRS-001", alacart: "RM 0.00", pwp: "RM 0.00", pharmacy: "—", shopee: "—", website: "—", facebook: "—", status: "Verify from website" } },
-  { section: "points", title: "Welcome Reward", subtitle: "Customer redemption", data: { points: "100 pts", value: "RM 5", terms: "One redemption per receipt", status: "Active" } },
-  { section: "pharmacies", title: "Add your first pharmacy", subtitle: "Malaysia", data: { phone: "—", address: "Edit this item with the full shop address", state: "—" } },
   { section: "payments", title: "Bank Transfer", subtitle: "Manual payment", data: { details: "Add bank name and account number", link: "", qrUrl: "", status: "Available" } },
   { section: "payments", title: "Touch ’n Go", subtitle: "QR payment", data: { details: "Upload TNG QR", link: "", qrUrl: "", status: "Available" } },
   { section: "payments", title: "Credit Card", subtitle: "Payex", data: { details: "Create a secure card payment link in Payex", link: "", qrUrl: "", portal: "https://portal.payex.io/AutoPayments", status: "Available" } },
   { section: "payments", title: "Atome Pay", subtitle: "Buy now, pay later", data: { details: "Create an Atome payment link", link: "", qrUrl: "", portal: "https://portal.atome.my/main/dashboard", status: "Available" } },
   { section: "payments", title: "Shopee Pay", subtitle: "QR payment", data: { details: "Upload ShopeePay QR", link: "", qrUrl: "", status: "Available" } },
   { section: "payments", title: "Cash on Delivery", subtitle: "COD", data: { details: "Confirm delivery area and fee before order", link: "", qrUrl: "", status: "Available" } },
-  { section: "faq", title: "How do I update an answer?", subtitle: "Dashboard", data: { answer: "Open this item, choose Edit, update the answer and save. Your team will see the latest version.", category: "General", source: "Google Sheet" } },
 ];
 
 async function ready() {
@@ -33,6 +30,10 @@ async function ready() {
       updated_at TEXT NOT NULL
     )`),
     env.DB.prepare("CREATE INDEX IF NOT EXISTS records_section_idx ON records(section)"),
+    env.DB.prepare(`CREATE TABLE IF NOT EXISTS dashboard_settings (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL
+    )`),
   ]);
   const count = await env.DB.prepare("SELECT COUNT(*) AS total FROM records").first<{ total: number }>();
   if (!count?.total) {
@@ -43,6 +44,21 @@ async function ready() {
           .bind(item.section, item.title, item.subtitle ?? "", JSON.stringify(item.data ?? {}), now, now),
       ),
     );
+  }
+
+  const sourceVersion = "drsmile-sheet-2026-07-29-v1";
+  const imported = await env.DB.prepare("SELECT value FROM dashboard_settings WHERE key = 'source_version'").first<{ value: string }>();
+  if (imported?.value !== sourceVersion) {
+    const now = new Date().toISOString();
+    await env.DB.prepare("DELETE FROM records WHERE section IN ('products', 'points', 'pharmacies', 'faq')").run();
+    const sourceRecords = sheetData.records as IncomingRecord[];
+    for (let index = 0; index < sourceRecords.length; index += 50) {
+      await env.DB.batch(sourceRecords.slice(index, index + 50).map((item) =>
+        env.DB.prepare("INSERT INTO records (section, title, subtitle, data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)")
+          .bind(item.section, item.title, item.subtitle ?? "", JSON.stringify(item.data ?? {}), now, now),
+      ));
+    }
+    await env.DB.prepare("INSERT INTO dashboard_settings (key, value) VALUES ('source_version', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value").bind(sourceVersion).run();
   }
 }
 
@@ -58,7 +74,25 @@ export async function GET() {
 
 export async function POST(request: Request) {
   await ready();
-  const item = (await request.json()) as IncomingRecord;
+  const payload = (await request.json()) as IncomingRecord | { mode: "replace"; section: string; records: IncomingRecord[] };
+  if ("records" in payload && payload.mode === "replace") {
+    const allowed = new Set(["products", "points", "pharmacies", "faq"]);
+    if (!allowed.has(payload.section) || !Array.isArray(payload.records) || payload.records.length > 1000) {
+      return Response.json({ error: "Invalid import" }, { status: 400 });
+    }
+    const records = payload.records.filter((item) => item.section === payload.section && item.title?.trim());
+    const now = new Date().toISOString();
+    await env.DB.prepare("DELETE FROM records WHERE section = ?").bind(payload.section).run();
+    for (let index = 0; index < records.length; index += 50) {
+      await env.DB.batch(records.slice(index, index + 50).map((item) =>
+        env.DB.prepare("INSERT INTO records (section, title, subtitle, data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)")
+          .bind(payload.section, item.title.trim(), item.subtitle ?? "", JSON.stringify(item.data ?? {}), now, now),
+      ));
+    }
+    const result = await env.DB.prepare("SELECT id, section, title, subtitle, data FROM records WHERE section = ? ORDER BY id ASC").bind(payload.section).all();
+    return Response.json({ records: result.results.map(output) });
+  }
+  const item = payload as IncomingRecord;
   if (!item.title?.trim() || !item.section) return Response.json({ error: "Missing fields" }, { status: 400 });
   const now = new Date().toISOString();
   const result = await env.DB.prepare("INSERT INTO records (section, title, subtitle, data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)")
