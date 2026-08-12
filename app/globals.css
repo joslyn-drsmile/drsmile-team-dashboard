@@ -332,6 +332,7 @@ main { margin-left: 194px; }
 .category-heading { display: flex; align-items: center; justify-content: space-between; padding: 2px 3px 10px; color: #7b8fa5; font-size: 8px; font-weight: 850; text-transform: uppercase; letter-spacing: .8px; }
 .category-heading small { display: grid; place-items: center; min-width: 19px; height: 19px; border-radius: 7px; color: #365d80; background: #dceefa; font-size: 8px; }
 .category-list { display: grid; gap: 4px; margin-top: 4px; }
+.pharmacy-state-list { max-height: 430px; overflow-y: auto; padding-right: 2px; }
 .category-row { display: grid; grid-template-columns: minmax(0,1fr) 24px; gap: 3px; border-radius: 10px; }
 .category-filter { width: 100%; min-width: 0; min-height: 34px; display: flex; align-items: center; justify-content: space-between; gap: 7px; padding: 7px 9px; border: 0; border-radius: 10px; color: #607890; background: transparent; cursor: pointer; text-align: left; font-size: 10px; font-weight: 720; }
 .category-filter span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

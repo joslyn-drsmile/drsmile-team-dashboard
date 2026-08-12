@@ -16,6 +16,7 @@ type ImportableSection = Exclude<Section, "payments" | "promotions">;
 
 const DEFAULT_PRODUCT_CATEGORIES = ["牙粉", "完整美白疗程", "漱口水", "加购产品", "包包"];
 const ALL_PRODUCTS = "All Item";
+const ALL_STATES = "All";
 
 const SOURCE_SHEET_URL = "https://docs.google.com/spreadsheets/d/18DC7Df9OCFtrbj5FmZUVcLTwC0hg_2lYnNDFjrpMSaU/edit?gid=1909559648#gid=1909559648";
 
@@ -254,6 +255,7 @@ export default function Home() {
   const [productCategories, setProductCategories] = useState<string[]>(DEFAULT_PRODUCT_CATEGORIES);
   const [selectedCategory, setSelectedCategory] = useState(ALL_PRODUCTS);
   const [newCategory, setNewCategory] = useState("");
+  const [selectedState, setSelectedState] = useState(ALL_STATES);
 
   useEffect(() => {
     fetch("/api/records")
@@ -283,18 +285,27 @@ export default function Home() {
       if (record.section !== active) return false;
       if (active === "promotions" && record.data.month !== promotionMonth) return false;
       if (active === "products" && selectedCategory !== ALL_PRODUCTS && productCategory(record) !== selectedCategory) return false;
+      if (active === "pharmacies" && selectedState !== ALL_STATES && (record.data.state || record.subtitle || "Unspecified") !== selectedState) return false;
       return true;
     });
     if (!needle) return inSection;
     return inSection.filter((record) =>
       `${record.title} ${record.subtitle} ${Object.values(record.data).join(" ")}`.toLowerCase().includes(needle),
     );
-  }, [active, query, records, promotionMonth, selectedCategory]);
+  }, [active, query, records, promotionMonth, selectedCategory, selectedState]);
+
+  const pharmacyStates = useMemo(() => Array.from(new Set(
+    records
+      .filter((record) => record.section === "pharmacies")
+      .map((record) => record.data.state || record.subtitle || "Unspecified")
+      .filter(Boolean),
+  )).sort((left, right) => left.localeCompare(right)), [records]);
 
   function navigate(next: "home" | Section) {
     setActive(next);
     setQuery("");
     if (next === "products") setSelectedCategory(ALL_PRODUCTS);
+    if (next === "pharmacies") setSelectedState(ALL_STATES);
     setMobileMenu(false);
   }
 
@@ -475,7 +486,7 @@ export default function Home() {
 
             {active === "payments" && <PaymentStudio setToast={setToast} />}
 
-            <div className={active === "products" ? "products-browser" : ""}>
+            <div className={active === "products" || active === "pharmacies" ? "products-browser" : ""}>
               {active === "products" && (
                 <aside className="category-panel" aria-label="Product categories">
                   <div className="category-heading"><span>Categories</span><small>{productCategories.length}</small></div>
@@ -496,9 +507,24 @@ export default function Home() {
                   </form>
                 </aside>
               )}
+              {active === "pharmacies" && (
+                <aside className="category-panel" aria-label="Pharmacy states">
+                  <div className="category-heading"><span>Filter by State</span><small>{pharmacyStates.length}</small></div>
+                  <button className={selectedState === ALL_STATES ? "category-filter active" : "category-filter"} onClick={() => setSelectedState(ALL_STATES)}>
+                    <span>All</span><em>{records.filter((record) => record.section === "pharmacies").length}</em>
+                  </button>
+                  <div className="category-list pharmacy-state-list">
+                    {pharmacyStates.map((state) => (
+                      <button className={selectedState === state ? "category-filter active" : "category-filter"} key={state} onClick={() => setSelectedState(state)}>
+                        <span>{state}</span><em>{records.filter((record) => record.section === "pharmacies" && (record.data.state || record.subtitle || "Unspecified") === state).length}</em>
+                      </button>
+                    ))}
+                  </div>
+                </aside>
+              )}
               <div className="products-results">
                 <div className="list-toolbar">
-                  <p><strong>{visible.length}</strong> {visible.length === 1 ? "item" : "items"}{active === "products" && selectedCategory !== ALL_PRODUCTS ? ` in ${selectedCategory}` : ""}</p>
+                  <p><strong>{visible.length}</strong> {visible.length === 1 ? "item" : "items"}{active === "products" && selectedCategory !== ALL_PRODUCTS ? ` in ${selectedCategory}` : ""}{active === "pharmacies" && selectedState !== ALL_STATES ? ` in ${selectedState}` : ""}</p>
                   <span>Last updated today</span>
                 </div>
 
