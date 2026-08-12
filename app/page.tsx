@@ -507,7 +507,7 @@ function RecordCard({ item, setEditing, removeItem, setToast }: { item: RecordIt
   if (item.section === "products") {
     return (
       <article className="record-card product-card">
-        {item.data.posterUrl && <img className="poster-image" src={item.data.posterUrl} alt={`${item.title} poster`} />}
+        {item.data.posterUrl && <div className="product-poster-frame"><img className="product-poster" src={item.data.posterUrl} alt={`${item.title} poster`} /></div>}
         <div className="card-top"><span className="record-avatar">DS</span><div><h3>{item.title}</h3><p>{item.data.sku || item.subtitle}</p></div><CardMenu item={item} setEditing={setEditing} removeItem={removeItem} /></div>
         <div className="price-highlight"><span>Ala carte</span><strong>{item.data.alacart || "—"}</strong><small>{item.data.sku || "No SKU"}</small></div>
         <div className="channel-grid">{channelFields.map(([key, label, pwpKey]) => <div key={key}><span>{label}</span><strong>{item.data[key] || "—"}</strong>{pwpKey && item.data[pwpKey] && item.data[pwpKey] !== "—" && <small>PWP {item.data[pwpKey]}</small>}</div>)}</div>
