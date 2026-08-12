@@ -85,7 +85,7 @@ const initialRecords: RecordItem[] = [
 
 const blankBySection: Record<Section, RecordItem> = {
   products: { id: 0, section: "products", title: "", subtitle: "", data: { sku: "", posterUrl: "", alacart: "", pharmacy: "", shopee: "", website: "", websitePwp: "", facebook: "", facebookPwp: "", status: "Active" } },
-  promotions: { id: 0, section: "promotions", title: "", subtitle: "", data: { month: new Date().toISOString().slice(0, 7), posterUrl: "", onlinePrice: "", shopeePrice: "", packageDetails: "", status: "Active" } },
+  promotions: { id: 0, section: "promotions", title: "", subtitle: "", data: { promotionName: "", month: new Date().toISOString().slice(0, 7), posterUrl: "", onlinePrice: "", shopeePrice: "", packageDetails: "", status: "Active" } },
   points: { id: 0, section: "points", title: "", subtitle: "", data: { points: "", value: "", terms: "", status: "Active" } },
   pharmacies: { id: 0, section: "pharmacies", title: "", subtitle: "", data: { phone: "", address: "", state: "" } },
   payments: { id: 0, section: "payments", title: "", subtitle: "", data: { details: "", link: "", qrUrl: "", portal: "", status: "Available" } },
@@ -485,10 +485,14 @@ function RecordCard({ item, setEditing, removeItem, setToast }: { item: RecordIt
     return (
       <article className="record-card promotion-card">
         {item.data.posterUrl ? <img className="poster-image promotion-poster" src={item.data.posterUrl} alt={`${item.title} promotion poster`} /> : <div className="poster-placeholder">POSTER</div>}
+        <div className="promotion-labels">
+          <strong>{item.data.promotionName || "Monthly Promotion"}</strong>
+          {item.subtitle && <span>SKU · {item.subtitle}</span>}
+        </div>
         <div className="card-top"><span className="record-avatar">PM</span><div><h3>{item.title}</h3><p>{monthLabel}</p></div><CardMenu item={item} setEditing={setEditing} removeItem={removeItem} /></div>
         <div className="promotion-prices"><div><span>Online price</span><strong>{item.data.onlinePrice || "—"}</strong></div><div><span>Shopee price</span><strong>{item.data.shopeePrice || "—"}</strong></div></div>
         <div className="package-details"><span>Package details</span><p>{item.data.packageDetails || "No package details added yet."}</p></div>
-        <div className="card-footer"><span className="status-chip">{item.data.status || "Active"}</span><button onClick={() => copyText(`${item.title}\nOnline: ${item.data.onlinePrice}\nShopee: ${item.data.shopeePrice}\n${item.data.packageDetails}`, "Promotion", setToast)}>Copy details</button></div>
+        <div className="card-footer"><span className="status-chip">{item.data.status || "Active"}</span><button onClick={() => copyText(`${item.data.promotionName || "Promotion"}\n${item.title}\nSKU: ${item.subtitle || "—"}\nOnline: ${item.data.onlinePrice}\nShopee: ${item.data.shopeePrice}\n${item.data.packageDetails}`, "Promotion", setToast)}>Copy details</button></div>
       </article>
     );
   }
@@ -640,7 +644,7 @@ function EditModal({ item, setItem, onClose, onSave, saving, setToast }: { item:
   const [uploading, setUploading] = useState(false);
   const fields: Record<Section, [string, string, "text" | "textarea" | "month"][]> = {
     products: [["sku", "SKU", "text"], ["alacart", "Ala carte price", "text"], ["facebook", "FB price", "text"], ["facebookPwp", "FB PWP", "text"], ["website", "Website price", "text"], ["websitePwp", "Website PWP", "text"], ["shopee", "Shopee price", "text"], ["pharmacy", "Pharmacy price", "text"], ["status", "Status", "text"]],
-    promotions: [["month", "Promotion month", "month"], ["onlinePrice", "Online price", "text"], ["shopeePrice", "Shopee price", "text"], ["packageDetails", "Package details", "textarea"], ["status", "Status", "text"]],
+    promotions: [["promotionName", "Title B · Promotion Name", "text"], ["month", "Promotion month", "month"], ["onlinePrice", "Online price", "text"], ["shopeePrice", "Shopee price", "text"], ["packageDetails", "Package details", "textarea"], ["status", "Status", "text"]],
     points: [["points", "Points required", "text"], ["value", "Reward value", "text"], ["terms", "Terms", "textarea"], ["status", "Status", "text"]],
     pharmacies: [["phone", "Phone number", "text"], ["address", "Full address", "textarea"], ["state", "State", "text"]],
     payments: [["details", "Payment instructions", "textarea"], ["link", "Payment link", "text"], ["portal", "Portal link", "text"], ["status", "Status", "text"]],
@@ -674,13 +678,13 @@ function EditModal({ item, setItem, onClose, onSave, saving, setToast }: { item:
       <form className="modal" onSubmit={onSave}>
         <div className="modal-heading"><div><p className="eyebrow">{item.id ? "Update item" : "New item"}</p><h2>{item.id ? item.title : `Add to ${menus.find((menu) => menu.id === item.section)?.label}`}</h2></div><button type="button" onClick={onClose} aria-label="Close">×</button></div>
         <div className="form-grid">
-          <label className="full"><span>{item.section === "faq" ? "Question" : item.section === "pharmacies" ? "Shop name" : "Name"}</span><input required value={item.title} onChange={(event) => setItem({ ...item, title: event.target.value })} placeholder="Enter a clear name" /></label>
-          <label className="full"><span>{item.section === "pharmacies" ? "Area / location" : "Short description"}</span><input value={item.subtitle} onChange={(event) => setItem({ ...item, subtitle: event.target.value })} placeholder="Optional supporting detail" /></label>
+          <label className="full"><span>{item.section === "faq" ? "Question" : item.section === "pharmacies" ? "Shop name" : item.section === "promotions" ? "Title A · Package Name" : "Name"}</span><input required value={item.title} onChange={(event) => setItem({ ...item, title: event.target.value })} placeholder={item.section === "promotions" ? "e.g. 配套A - 美白牙粉x2" : "Enter a clear name"} /></label>
+          <label className="full"><span>{item.section === "pharmacies" ? "Area / location" : item.section === "promotions" ? "SKU" : "Short description"}</span><input value={item.subtitle} onChange={(event) => setItem({ ...item, subtitle: event.target.value })} placeholder={item.section === "promotions" ? "e.g. 8A26" : "Optional supporting detail"} /></label>
           {fields[item.section].map(([key, label, type]) => (
             <label key={key} className={type === "textarea" ? "full" : ""}><span>{label}</span>{type === "textarea" ? <textarea value={item.data[key] || ""} onChange={(event) => updateData(key, event.target.value)} /> : <input type={type} value={item.data[key] || ""} onChange={(event) => updateData(key, event.target.value)} />}</label>
           ))}
           {(item.section === "products" || item.section === "promotions") && (
-            <label className="full upload-field"><span>Poster image</span><input type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => uploadImage(event.target.files?.[0], "posterUrl")} /><small>{uploading ? "Uploading…" : item.data.posterUrl ? "Poster attached — choose another image to replace it." : "PNG, JPG or WebP · maximum 5 MB"}</small></label>
+            <label className="full upload-field"><span>Poster image</span><input type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => uploadImage(event.target.files?.[0], "posterUrl")} /><small>{uploading ? "Uploading…" : item.data.posterUrl ? "Poster attached — it will display in a neat 4×4 square crop." : "PNG, JPG or WebP · displayed as a 4×4 square · maximum 5 MB"}</small></label>
           )}
           {item.section === "payments" && (
             <label className="full upload-field"><span>Payment QR image</span><input type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => uploadImage(event.target.files?.[0])} /><small>{uploading ? "Uploading…" : item.data.qrUrl ? "QR attached — choose another file to replace it." : "PNG, JPG or WebP"}</small></label>
