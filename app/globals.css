@@ -145,7 +145,7 @@ main { min-height: 100vh; margin-left: 252px; }
 .month-grid.compact .weekday { height: 22px; font-size: 8px; }
 .upcoming-overview { padding: 4px 0 4px 22px; border-left: 1px solid rgba(171,198,218,.34); }
 .upcoming-overview h3 { margin: 0 0 13px; font-size: 16px; }
-.upcoming-overview > button { width: 100%; display: grid; grid-template-columns: 42px 1fr; gap: 10px; align-items: center; padding: 10px 0; border: 0; border-bottom: 1px solid rgba(179,202,219,.32); background: transparent; cursor: pointer; text-align: left; }
+.upcoming-overview > button { width: 100%; display: grid; grid-template-columns: 68px 1fr; gap: 10px; align-items: center; padding: 10px 0; border: 0; border-bottom: 1px solid rgba(179,202,219,.32); background: transparent; cursor: pointer; text-align: left; }
 .upcoming-overview > button time { display: grid; place-items: center; height: 38px; border-radius: 9px; color: #315d80; background: #deeffa; font-size: 9px; font-weight: 850; text-transform: uppercase; }
 .upcoming-overview > button strong, .upcoming-overview > button small { display: block; }.upcoming-overview > button strong { font-size: 10px; }.upcoming-overview > button small { margin-top: 3px; color: #8393a2; font-size: 8px; }
 .calendar-workspace { display: grid; grid-template-columns: minmax(0,1.45fr) minmax(290px,.55fr); gap: 16px; align-items: start; }
@@ -423,13 +423,28 @@ main { margin-left: 194px; }
 .name-chips > span { display: inline-flex; align-items: center; gap: 5px; padding: 5px 7px; border-radius: 8px; color: #315a79; background: #deeffa; font-size: 9px; font-weight: 760; }
 .name-chips button { width: 15px; height: 15px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; color: #6e8ba1; background: rgba(255,255,255,.56); cursor: pointer; font-size: 11px; }
 .name-entry { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 5px; }.name-entry button { padding: 0 9px; border: 0; border-radius: 8px; color: white; background: #17365d; cursor: pointer; font-size: 8px; font-weight: 820; }
-.multi-name-field > small { display: block; margin-top: 6px; color: #8a9aa8; font-size: 7px; line-height: 1.4; }
+.team-select { margin-bottom: 6px; }
+.calendar-schedule-fields { display: grid; grid-template-columns: minmax(0,1.4fr) minmax(250px,.6fr); gap: 14px; }
+.date-range-field, .custom-time-field { min-width: 0; padding: 12px; border: 1px solid #cfe0ed; border-radius: 11px; background: rgba(255,255,255,.48); }
+.date-range-field { display: grid; grid-template-columns: minmax(0,1fr) 24px minmax(0,1fr); gap: 8px; align-items: end; }
+.date-range-field > i { display: grid; place-items: center; height: 38px; color: #78a0bd; font-size: 16px; font-style: normal; }
+.custom-time-field > span { display: flex; align-items: center; justify-content: space-between; color: var(--muted); font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: .6px; }
+.custom-time-field > span small { color: #9aabb8; font-size: 7px; font-weight: 650; letter-spacing: 0; text-transform: none; }
+.time-control { display: grid; grid-template-columns: 47px 9px 47px minmax(98px,1fr); gap: 5px; align-items: center; margin-top: 7px; }
+.time-control > input { height: 38px; padding: 0 7px !important; text-align: center; font-size: 14px !important; font-weight: 800; }
+.time-control > b { color: #6f8aa0; text-align: center; font-size: 14px; }
+.period-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; padding: 3px; border-radius: 9px; background: #e6f1f8; }
+.period-toggle button { height: 32px; border: 0; border-radius: 7px; color: #7790a3; background: transparent; cursor: pointer; font-size: 8px; font-weight: 850; }
+.period-toggle button.active { color: white; background: #17365d; box-shadow: 0 4px 10px rgba(23,54,93,.18); }
 @media (max-width: 900px) {
   .products-browser { grid-template-columns: 1fr; }
   .category-panel { position: static; }
   .category-list { grid-template-columns: repeat(auto-fit,minmax(125px,1fr)); }
+  .calendar-schedule-fields { grid-template-columns: 1fr; }
 }
 @media (max-width: 560px) {
   .category-list { grid-template-columns: 1fr; }
   .products-browser .record-grid.products { grid-template-columns: 1fr; }
+  .multi-people-fields, .date-range-field { grid-template-columns: 1fr; }
+  .date-range-field > i { height: 12px; transform: rotate(90deg); }
 }

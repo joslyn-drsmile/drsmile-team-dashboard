@@ -23,6 +23,17 @@ const PHARMACY_STATE_GROUPS = [
   { label: "Federal Territories", states: ["Kuala Lumpur", "Putrajaya", "Labuan"] },
 ] as const;
 const PHARMACY_STATES = PHARMACY_STATE_GROUPS.flatMap((group) => [...group.states]);
+const ADMIN_TEAM = [
+  { name: "Oscar", role: "Boss" },
+  { name: "Elaine", role: "Boss" },
+  { name: "Wen Yi", role: "Marketer" },
+  { name: "Joey", role: "Marketer" },
+  { name: "Zi Hui", role: "Marketer" },
+  { name: "Jae Wye", role: "Marketer" },
+  { name: "Joslyn", role: "CS" },
+  { name: "Shina", role: "CS & Admin" },
+  { name: "Corrine", role: "After Sales" },
+];
 
 const SOURCE_SHEET_URL = "https://docs.google.com/spreadsheets/d/18DC7Df9OCFtrbj5FmZUVcLTwC0hg_2lYnNDFjrpMSaU/edit?gid=1909559648#gid=1909559648";
 
@@ -101,7 +112,7 @@ const blankBySection: Record<Section, RecordItem> = {
   pharmacies: { id: 0, section: "pharmacies", title: "", subtitle: "", data: { phone: "", address: "", city: "", regionState: "" } },
   payments: { id: 0, section: "payments", title: "", subtitle: "", data: { details: "", link: "", qrUrl: "", portal: "", status: "Available" } },
   faq: { id: 0, section: "faq", title: "", subtitle: "", data: { answer: "", category: "", source: "Google Sheet" } },
-  calendar: { id: 0, section: "calendar", title: "", subtitle: "", data: { date: localDateKey(new Date()), time: "", location: "", pic: "", attendees: "", details: "", status: "Scheduled" } },
+  calendar: { id: 0, section: "calendar", title: "", subtitle: "", data: { date: localDateKey(new Date()), endDate: localDateKey(new Date()), time: "", location: "", pic: "", attendees: "", details: "", status: "Scheduled" } },
 };
 
 const pageCopy: Record<Section, { eyebrow: string; title: string; description: string }> = {
@@ -136,6 +147,30 @@ function calendarCells(month: Date) {
   const leading = (new Date(year, monthIndex, 1).getDay() + 6) % 7;
   const days = new Date(year, monthIndex + 1, 0).getDate();
   return [...Array.from({ length: leading }, () => null), ...Array.from({ length: days }, (_, index) => index + 1)];
+}
+
+function eventEndDate(event: RecordItem) {
+  return event.data.endDate || event.data.date;
+}
+
+function eventSpansDate(event: RecordItem, date: string) {
+  return !!event.data.date && event.data.date <= date && eventEndDate(event) >= date;
+}
+
+function formatEventTime(value = "") {
+  if (!value) return "";
+  const [hourValue, minute = "00"] = value.split(":");
+  const hour = Number(hourValue);
+  if (Number.isNaN(hour)) return value;
+  return `${hour % 12 || 12}:${minute} ${hour >= 12 ? "PM" : "AM"}`;
+}
+
+function eventDateLabel(event: RecordItem) {
+  const start = event.data.date;
+  const end = eventEndDate(event);
+  if (!start) return "Date not added";
+  const format = (value: string) => dateFromKey(value).toLocaleDateString("en-MY", { day: "2-digit", month: "short" });
+  return end && end !== start ? `${format(start)} → ${format(end)}` : format(start);
 }
 
 function copyText(value: string, label: string, setToast: (value: string) => void) {
@@ -379,6 +414,7 @@ export default function Home() {
   function startCalendarEvent(date: string) {
     const next = structuredClone(blankBySection.calendar);
     next.data.date = date;
+    next.data.endDate = date;
     setEditing(next);
   }
 
@@ -719,13 +755,13 @@ function MonthGrid({ month, events, onDayClick, compact = false }: { month: Date
       {cells.map((day, index) => {
         if (!day) return <span className="calendar-blank" key={`blank-${index}`} />;
         const date = localDateKey(new Date(year, monthIndex, day));
-        const dayEvents = events.filter((event) => event.data.date === date);
+        const dayEvents = events.filter((event) => eventSpansDate(event, date));
         return (
           <button type="button" className={`${date === today ? "today " : ""}${dayEvents.length ? "has-events" : ""}`} key={date} onClick={() => onDayClick?.(date)} aria-label={`${date}${dayEvents.length ? `, ${dayEvents.length} events` : ""}`}>
             <strong>{day}</strong>
             {!!dayEvents.length && (compact
               ? <span className="event-dots">{dayEvents.slice(0, 3).map((event) => <i key={event.id} />)}</span>
-              : <span className="calendar-events">{dayEvents.slice(0, 3).map((event, eventIndex) => <span className={`calendar-event-pill tone-${eventIndex % 3}`} key={event.id}><b>{event.title}</b>{event.data.time && <small>{event.data.time}</small>}</span>)}{dayEvents.length > 3 && <em>+{dayEvents.length - 3} more</em>}</span>
+              : <span className="calendar-events">{dayEvents.slice(0, 3).map((event, eventIndex) => <span className={`calendar-event-pill tone-${eventIndex % 3}`} key={event.id}><b>{event.title}</b>{event.data.time && <small>{formatEventTime(event.data.time)}</small>}</span>)}{dayEvents.length > 3 && <em>+{dayEvents.length - 3} more</em>}</span>
             )}
           </button>
         );
@@ -738,28 +774,29 @@ function OverviewCalendar({ events, onOpen }: { events: RecordItem[]; onOpen: ()
   const today = new Date();
   const currentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
   const upcoming = events
-    .filter((event) => event.data.date >= localDateKey(today))
+    .filter((event) => eventEndDate(event) >= localDateKey(today))
     .sort((left, right) => `${left.data.date}${left.data.time}`.localeCompare(`${right.data.date}${right.data.time}`))
     .slice(0, 4);
   return (
     <section className="panel overview-calendar">
       <div className="calendar-overview-main">
         <div className="calendar-title-row"><div><p className="eyebrow">Today · {new Intl.DateTimeFormat("en-MY", { weekday: "long", day: "numeric", month: "long", year: "numeric" }).format(today)}</p><h2>Calendar</h2></div><button onClick={onOpen}>Open calendar ›</button></div>
-        <div className="month-pill"><strong>{monthLabel(currentMonth)}</strong><span>{events.filter((event) => event.data.date?.startsWith(localDateKey(currentMonth).slice(0, 7))).length} events</span></div>
+        <div className="month-pill"><strong>{monthLabel(currentMonth)}</strong><span>{events.filter((event) => eventSpansDate(event, localDateKey(currentMonth)) || event.data.date?.startsWith(localDateKey(currentMonth).slice(0, 7))).length} events</span></div>
         <MonthGrid month={currentMonth} events={events} compact />
       </div>
       <div className="upcoming-overview">
         <p className="eyebrow">Coming up</p>
         <h3>Next activities</h3>
-        {upcoming.length ? upcoming.map((event) => <button key={event.id} onClick={onOpen}><time>{dateFromKey(event.data.date).toLocaleDateString("en-MY", { day: "2-digit", month: "short" })}</time><div><strong>{event.title}</strong><small>{event.data.location || "Location not added"}{event.data.time ? ` · ${event.data.time}` : ""}</small></div></button>) : <div className="no-events"><span>＋</span><p>No upcoming events yet.</p><button onClick={onOpen}>Add the first event</button></div>}
+        {upcoming.length ? upcoming.map((event) => <button key={event.id} onClick={onOpen}><time>{eventDateLabel(event)}</time><div><strong>{event.title}</strong><small>{event.data.location || "Location not added"}{event.data.time ? ` · ${formatEventTime(event.data.time)}` : ""}</small></div></button>) : <div className="no-events"><span>＋</span><p>No upcoming events yet.</p><button onClick={onOpen}>Add the first event</button></div>}
       </div>
     </section>
   );
 }
 
 function CalendarWorkspace({ events, month, setMonth, onAddDate, setEditing, removeItem }: { events: RecordItem[]; month: Date; setMonth: React.Dispatch<React.SetStateAction<Date>>; onAddDate: (date: string) => void; setEditing: (item: RecordItem) => void; removeItem: (item: RecordItem) => void }) {
-  const monthPrefix = `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, "0")}`;
-  const monthEvents = events.filter((event) => event.data.date?.startsWith(monthPrefix)).sort((left, right) => `${left.data.date}${left.data.time}`.localeCompare(`${right.data.date}${right.data.time}`));
+  const monthStart = localDateKey(new Date(month.getFullYear(), month.getMonth(), 1));
+  const monthEnd = localDateKey(new Date(month.getFullYear(), month.getMonth() + 1, 0));
+  const monthEvents = events.filter((event) => event.data.date <= monthEnd && eventEndDate(event) >= monthStart).sort((left, right) => `${left.data.date}${left.data.time}`.localeCompare(`${right.data.date}${right.data.time}`));
   const today = new Date();
   function changeMonth(offset: number) { setMonth(new Date(month.getFullYear(), month.getMonth() + offset, 1)); }
   return (
@@ -777,7 +814,7 @@ function CalendarWorkspace({ events, month, setMonth, onAddDate, setEditing, rem
           {monthEvents.map((event) => (
             <article key={event.id}>
               <time><strong>{dateFromKey(event.data.date).getDate()}</strong><span>{dateFromKey(event.data.date).toLocaleDateString("en-MY", { month: "short" })}</span></time>
-              <div><h3>{event.title}</h3><p>{event.data.time || "All day"} · {event.data.location || "Location not added"}</p>{event.data.pic && <span className="agenda-people">PIC · {event.data.pic}</span>}{event.data.attendees && <span className="agenda-people">Attend · {event.data.attendees}</span>}{event.data.details && <small>{event.data.details}</small>}</div>
+              <div><h3>{event.title}</h3><p>{eventDateLabel(event)} · {formatEventTime(event.data.time) || "All day"}</p><p>{event.data.location || "Location not added"}</p>{event.data.pic && <span className="agenda-people">PIC · {event.data.pic}</span>}{event.data.attendees && <span className="agenda-people">Attend · {event.data.attendees}</span>}{event.data.details && <small>{event.data.details}</small>}</div>
               <div className="agenda-actions"><button onClick={() => setEditing(structuredClone(event))}>Edit</button><button className="delete" onClick={() => removeItem(event)}>Delete</button></div>
             </article>
           ))}
@@ -974,7 +1011,7 @@ function EditModal({ item, setItem, onClose, onSave, saving, setToast, productCa
     pharmacies: [["phone", "Phone number", "text"], ["address", "Full address", "textarea"]],
     payments: [["details", "Payment instructions", "textarea"], ["link", "Payment link", "text"], ["portal", "Portal link", "text"], ["status", "Status", "text"]],
     faq: [["category", "Category", "text"], ["answer", "Answer", "textarea"], ["source", "Source", "text"]],
-    calendar: [["date", "Event date", "date"], ["time", "Start time", "time"], ["location", "Location", "text"], ["details", "Event details / remark", "textarea"], ["status", "Status", "text"]],
+    calendar: [["location", "Location", "text"], ["details", "Event details / remark", "textarea"], ["status", "Status", "text"]],
   };
 
   function updateData(key: string, value: string) {
@@ -1037,10 +1074,20 @@ function EditModal({ item, setItem, onClose, onSave, saving, setToast, productCa
             </>
           )}
           {item.section === "calendar" && (
-            <div className="multi-people-fields full">
-              <MultiNameField label="PIC" value={item.data.pic || ""} onChange={(value) => updateData("pic", value)} placeholder="Type a PIC name" />
-              <MultiNameField label="Who Attend" value={item.data.attendees || ""} onChange={(value) => updateData("attendees", value)} placeholder="Type an attendee name" />
-            </div>
+            <>
+              <div className="calendar-schedule-fields full">
+                <div className="date-range-field">
+                  <label><span>Start date</span><input required type="date" value={item.data.date || ""} onChange={(event) => { const next = event.target.value; setItem({ ...item, data: { ...item.data, date: next, endDate: !item.data.endDate || item.data.endDate < next ? next : item.data.endDate } }); }} /></label>
+                  <i>→</i>
+                  <label><span>End date</span><input required type="date" min={item.data.date || undefined} value={item.data.endDate || item.data.date || ""} onChange={(event) => updateData("endDate", event.target.value)} /></label>
+                </div>
+                <TimeField value={item.data.time || ""} onChange={(value) => updateData("time", value)} />
+              </div>
+              <div className="multi-people-fields full">
+                <MultiNameField label="PIC" value={item.data.pic || ""} onChange={(value) => updateData("pic", value)} />
+                <MultiNameField label="Who Attend" value={item.data.attendees || ""} onChange={(value) => updateData("attendees", value)} />
+              </div>
+            </>
           )}
           {item.section === "pharmacies" && (
             <label><span>State</span><select required value={item.data.regionState || pharmacyState(item)} onChange={(event) => updateData("regionState", event.target.value)}><option value="">Choose state</option>{PHARMACY_STATE_GROUPS.map((group) => <optgroup key={group.label} label={group.label}>{group.states.map((state) => <option key={state} value={state}>{state}</option>)}</optgroup>)}</select></label>
@@ -1061,11 +1108,11 @@ function EditModal({ item, setItem, onClose, onSave, saving, setToast, productCa
   );
 }
 
-function MultiNameField({ label, value, onChange, placeholder }: { label: string; value: string; onChange: (value: string) => void; placeholder: string }) {
+function MultiNameField({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
   const [draft, setDraft] = useState("");
   const names = value.split(",").map((name) => name.trim()).filter(Boolean);
-  function addName() {
-    const name = draft.trim();
+  function addName(selected = draft) {
+    const name = selected.trim();
     if (!name) return;
     if (!names.some((existing) => existing.toLowerCase() === name.toLowerCase())) onChange([...names, name].join(", "));
     setDraft("");
@@ -1075,9 +1122,45 @@ function MultiNameField({ label, value, onChange, placeholder }: { label: string
     <label className="multi-name-field">
       <span>{label} · Multiple selection</span>
       <div className="name-chips">{names.map((name) => <span key={name}>{name}<button type="button" onClick={() => removeName(name)} aria-label={`Remove ${name}`}>×</button></span>)}</div>
-      <div className="name-entry"><input value={draft} onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === ",") { event.preventDefault(); addName(); } }} placeholder={placeholder} /><button type="button" onClick={addName}>＋ Add</button></div>
-      <small>Enter a name, then press Enter. Add as many people as needed.</small>
+      <select className="team-select" value="" onChange={(event) => addName(event.target.value)}><option value="">＋ Select from Admin team</option>{ADMIN_TEAM.filter((member) => !names.includes(member.name)).map((member) => <option key={member.name} value={member.name}>{member.name} · {member.role}</option>)}</select>
+      <div className="name-entry"><input value={draft} onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === ",") { event.preventDefault(); addName(); } }} placeholder="Or enter another name" /><button type="button" onClick={() => addName()}>＋ Add</button></div>
     </label>
+  );
+}
+
+function TimeField({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+  const parsedHour = value ? Number(value.split(":")[0]) : 9;
+  const [hour, setHour] = useState(value ? String(parsedHour % 12 || 12).padStart(2, "0") : "");
+  const [minute, setMinute] = useState(value ? (value.split(":")[1] || "00") : "");
+  const [period, setPeriod] = useState<"AM" | "PM">(parsedHour >= 12 ? "PM" : "AM");
+
+  useEffect(() => {
+    if (!value) return;
+    const [nextHour, nextMinute = "00"] = value.split(":");
+    const hourNumber = Number(nextHour);
+    setHour(String(hourNumber % 12 || 12).padStart(2, "0"));
+    setMinute(nextMinute.padStart(2, "0"));
+    setPeriod(hourNumber >= 12 ? "PM" : "AM");
+  }, [value]);
+
+  function commit(nextHour = hour, nextMinute = minute, nextPeriod = period) {
+    const hourNumber = Number(nextHour);
+    const minuteNumber = Number(nextMinute);
+    if (!nextHour || !nextMinute || hourNumber < 1 || hourNumber > 12 || minuteNumber < 0 || minuteNumber > 59) { onChange(""); return; }
+    const hour24 = (hourNumber % 12) + (nextPeriod === "PM" ? 12 : 0);
+    onChange(`${String(hour24).padStart(2, "0")}:${String(minuteNumber).padStart(2, "0")}`);
+  }
+
+  return (
+    <div className="custom-time-field">
+      <span>Start time <small>Optional</small></span>
+      <div className="time-control">
+        <input inputMode="numeric" maxLength={2} value={hour} onChange={(event) => { const next = event.target.value.replace(/\D/g, "").slice(0, 2); setHour(next); commit(next, minute, period); }} onBlur={() => hour && setHour(hour.padStart(2, "0"))} placeholder="09" aria-label="Hour" />
+        <b>:</b>
+        <input inputMode="numeric" maxLength={2} value={minute} onChange={(event) => { const next = event.target.value.replace(/\D/g, "").slice(0, 2); setMinute(next); commit(hour, next, period); }} onBlur={() => minute && setMinute(minute.padStart(2, "0"))} placeholder="00" aria-label="Minute" />
+        <div className="period-toggle"><button type="button" className={period === "AM" ? "active" : ""} onClick={() => { setPeriod("AM"); commit(hour, minute, "AM"); }}>AM</button><button type="button" className={period === "PM" ? "active" : ""} onClick={() => { setPeriod("PM"); commit(hour, minute, "PM"); }}>PM</button></div>
+      </div>
+    </div>
   );
 }
 
