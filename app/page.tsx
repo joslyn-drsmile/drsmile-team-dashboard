@@ -13,6 +13,9 @@ type RecordItem = {
 };
 
 type ImportableSection = Exclude<Section, "payments" | "promotions" | "calendar">;
+type PermissionSet = { view: boolean; add: boolean; edit: boolean; delete: boolean };
+type AccessMember = { id: string; name: string; role: string; email: string; active: boolean; isOwner: boolean; updatedAt: string; permissions: Record<Section, PermissionSet> };
+type CurrentAccess = { member: AccessMember; permissions: Record<Section, PermissionSet> };
 
 const DEFAULT_PRODUCT_CATEGORIES = ["牙粉", "完整美白疗程", "漱口水", "加购产品", "包包"];
 const ALL_PRODUCTS = "All Item";
@@ -339,7 +342,9 @@ function importRows(section: ImportableSection, text: string): Omit<RecordItem, 
 }
 
 export default function Home() {
-  const [active, setActive] = useState<"home" | Section>("home");
+  const [active, setActive] = useState<"home" | Section | "settings">("home");
+  const [access, setAccess] = useState<CurrentAccess | null>(null);
+  const [accessLoaded, setAccessLoaded] = useState(false);
   const [records, setRecords] = useState<RecordItem[]>(initialRecords);
   const [query, setQuery] = useState("");
   const [editing, setEditing] = useState<RecordItem | null>(null);
@@ -356,14 +361,23 @@ export default function Home() {
   const [calendarMonth, setCalendarMonth] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
 
   useEffect(() => {
-    fetch("/api/records")
-      .then((response) => (response.ok ? response.json() : Promise.reject()))
-      .then((payload) => payload.records?.length && setRecords(payload.records))
-      .catch(() => undefined);
-    fetch("/api/categories")
-      .then((response) => (response.ok ? response.json() : Promise.reject()))
-      .then((payload) => Array.isArray(payload.categories) && setProductCategories(payload.categories))
-      .catch(() => undefined);
+    fetch("/api/me")
+      .then(async (response) => {
+        if (!response.ok) throw new Error("No access");
+        const payload = await response.json();
+        setAccess({ member: { ...payload.member, permissions: payload.permissions }, permissions: payload.permissions });
+        const [recordsResponse, categoriesResponse] = await Promise.all([fetch("/api/records"), fetch("/api/categories")]);
+        if (recordsResponse.ok) {
+          const recordsPayload = await recordsResponse.json();
+          setRecords(recordsPayload.records || []);
+        }
+        if (categoriesResponse.ok) {
+          const categoriesPayload = await categoriesResponse.json();
+          if (Array.isArray(categoriesPayload.categories)) setProductCategories(categoriesPayload.categories);
+        }
+      })
+      .catch(() => setAccess(null))
+      .finally(() => setAccessLoaded(true));
   }, []);
 
   useEffect(() => {
@@ -392,7 +406,13 @@ export default function Home() {
     );
   }, [active, query, records, promotionMonth, selectedCategory, selectedState]);
 
-  function navigate(next: "home" | Section) {
+  function allowed(section: Section, action: keyof PermissionSet) {
+    return !!access?.permissions[section]?.[action];
+  }
+
+  function navigate(next: "home" | Section | "settings") {
+    if (next === "settings" && !access?.member.isOwner) return;
+    if (next !== "home" && next !== "settings" && !allowed(next, "view")) return;
     setActive(next);
     setQuery("");
     if (next === "products") setSelectedCategory(ALL_PRODUCTS);
@@ -401,7 +421,7 @@ export default function Home() {
   }
 
   function startAdd() {
-    if (active === "home") return;
+    if (active === "home" || active === "settings" || !allowed(active, "add")) return;
     const next = structuredClone(blankBySection[active]);
     if (active === "products") next.data.category = selectedCategory === ALL_PRODUCTS ? "" : selectedCategory;
     if (active === "promotions") {
@@ -412,6 +432,7 @@ export default function Home() {
   }
 
   function startCalendarEvent(date: string) {
+    if (!allowed("calendar", "add")) return;
     const next = structuredClone(blankBySection.calendar);
     next.data.date = date;
     next.data.endDate = date;
@@ -419,20 +440,28 @@ export default function Home() {
   }
 
   async function savePromotionTitle() {
+    if (!allowed("promotions", "edit")) return;
     const campaignItems = records.filter((record) => record.section === "promotions" && record.data.month === promotionMonth);
     if (!campaignItems.length) {
       setToast("Add a promotion item first");
       return;
     }
     const updated = campaignItems.map((record) => ({ ...record, data: { ...record.data, promotionName: promotionTitle.trim() } }));
+    const previous = records;
     setRecords((current) => current.map((record) => updated.find((item) => item.id === record.id) || record));
-    await Promise.all(updated.map((record) => fetch("/api/records", { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify(record) })));
+    const responses = await Promise.all(updated.map((record) => fetch("/api/records", { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify(record) })));
+    if (responses.some((response) => !response.ok)) {
+      setRecords(previous);
+      setToast("Promotion name could not be saved");
+      return;
+    }
     setToast("Promotion name saved");
   }
 
   async function saveItem(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!editing) return;
+    if (!allowed(editing.section, editing.id ? "edit" : "add")) return;
     setSaving(true);
     const optimistic = editing.id
       ? records.map((record) => (record.id === editing.id ? editing : record))
@@ -445,31 +474,42 @@ export default function Home() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify(editing),
       });
-      if (response.ok) {
-        const payload = await response.json();
-        setRecords((current) =>
-          editing.id
-            ? current.map((record) => (record.id === editing.id ? payload.record : record))
-            : current.map((record) => (record.id === optimistic[optimistic.length - 1].id ? payload.record : record)),
-        );
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.error || "Shared changes could not be saved");
       }
+      const payload = await response.json();
+      setRecords((current) =>
+        editing.id
+          ? current.map((record) => (record.id === editing.id ? payload.record : record))
+          : current.map((record) => (record.id === optimistic[optimistic.length - 1].id ? payload.record : record)),
+      );
       setToast("Shared changes saved");
-    } catch {
-      setToast("Saved in this preview");
+    } catch (error) {
+      setRecords(records);
+      setToast(error instanceof Error ? error.message : "Shared changes could not be saved");
     } finally {
       setSaving(false);
     }
   }
 
   async function removeItem(item: RecordItem) {
+    if (!allowed(item.section, "delete")) return;
     if (!window.confirm(`Delete “${item.title}”?`)) return;
+    const previous = records;
     setRecords((current) => current.filter((record) => record.id !== item.id));
-    await fetch(`/api/records?id=${item.id}`, { method: "DELETE" }).catch(() => undefined);
+    const response = await fetch(`/api/records?id=${item.id}`, { method: "DELETE" }).catch(() => null);
+    if (!response?.ok) {
+      setRecords(previous);
+      setToast("Item could not be deleted");
+      return;
+    }
     setToast("Item deleted");
   }
 
   async function addProductCategory(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!allowed("products", "add")) return;
     const name = newCategory.trim();
     if (!name) return;
     if (productCategories.some((category) => category.toLowerCase() === name.toLowerCase())) {
@@ -493,6 +533,7 @@ export default function Home() {
   }
 
   async function deleteProductCategory(name: string) {
+    if (!allowed("products", "delete")) return;
     if (!window.confirm(`Delete category “${name}”? Products will remain under All Item.`)) return;
     const response = await fetch(`/api/categories?name=${encodeURIComponent(name)}`, { method: "DELETE" }).catch(() => null);
     if (!response?.ok) {
@@ -508,6 +549,10 @@ export default function Home() {
     setToast("Category deleted");
   }
 
+  if (!accessLoaded) return <div className="access-screen"><div className="access-card"><span>DS</span><h1>Loading your workspace…</h1></div></div>;
+  if (!access) return <div className="access-screen"><div className="access-card"><span>DS</span><p className="eyebrow">DrSmile Team Dashboard</p><h1>No access</h1><p>Your signed-in email is not active in the Admin member list. Please ask Joslyn to add your email in Settings.</p></div></div>;
+
+  const visibleMenus = menus.filter((menu) => menu.id === "home" || allowed(menu.id, "view"));
   return (
     <div className="app-shell">
       <aside className={`sidebar ${mobileMenu ? "is-open" : ""}`}>
@@ -520,7 +565,7 @@ export default function Home() {
         </div>
         <nav aria-label="Dashboard menu">
           <p className="nav-label">Workspace</p>
-          {menus.map((menu) => (
+          {visibleMenus.map((menu) => (
             <button key={menu.id} className={active === menu.id ? "active" : ""} onClick={() => navigate(menu.id)}>
               <span className="nav-icon">{menu.short}</span>
               <span>{menu.label}</span>
@@ -529,6 +574,7 @@ export default function Home() {
           ))}
         </nav>
         <div className="sidebar-bottom">
+          {access.member.isOwner && <button className={active === "settings" ? "settings-link active" : "settings-link"} onClick={() => navigate("settings")}><span>⚙</span> Settings</button>}
           <a href="https://drsmile.my/" target="_blank" rel="noreferrer"><span>↗</span> View DrSmile website</a>
           <p><span className="status-dot" />Team data synced</p>
         </div>
@@ -539,18 +585,20 @@ export default function Home() {
           <button className="menu-toggle" onClick={() => setMobileMenu((value) => !value)} aria-label="Toggle menu">☰</button>
           <label className="search">
             <span>⌕</span>
-            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={`Search ${active === "home" ? "the workspace" : pageCopy[active].title.toLowerCase()}…`} />
+            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={`Search ${active === "home" ? "the workspace" : active === "settings" ? "settings" : pageCopy[active].title.toLowerCase()}…`} />
             <kbd>⌘ K</kbd>
           </label>
           <div className="top-actions">
             <button className="icon-button" aria-label="Notifications">◎</button>
             <div className="avatar">DS</div>
-            <div className="profile"><strong>DrSmile Team</strong><small>Shared access</small></div>
+            <div className="profile"><strong>{access.member.name}</strong><small>{access.member.role || "Team member"}</small></div>
           </div>
         </header>
 
         {active === "home" ? (
-          <Overview records={records} navigate={navigate} setToast={setToast} />
+          <Overview records={records} navigate={navigate} setToast={setToast} permissions={access.permissions} />
+        ) : active === "settings" ? (
+          <SettingsPage currentEmail={access.member.email} setToast={setToast} />
         ) : (
           <section className="page">
             <div className="page-heading">
@@ -561,7 +609,7 @@ export default function Home() {
                   <label className="campaign-title-editor">
                     <span>Title B · Promotion Name</span>
                     <input value={promotionTitle} onChange={(event) => setPromotionTitle(event.target.value)} placeholder="Enter this month’s promotion name" />
-                    <button type="button" onClick={savePromotionTitle}>Save</button>
+                    {allowed("promotions", "edit") && <button type="button" onClick={savePromotionTitle}>Save</button>}
                   </label>
                 )}
                 <p>{pageCopy[active].description}</p>
@@ -569,8 +617,8 @@ export default function Home() {
               <div className="heading-actions">
                 {active === "promotions" && <label className="month-filter"><span>Track by month</span><input type="month" value={promotionMonth} onChange={(event) => setPromotionMonth(event.target.value)} /></label>}
                 {active !== "payments" && active !== "promotions" && active !== "calendar" && <a className="secondary-button" href={SOURCE_SHEET_URL} target="_blank" rel="noreferrer">Open Sheet ↗</a>}
-                {active !== "payments" && active !== "promotions" && active !== "calendar" && <button className="secondary-button import-button" onClick={() => setImporting(active)}>⇧ Import data</button>}
-                <button className="primary-button" onClick={startAdd}>＋ {active === "calendar" ? "Add event" : "Add item"}</button>
+                {active !== "payments" && active !== "promotions" && active !== "calendar" && allowed(active, "add") && allowed(active, "edit") && allowed(active, "delete") && <button className="secondary-button import-button" onClick={() => setImporting(active)}>⇧ Import data</button>}
+                {allowed(active, "add") && <button className="primary-button" onClick={startAdd}>＋ {active === "calendar" ? "Add event" : "Add item"}</button>}
               </div>
             </div>
 
@@ -582,7 +630,7 @@ export default function Home() {
               </div>
             )}
 
-            {active === "payments" && <PaymentStudio setToast={setToast} />}
+            {active === "payments" && <PaymentStudio setToast={setToast} canManage={allowed("payments", "add")} />}
 
             {active === "calendar" ? (
               <CalendarWorkspace
@@ -592,6 +640,9 @@ export default function Home() {
                 onAddDate={startCalendarEvent}
                 setEditing={setEditing}
                 removeItem={removeItem}
+                canAdd={allowed("calendar", "add")}
+                canEdit={allowed("calendar", "edit")}
+                canDelete={allowed("calendar", "delete")}
               />
             ) : <div className={active === "products" || active === "pharmacies" ? "products-browser" : ""}>
               {active === "products" && (
@@ -604,14 +655,14 @@ export default function Home() {
                     {productCategories.map((category) => (
                       <div className={selectedCategory === category ? "category-row active" : "category-row"} key={category}>
                         <button className="category-filter" onClick={() => setSelectedCategory(category)}><span>{category}</span><em>{records.filter((record) => record.section === "products" && productCategory(record) === category).length}</em></button>
-                        <button className="category-delete" onClick={() => deleteProductCategory(category)} aria-label={`Delete ${category}`}>×</button>
+                        {allowed("products", "delete") && <button className="category-delete" onClick={() => deleteProductCategory(category)} aria-label={`Delete ${category}`}>×</button>}
                       </div>
                     ))}
                   </div>
-                  <form className="category-add" onSubmit={addProductCategory}>
+                  {allowed("products", "add") && <form className="category-add" onSubmit={addProductCategory}>
                     <input value={newCategory} onChange={(event) => setNewCategory(event.target.value)} placeholder="Add category" aria-label="New category name" maxLength={40} />
                     <button type="submit" aria-label="Add category">＋</button>
-                  </form>
+                  </form>}
                 </aside>
               )}
               {active === "pharmacies" && (
@@ -642,7 +693,7 @@ export default function Home() {
 
                 <div className={`record-grid ${active}`}>
                   {visible.map((item) => (
-                    <RecordCard key={item.id} item={item} setEditing={setEditing} removeItem={removeItem} setToast={setToast} />
+                    <RecordCard key={item.id} item={item} setEditing={setEditing} removeItem={removeItem} setToast={setToast} canEdit={allowed(item.section, "edit")} canDelete={allowed(item.section, "delete")} />
                   ))}
                   {visible.length === 0 && (
                     <div className="empty-state">
@@ -681,7 +732,7 @@ export default function Home() {
   );
 }
 
-function Overview({ records, navigate, setToast }: { records: RecordItem[]; navigate: (next: "home" | Section) => void; setToast: (value: string) => void }) {
+function Overview({ records, navigate, setToast, permissions }: { records: RecordItem[]; navigate: (next: "home" | Section) => void; setToast: (value: string) => void; permissions: Record<Section, PermissionSet> }) {
   const stats = [
     { label: "Products", value: records.filter((item) => item.section === "products").length, detail: "Across 4 channels", accent: "lime", section: "products" as Section },
     { label: "Promotions", value: records.filter((item) => item.section === "promotions").length, detail: "Monthly campaigns", accent: "blue", section: "promotions" as Section },
@@ -689,7 +740,7 @@ function Overview({ records, navigate, setToast }: { records: RecordItem[]; navi
     { label: "Payment options", value: records.filter((item) => item.section === "payments").length, detail: "Ready for orders", accent: "pink", section: "payments" as Section },
     { label: "FAQ answers", value: records.filter((item) => item.section === "faq").length, detail: "Shared knowledge", accent: "gold", section: "faq" as Section },
     { label: "Events", value: records.filter((item) => item.section === "calendar").length, detail: "Shared schedule", accent: "blue", section: "calendar" as Section },
-  ];
+  ].filter((item) => permissions[item.section].view);
   const recent = records.slice(-5).reverse();
   return (
     <section className="page overview">
@@ -715,18 +766,18 @@ function Overview({ records, navigate, setToast }: { records: RecordItem[]; navi
         ))}
       </div>
 
-      <OverviewCalendar events={records.filter((record) => record.section === "calendar")} onOpen={() => navigate("calendar")} />
+      {permissions.calendar.view && <OverviewCalendar events={records.filter((record) => record.section === "calendar")} onOpen={() => navigate("calendar")} />}
 
       <div className="overview-grid">
         <div className="panel quick-panel">
           <div className="panel-heading"><div><p className="eyebrow">Shortcuts</p><h2>Quick actions</h2></div></div>
           <div className="quick-grid">
-            <button onClick={() => navigate("products")}><span>PR</span><strong>Check pricing</strong><small>Compare price and PWP</small></button>
-            <button onClick={() => navigate("promotions")}><span>PM</span><strong>Monthly promotion</strong><small>Poster, package and prices</small></button>
-            <button onClick={() => navigate("pharmacies")}><span>PH</span><strong>Find pharmacy</strong><small>Copy address or phone</small></button>
-            <button onClick={() => navigate("payments")}><span>PY</span><strong>Create payment</strong><small>Atome or Payex portal</small></button>
-            <button onClick={() => navigate("faq")}><span>FQ</span><strong>Find an answer</strong><small>Search team FAQ</small></button>
-            <button onClick={() => navigate("calendar")}><span>CL</span><strong>Team calendar</strong><small>View events and locations</small></button>
+            {permissions.products.view && <button onClick={() => navigate("products")}><span>PR</span><strong>Check pricing</strong><small>Compare price and PWP</small></button>}
+            {permissions.promotions.view && <button onClick={() => navigate("promotions")}><span>PM</span><strong>Monthly promotion</strong><small>Poster, package and prices</small></button>}
+            {permissions.pharmacies.view && <button onClick={() => navigate("pharmacies")}><span>PH</span><strong>Find pharmacy</strong><small>Copy address or phone</small></button>}
+            {permissions.payments.view && <button onClick={() => navigate("payments")}><span>PY</span><strong>Create payment</strong><small>Atome or Payex portal</small></button>}
+            {permissions.faq.view && <button onClick={() => navigate("faq")}><span>FQ</span><strong>Find an answer</strong><small>Search team FAQ</small></button>}
+            {permissions.calendar.view && <button onClick={() => navigate("calendar")}><span>CL</span><strong>Team calendar</strong><small>View events and locations</small></button>}
           </div>
         </div>
         <div className="panel activity-panel">
@@ -793,7 +844,7 @@ function OverviewCalendar({ events, onOpen }: { events: RecordItem[]; onOpen: ()
   );
 }
 
-function CalendarWorkspace({ events, month, setMonth, onAddDate, setEditing, removeItem }: { events: RecordItem[]; month: Date; setMonth: React.Dispatch<React.SetStateAction<Date>>; onAddDate: (date: string) => void; setEditing: (item: RecordItem) => void; removeItem: (item: RecordItem) => void }) {
+function CalendarWorkspace({ events, month, setMonth, onAddDate, setEditing, removeItem, canAdd, canEdit, canDelete }: { events: RecordItem[]; month: Date; setMonth: React.Dispatch<React.SetStateAction<Date>>; onAddDate: (date: string) => void; setEditing: (item: RecordItem) => void; removeItem: (item: RecordItem) => void; canAdd: boolean; canEdit: boolean; canDelete: boolean }) {
   const monthStart = localDateKey(new Date(month.getFullYear(), month.getMonth(), 1));
   const monthEnd = localDateKey(new Date(month.getFullYear(), month.getMonth() + 1, 0));
   const monthEvents = events.filter((event) => event.data.date <= monthEnd && eventEndDate(event) >= monthStart).sort((left, right) => `${left.data.date}${left.data.time}`.localeCompare(`${right.data.date}${right.data.time}`));
@@ -806,7 +857,7 @@ function CalendarWorkspace({ events, month, setMonth, onAddDate, setEditing, rem
           <div><p className="eyebrow">Click a date to add an event</p><h2>{monthLabel(month)}</h2></div>
           <div><button onClick={() => setMonth(new Date(today.getFullYear(), today.getMonth(), 1))}>Today</button><button onClick={() => changeMonth(-1)} aria-label="Previous month">‹</button><button onClick={() => changeMonth(1)} aria-label="Next month">›</button></div>
         </div>
-        <MonthGrid month={month} events={monthEvents} onDayClick={onAddDate} />
+        <MonthGrid month={month} events={monthEvents} onDayClick={canAdd ? onAddDate : undefined} />
       </section>
       <aside className="panel calendar-agenda">
         <div className="panel-heading"><div><p className="eyebrow">Monthly agenda</p><h2>{monthEvents.length} {monthEvents.length === 1 ? "event" : "events"}</h2></div></div>
@@ -815,22 +866,123 @@ function CalendarWorkspace({ events, month, setMonth, onAddDate, setEditing, rem
             <article key={event.id}>
               <time><strong>{dateFromKey(event.data.date).getDate()}</strong><span>{dateFromKey(event.data.date).toLocaleDateString("en-MY", { month: "short" })}</span></time>
               <div><h3>{event.title}</h3><p>{eventDateLabel(event)} · {formatEventTime(event.data.time) || "All day"}</p><p>{event.data.location || "Location not added"}</p>{event.data.pic && <span className="agenda-people">PIC · {event.data.pic}</span>}{event.data.attendees && <span className="agenda-people">Attend · {event.data.attendees}</span>}{event.data.details && <small>{event.data.details}</small>}</div>
-              <div className="agenda-actions"><button onClick={() => setEditing(structuredClone(event))}>Edit</button><button className="delete" onClick={() => removeItem(event)}>Delete</button></div>
+              {(canEdit || canDelete) && <div className="agenda-actions">{canEdit && <button onClick={() => setEditing(structuredClone(event))}>Edit</button>}{canDelete && <button className="delete" onClick={() => removeItem(event)}>Delete</button>}</div>}
             </article>
           ))}
-          {!monthEvents.length && <div className="no-events"><span>＋</span><p>No events planned for {monthLabel(month)}.</p><button onClick={() => onAddDate(localDateKey(new Date(month.getFullYear(), month.getMonth(), 1)))}>Add event</button></div>}
+          {!monthEvents.length && <div className="no-events"><span>＋</span><p>No events planned for {monthLabel(month)}.</p>{canAdd && <button onClick={() => onAddDate(localDateKey(new Date(month.getFullYear(), month.getMonth(), 1)))}>Add event</button>}</div>}
         </div>
       </aside>
     </div>
   );
 }
 
-function RecordCard({ item, setEditing, removeItem, setToast }: { item: RecordItem; setEditing: (item: RecordItem) => void; removeItem: (item: RecordItem) => void; setToast: (value: string) => void }) {
+const permissionMenus = menus.filter((menu): menu is { id: Section; label: string; short: string } => menu.id !== "home");
+
+function SettingsPage({ currentEmail, setToast }: { currentEmail: string; setToast: (value: string) => void }) {
+  const [members, setMembers] = useState<AccessMember[]>([]);
+  const [sync, setSync] = useState({ status: "loading", message: "Checking Google Sheet sync", lastSync: "" });
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/access").then(async (response) => {
+      if (!response.ok) throw new Error("Settings unavailable");
+      return response.json();
+    }).then((payload) => { setMembers(payload.members); setSync(payload.sync); }).catch(() => setToast("Settings could not be loaded"));
+  }, [setToast]);
+
+  function updateMember(id: string, changes: Partial<AccessMember>) {
+    setMembers((current) => current.map((member) => member.id === id ? { ...member, ...changes } : member));
+  }
+
+  function updatePermission(memberId: string, menu: Section, action: keyof PermissionSet, checked: boolean) {
+    setMembers((current) => current.map((member) => {
+      if (member.id !== memberId || member.isOwner) return member;
+      const nextPermission = { ...member.permissions[menu], [action]: checked };
+      if (action === "view" && !checked) Object.assign(nextPermission, { add: false, edit: false, delete: false });
+      if (action !== "view" && checked) nextPermission.view = true;
+      return { ...member, permissions: { ...member.permissions, [menu]: nextPermission } };
+    }));
+  }
+
+  function setAll(memberId: string, menu: Section, checked: boolean) {
+    setMembers((current) => current.map((member) => member.id === memberId && !member.isOwner
+      ? { ...member, permissions: { ...member.permissions, [menu]: { view: checked, add: checked, edit: checked, delete: checked } } }
+      : member));
+  }
+
+  function addMember() {
+    const id = `member-${crypto.randomUUID()}`;
+    const permissions = Object.fromEntries(permissionMenus.map((menu) => [menu.id, { view: true, add: false, edit: false, delete: false }])) as Record<Section, PermissionSet>;
+    setMembers((current) => [...current, { id, name: "New member", role: "", email: "", active: true, isOwner: false, updatedAt: new Date().toISOString(), permissions }]);
+  }
+
+  async function syncNow() {
+    const response = await fetch("/api/access/sync", { method: "POST" });
+    const payload = await response.json();
+    setSync({ status: payload.status, message: payload.message, lastSync: new Date().toISOString() });
+    setToast(payload.synced ? "Google Sheet synced" : "Saved — Google Sheet sync pending");
+  }
+
+  async function saveSettings() {
+    setBusy(true);
+    try {
+      const response = await fetch("/api/access", { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ members }) });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || "Settings could not be saved");
+      setMembers(payload.members);
+      setSync(payload.sync);
+      setToast("Access settings saved");
+      await syncNow();
+    } catch (error) {
+      setToast(error instanceof Error ? error.message : "Settings could not be saved");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <section className="page settings-page">
+      <div className="page-heading settings-heading">
+        <div><p className="eyebrow">Owner controls</p><h1>Settings</h1><p>Choose exactly which menus each team member can view or manage.</p></div>
+        <div className="heading-actions"><button className="secondary-button" onClick={addMember}>＋ Add member</button><button className="primary-button" disabled={busy} onClick={saveSettings}>{busy ? "Saving…" : "Save access"}</button></div>
+      </div>
+      <div className={`sync-banner ${sync.status}`}><span>{sync.status === "synced" ? "✓" : "↻"}</span><div><strong>{sync.status === "synced" ? "Google Sheet synced" : "Sync pending"}</strong><small>{sync.message}</small></div><button onClick={syncNow}>Sync now</button></div>
+      <div className="settings-members">
+        {members.map((member) => (
+          <article className="member-access-card" key={member.id}>
+            <header>
+              <div className="member-badge">{member.name.slice(0, 2).toUpperCase()}</div>
+              <div><strong>{member.name}</strong><small>{member.isOwner ? "Fixed administrator · All access" : member.email ? "Active team access" : "Add login email to enable access"}</small></div>
+              <label className="active-toggle"><input type="checkbox" checked={member.active} disabled={member.isOwner} onChange={(event) => updateMember(member.id, { active: event.target.checked })} /><span>Active</span></label>
+            </header>
+            <div className="member-fields">
+              <label><span>Name</span><input value={member.name} disabled={member.id === "admin-joslyn"} onChange={(event) => updateMember(member.id, { name: event.target.value })} /></label>
+              <label><span>Role</span><input value={member.role} onChange={(event) => updateMember(member.id, { role: event.target.value })} /></label>
+              <label className="email-field"><span>Login email</span><input type="email" value={member.email} disabled={member.id === "admin-joslyn"} placeholder="name@company.com" onChange={(event) => updateMember(member.id, { email: event.target.value })} /></label>
+            </div>
+            <div className="permission-table-wrap">
+              <table className="permission-table"><thead><tr><th>Menu</th><th>View</th><th>Add</th><th>Edit</th><th>Delete</th><th>All Access</th></tr></thead><tbody>
+                {permissionMenus.map((menu) => {
+                  const permission = member.permissions[menu.id];
+                  const all = Object.values(permission).every(Boolean);
+                  return <tr key={menu.id}><th><span>{menu.short}</span>{menu.label}</th>{(["view", "add", "edit", "delete"] as const).map((action) => <td key={action}><input aria-label={`${member.name} ${menu.label} ${action}`} type="checkbox" checked={permission[action]} disabled={member.isOwner || !member.email} onChange={(event) => updatePermission(member.id, menu.id, action, event.target.checked)} /></td>)}<td><input aria-label={`${member.name} ${menu.label} all access`} type="checkbox" checked={all} disabled={member.isOwner || !member.email} onChange={(event) => setAll(member.id, menu.id, event.target.checked)} /></td></tr>;
+                })}
+              </tbody></table>
+            </div>
+          </article>
+        ))}
+      </div>
+      <p className="settings-footnote">Signed in as {currentEmail}. Overview is always available. Oscar and Elaine become fixed administrators after their login emails are added.</p>
+    </section>
+  );
+}
+
+function RecordCard({ item, setEditing, removeItem, setToast, canEdit, canDelete }: { item: RecordItem; setEditing: (item: RecordItem) => void; removeItem: (item: RecordItem) => void; setToast: (value: string) => void; canEdit: boolean; canDelete: boolean }) {
   if (item.section === "products") {
     return (
       <article className="record-card product-card">
         {item.data.posterUrl && <div className="product-poster-frame"><img className="product-poster" src={item.data.posterUrl} alt={`${item.title} poster`} /></div>}
-        <div className="card-top"><span className="record-avatar">DS</span><div><h3>{item.title}</h3><p>{item.data.sku || item.subtitle}</p></div><CardMenu item={item} setEditing={setEditing} removeItem={removeItem} /></div>
+        <div className="card-top"><span className="record-avatar">DS</span><div><h3>{item.title}</h3><p>{item.data.sku || item.subtitle}</p></div><CardMenu item={item} setEditing={setEditing} removeItem={removeItem} canEdit={canEdit} canDelete={canDelete} /></div>
         <div className="product-category-chip">{productCategory(item) || "Uncategorised"}</div>
         <div className="market-price-row">
           <div><span>Malaysia price</span><strong>{item.data.alacart || "—"}</strong></div>
@@ -848,7 +1000,7 @@ function RecordCard({ item, setEditing, removeItem, setToast }: { item: RecordIt
         <div className="promotion-poster-frame">
           {item.data.posterUrl ? <img className="promotion-poster" src={item.data.posterUrl} alt={`${item.title} promotion poster`} /> : <div className="poster-placeholder">POSTER</div>}
         </div>
-        <div className="card-top"><span className="record-avatar">PM</span><div><h3>{item.title}</h3><p>{item.subtitle ? `SKU · ${item.subtitle}` : "SKU not added"}</p></div><CardMenu item={item} setEditing={setEditing} removeItem={removeItem} /></div>
+        <div className="card-top"><span className="record-avatar">PM</span><div><h3>{item.title}</h3><p>{item.subtitle ? `SKU · ${item.subtitle}` : "SKU not added"}</p></div><CardMenu item={item} setEditing={setEditing} removeItem={removeItem} canEdit={canEdit} canDelete={canDelete} /></div>
         <div className="promotion-prices"><div><span>Online price</span><strong>{item.data.onlinePrice || "—"}</strong></div><div><span>Shopee price</span><strong>{item.data.shopeePrice || "—"}</strong></div></div>
         <div className="package-details"><span>Package details</span><p>{item.data.packageDetails || "No package details added yet."}</p></div>
         <div className="card-footer"><span className="status-chip">{item.data.status || "Active"}</span><button onClick={() => copyText(`${item.data.promotionName || "Promotion"}\n${item.title}\nSKU: ${item.subtitle || "—"}\nOnline: ${item.data.onlinePrice}\nShopee: ${item.data.shopeePrice}\n${item.data.packageDetails}`, "Promotion", setToast)}>Copy details</button></div>
@@ -860,7 +1012,7 @@ function RecordCard({ item, setEditing, removeItem, setToast }: { item: RecordIt
     const location = item.subtitle || item.data.city || "";
     return (
       <article className="record-card pharmacy-card">
-        <div className="card-top"><span className="record-avatar">＋</span><div><h3>{item.title}</h3><p>{location && location !== state ? `${location} · ${state}` : state}</p></div><CardMenu item={item} setEditing={setEditing} removeItem={removeItem} /></div>
+        <div className="card-top"><span className="record-avatar">＋</span><div><h3>{item.title}</h3><p>{location && location !== state ? `${location} · ${state}` : state}</p></div><CardMenu item={item} setEditing={setEditing} removeItem={removeItem} canEdit={canEdit} canDelete={canDelete} /></div>
         <div className="contact-row"><span>Phone</span><strong>{item.data.phone || "—"}</strong><button onClick={() => copyText(item.data.phone, "Phone number", setToast)}>Copy</button></div>
         <div className="address-block"><span>Full address {item.data.postcode ? `· ${item.data.postcode}` : ""}</span><p>{item.data.address || "—"}</p><button onClick={() => copyText(item.data.address, "Address", setToast)}>Copy full address</button></div>
       </article>
@@ -869,7 +1021,7 @@ function RecordCard({ item, setEditing, removeItem, setToast }: { item: RecordIt
   if (item.section === "payments") {
     return (
       <article className="record-card payment-card">
-        <div className="card-top"><span className="payment-logo">{item.title.slice(0, 2).toUpperCase()}</span><div><h3>{item.title}</h3><p>{item.subtitle}</p></div><CardMenu item={item} setEditing={setEditing} removeItem={removeItem} /></div>
+        <div className="card-top"><span className="payment-logo">{item.title.slice(0, 2).toUpperCase()}</span><div><h3>{item.title}</h3><p>{item.subtitle}</p></div><CardMenu item={item} setEditing={setEditing} removeItem={removeItem} canEdit={canEdit} canDelete={canDelete} /></div>
         <p className="payment-details">{item.data.details}</p>
         {item.data.qrUrl ? <img className="qr-image" src={item.data.qrUrl} alt={`${item.title} QR code`} /> : <div className="qr-placeholder"><span>QR</span><small>Add payment QR</small></div>}
         <div className="payment-actions">
@@ -883,25 +1035,26 @@ function RecordCard({ item, setEditing, removeItem, setToast }: { item: RecordIt
   if (item.section === "faq") {
     return (
       <article className="record-card faq-card">
-        <div className="faq-number">Q</div><div className="faq-content"><span>{item.data.category || item.subtitle}</span><h3>{item.title}</h3><details><summary>View answer</summary><p>{item.data.answer}</p></details><button onClick={() => copyText(item.data.answer, "Answer", setToast)}>Copy answer</button></div><CardMenu item={item} setEditing={setEditing} removeItem={removeItem} />
+        <div className="faq-number">Q</div><div className="faq-content"><span>{item.data.category || item.subtitle}</span><h3>{item.title}</h3><details><summary>View answer</summary><p>{item.data.answer}</p></details><button onClick={() => copyText(item.data.answer, "Answer", setToast)}>Copy answer</button></div><CardMenu item={item} setEditing={setEditing} removeItem={removeItem} canEdit={canEdit} canDelete={canDelete} />
       </article>
     );
   }
   return (
     <article className="record-card point-card">
       {item.data.posterUrl && <div className="point-poster-frame"><img className="point-poster" src={item.data.posterUrl} alt={`${item.title} reward`} /></div>}
-      <div className="card-top"><span className="record-avatar">PT</span><div><h3>{item.title}</h3><p>{item.subtitle}</p></div><CardMenu item={item} setEditing={setEditing} removeItem={removeItem} /></div>
+      <div className="card-top"><span className="record-avatar">PT</span><div><h3>{item.title}</h3><p>{item.subtitle}</p></div><CardMenu item={item} setEditing={setEditing} removeItem={removeItem} canEdit={canEdit} canDelete={canDelete} /></div>
       <div className="point-value"><strong>{item.data.points || "—"}</strong><span>Redeem</span></div>
       <p>{item.data.terms}</p><div className="card-footer"><span className="status-chip">{item.data.status || "Active"}</span><button onClick={() => copyText(`${item.title}: ${item.data.points} = ${item.data.value}. ${item.data.terms}`, "Reward details", setToast)}>Copy details</button></div>
     </article>
   );
 }
 
-function CardMenu({ item, setEditing, removeItem }: { item: RecordItem; setEditing: (item: RecordItem) => void; removeItem: (item: RecordItem) => void }) {
-  return <div className="card-menu"><button onClick={() => setEditing(structuredClone(item))}>Edit</button><button className="delete" onClick={() => removeItem(item)}>Delete</button></div>;
+function CardMenu({ item, setEditing, removeItem, canEdit, canDelete }: { item: RecordItem; setEditing: (item: RecordItem) => void; removeItem: (item: RecordItem) => void; canEdit: boolean; canDelete: boolean }) {
+  if (!canEdit && !canDelete) return null;
+  return <div className="card-menu">{canEdit && <button onClick={() => setEditing(structuredClone(item))}>Edit</button>}{canDelete && <button className="delete" onClick={() => removeItem(item)}>Delete</button>}</div>;
 }
 
-function PaymentStudio({ setToast }: { setToast: (value: string) => void }) {
+function PaymentStudio({ setToast, canManage }: { setToast: (value: string) => void; canManage: boolean }) {
   const [gateway, setGateway] = useState("Atome");
   const [amount, setAmount] = useState("");
   const [reference, setReference] = useState("");
@@ -912,10 +1065,10 @@ function PaymentStudio({ setToast }: { setToast: (value: string) => void }) {
       <label><span>Gateway</span><select value={gateway} onChange={(event) => setGateway(event.target.value)}><option>Atome</option><option>Payex</option></select></label>
       <label><span>Amount (RM)</span><input inputMode="decimal" value={amount} onChange={(event) => setAmount(event.target.value)} placeholder="0.00" /></label>
       <label><span>Order reference</span><input value={reference} onChange={(event) => setReference(event.target.value)} placeholder="e.g. DS-1042" /></label>
-      <div className="studio-actions">
+      {canManage && <div className="studio-actions">
         <button onClick={() => copyText(`${gateway} payment • RM ${amount || "0.00"} • ${reference || "No reference"}`, "Payment brief", setToast)}>Copy brief</button>
         <a href={portal} target="_blank" rel="noreferrer">Continue in {gateway} ↗</a>
-      </div>
+      </div>}
     </div>
   );
 }
@@ -1025,6 +1178,8 @@ function EditModal({ item, setItem, onClose, onSave, saving, setToast, productCa
       const uploadFile = await prepareImageForUpload(file);
       const form = new FormData();
       form.append("file", uploadFile);
+      form.append("section", item.section);
+      form.append("action", item.id ? "edit" : "add");
       const response = await fetch("/api/files", { method: "POST", body: form });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(payload.error || "Image upload failed");

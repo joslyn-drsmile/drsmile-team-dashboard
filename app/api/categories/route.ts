@@ -1,4 +1,5 @@
 import { env } from "cloudflare:workers";
+import { accessDenied, can, getAccessContext } from "../../access-control";
 
 const SETTINGS_KEY = "product_categories";
 const defaults = ["牙粉", "完整美白疗程", "漱口水", "加购产品", "包包"];
@@ -34,11 +35,15 @@ async function writeCategories(categories: string[]) {
     .run();
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  const context = await getAccessContext(request);
+  if (!can(context, "products", "view")) return accessDenied();
   return Response.json({ categories: await readCategories() });
 }
 
 export async function POST(request: Request) {
+  const context = await getAccessContext(request);
+  if (!can(context, "products", "add")) return accessDenied();
   const payload = (await request.json()) as { name?: string };
   const name = payload.name?.trim();
   if (!name || name.length > 40 || name.toLowerCase() === "all item") {
@@ -51,6 +56,8 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  const context = await getAccessContext(request);
+  if (!can(context, "products", "delete")) return accessDenied();
   const name = new URL(request.url).searchParams.get("name")?.trim();
   if (!name) return Response.json({ error: "Missing category" }, { status: 400 });
 

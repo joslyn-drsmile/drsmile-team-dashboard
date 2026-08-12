@@ -1,5 +1,6 @@
 import { env } from "cloudflare:workers";
 import sheetData from "../../sheet-data.json";
+import { accessDenied, can, getAccessContext } from "../../access-control";
 
 type IncomingRecord = {
   id?: number;
@@ -66,20 +67,24 @@ function output(row: Record<string, unknown>) {
   return { ...row, data: JSON.parse(String(row.data || "{}")) };
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   await ready();
+  const context = await getAccessContext(request);
+  if (!context) return accessDenied();
   const result = await env.DB.prepare("SELECT id, section, title, subtitle, data FROM records ORDER BY id ASC").all();
-  return Response.json({ records: result.results.map(output) });
+  return Response.json({ records: result.results.map(output).filter((record) => can(context, String(record.section), "view")) });
 }
 
 export async function POST(request: Request) {
   await ready();
   const payload = (await request.json()) as IncomingRecord | { mode: "replace"; section: string; records: IncomingRecord[] };
+  const context = await getAccessContext(request);
   if ("records" in payload && payload.mode === "replace") {
     const allowed = new Set(["products", "points", "pharmacies", "faq"]);
     if (!allowed.has(payload.section) || !Array.isArray(payload.records) || payload.records.length > 1000) {
       return Response.json({ error: "Invalid import" }, { status: 400 });
     }
+    if (!context || !["add", "edit", "delete"].every((action) => can(context, payload.section, action as "add" | "edit" | "delete"))) return accessDenied();
     const records = payload.records.filter((item) => item.section === payload.section && item.title?.trim());
     const now = new Date().toISOString();
     await env.DB.prepare("DELETE FROM records WHERE section = ?").bind(payload.section).run();
@@ -94,6 +99,7 @@ export async function POST(request: Request) {
   }
   const item = payload as IncomingRecord;
   if (!item.title?.trim() || !item.section) return Response.json({ error: "Missing fields" }, { status: 400 });
+  if (!can(context, item.section, "add")) return accessDenied();
   const now = new Date().toISOString();
   const result = await env.DB.prepare("INSERT INTO records (section, title, subtitle, data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)")
     .bind(item.section, item.title.trim(), item.subtitle ?? "", JSON.stringify(item.data ?? {}), now, now).run();
@@ -104,6 +110,9 @@ export async function PUT(request: Request) {
   await ready();
   const item = (await request.json()) as IncomingRecord;
   if (!item.id || !item.title?.trim()) return Response.json({ error: "Missing fields" }, { status: 400 });
+  const existing = await env.DB.prepare("SELECT section FROM records WHERE id = ?").bind(item.id).first<{ section: string }>();
+  const context = await getAccessContext(request);
+  if (!existing || existing.section !== item.section || !can(context, existing.section, "edit")) return accessDenied();
   await env.DB.prepare("UPDATE records SET section = ?, title = ?, subtitle = ?, data = ?, updated_at = ? WHERE id = ?")
     .bind(item.section, item.title.trim(), item.subtitle ?? "", JSON.stringify(item.data ?? {}), new Date().toISOString(), item.id).run();
   return Response.json({ record: { ...item, title: item.title.trim(), subtitle: item.subtitle ?? "", data: item.data ?? {} } });
@@ -113,6 +122,9 @@ export async function DELETE(request: Request) {
   await ready();
   const id = Number(new URL(request.url).searchParams.get("id"));
   if (!id) return Response.json({ error: "Missing id" }, { status: 400 });
+  const existing = await env.DB.prepare("SELECT section FROM records WHERE id = ?").bind(id).first<{ section: string }>();
+  const context = await getAccessContext(request);
+  if (!existing || !can(context, existing.section, "delete")) return accessDenied();
   await env.DB.prepare("DELETE FROM records WHERE id = ?").bind(id).run();
   return Response.json({ ok: true });
 }
