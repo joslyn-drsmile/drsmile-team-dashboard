@@ -17,6 +17,12 @@ type ImportableSection = Exclude<Section, "payments" | "promotions" | "calendar"
 const DEFAULT_PRODUCT_CATEGORIES = ["牙粉", "完整美白疗程", "漱口水", "加购产品", "包包"];
 const ALL_PRODUCTS = "All Item";
 const ALL_STATES = "All";
+const PHARMACY_STATE_GROUPS = [
+  { label: "West Malaysia", states: ["Johor", "Kedah", "Kelantan", "Melaka", "Negeri Sembilan", "Pahang", "Penang", "Perak", "Perlis", "Selangor", "Terengganu"] },
+  { label: "East Malaysia", states: ["Sabah", "Sarawak"] },
+  { label: "Federal Territories", states: ["Kuala Lumpur", "Putrajaya", "Labuan"] },
+] as const;
+const PHARMACY_STATES = PHARMACY_STATE_GROUPS.flatMap((group) => [...group.states]);
 
 const SOURCE_SHEET_URL = "https://docs.google.com/spreadsheets/d/18DC7Df9OCFtrbj5FmZUVcLTwC0hg_2lYnNDFjrpMSaU/edit?gid=1909559648#gid=1909559648";
 
@@ -92,7 +98,7 @@ const blankBySection: Record<Section, RecordItem> = {
   products: { id: 0, section: "products", title: "", subtitle: "", data: { sku: "", category: "", remark: "", posterUrl: "", alacart: "", alacartSG: "", pharmacy: "", shopee: "", website: "", websitePwp: "", facebook: "", facebookPwp: "", status: "Active" } },
   promotions: { id: 0, section: "promotions", title: "", subtitle: "", data: { promotionName: "", month: new Date().toISOString().slice(0, 7), posterUrl: "", onlinePrice: "", shopeePrice: "", packageDetails: "", status: "Active" } },
   points: { id: 0, section: "points", title: "", subtitle: "", data: { points: "", value: "", terms: "", posterUrl: "", status: "Active" } },
-  pharmacies: { id: 0, section: "pharmacies", title: "", subtitle: "", data: { phone: "", address: "", state: "" } },
+  pharmacies: { id: 0, section: "pharmacies", title: "", subtitle: "", data: { phone: "", address: "", city: "", regionState: "" } },
   payments: { id: 0, section: "payments", title: "", subtitle: "", data: { details: "", link: "", qrUrl: "", portal: "", status: "Available" } },
   faq: { id: 0, section: "faq", title: "", subtitle: "", data: { answer: "", category: "", source: "Google Sheet" } },
   calendar: { id: 0, section: "calendar", title: "", subtitle: "", data: { date: localDateKey(new Date()), time: "", location: "", pic: "", attendees: "", details: "", status: "Scheduled" } },
@@ -193,6 +199,35 @@ function productCategory(item: RecordItem) {
     : inferProductCategory(item.title);
 }
 
+function inferStateFromText(value = "") {
+  const text = value.toLowerCase();
+  const matches: [RegExp, string][] = [
+    [/kuala lumpur|wilayah persekutuan kuala lumpur/, "Kuala Lumpur"],
+    [/putrajaya/, "Putrajaya"],
+    [/labuan/, "Labuan"],
+    [/negeri sembilan|seremban/, "Negeri Sembilan"],
+    [/pulau pinang|penang|tanjung tokong|juru|simpang ampat|kepala batas|butterworth|bukit mertajam/, "Penang"],
+    [/sarawak|miri|kuching|bintulu|sibu/, "Sarawak"],
+    [/sabah|kota kinabalu/, "Sabah"],
+    [/johor|skudai|iskandar puteri|gelang patah|kulai|segamat|batu pahat|kluang/, "Johor"],
+    [/selangor|sungai buloh|batu caves|klang|ampang|cheras|setia alam|shah alam/, "Selangor"],
+    [/melaka|malacca/, "Melaka"],
+    [/perak|ipoh|taiping/, "Perak"],
+    [/pahang|kuantan/, "Pahang"],
+    [/kedah|alor setar/, "Kedah"],
+    [/kelantan|kota bharu/, "Kelantan"],
+    [/perlis|kangar/, "Perlis"],
+    [/terengganu|kuala terengganu/, "Terengganu"],
+  ];
+  return matches.find(([pattern]) => pattern.test(text))?.[1] || "";
+}
+
+function pharmacyState(item: RecordItem) {
+  return item.data.regionState
+    || inferStateFromText(`${item.data.address || ""} ${item.data.city || ""} ${item.data.state || ""} ${item.subtitle || ""}`)
+    || "Unspecified";
+}
+
 function importRows(section: ImportableSection, text: string): Omit<RecordItem, "id">[] {
   const rows = parseDelimited(text);
   if (!rows.length) return [];
@@ -235,7 +270,7 @@ function importRows(section: ImportableSection, text: string): Omit<RecordItem, 
       section,
       title: row[1],
       subtitle: row[0],
-      data: { address: row[2], postcode: row[3], phone: row[4], state: row[0] },
+      data: { address: row[2], postcode: row[3], phone: row[4], city: row[0], regionState: inferStateFromText(`${row[2]} ${row[0]}`) },
     }));
   }
 
@@ -313,7 +348,7 @@ export default function Home() {
       if (record.section !== active) return false;
       if (active === "promotions" && record.data.month !== promotionMonth) return false;
       if (active === "products" && selectedCategory !== ALL_PRODUCTS && productCategory(record) !== selectedCategory) return false;
-      if (active === "pharmacies" && selectedState !== ALL_STATES && (record.data.state || record.subtitle || "Unspecified") !== selectedState) return false;
+      if (active === "pharmacies" && selectedState !== ALL_STATES && pharmacyState(record) !== selectedState) return false;
       return true;
     });
     if (!needle) return inSection;
@@ -321,13 +356,6 @@ export default function Home() {
       `${record.title} ${record.subtitle} ${Object.values(record.data).join(" ")}`.toLowerCase().includes(needle),
     );
   }, [active, query, records, promotionMonth, selectedCategory, selectedState]);
-
-  const pharmacyStates = useMemo(() => Array.from(new Set(
-    records
-      .filter((record) => record.section === "pharmacies")
-      .map((record) => record.data.state || record.subtitle || "Unspecified")
-      .filter(Boolean),
-  )).sort((left, right) => left.localeCompare(right)), [records]);
 
   function navigate(next: "home" | Section) {
     setActive(next);
@@ -552,15 +580,20 @@ export default function Home() {
               )}
               {active === "pharmacies" && (
                 <aside className="category-panel" aria-label="Pharmacy states">
-                  <div className="category-heading"><span>Filter by State</span><small>{pharmacyStates.length}</small></div>
+                  <div className="category-heading"><span>Filter by State</span><small>{PHARMACY_STATES.length}</small></div>
                   <button className={selectedState === ALL_STATES ? "category-filter active" : "category-filter"} onClick={() => setSelectedState(ALL_STATES)}>
                     <span>All</span><em>{records.filter((record) => record.section === "pharmacies").length}</em>
                   </button>
                   <div className="category-list pharmacy-state-list">
-                    {pharmacyStates.map((state) => (
-                      <button className={selectedState === state ? "category-filter active" : "category-filter"} key={state} onClick={() => setSelectedState(state)}>
-                        <span>{state}</span><em>{records.filter((record) => record.section === "pharmacies" && (record.data.state || record.subtitle || "Unspecified") === state).length}</em>
-                      </button>
+                    {PHARMACY_STATE_GROUPS.map((group) => (
+                      <div className="state-group" key={group.label}>
+                        <p className="state-group-title">{group.label}</p>
+                        {group.states.map((state) => (
+                          <button className={selectedState === state ? "category-filter active" : "category-filter"} key={state} onClick={() => setSelectedState(state)}>
+                            <span>{state}</span><em>{records.filter((record) => record.section === "pharmacies" && pharmacyState(record) === state).length}</em>
+                          </button>
+                        ))}
+                      </div>
                     ))}
                   </div>
                 </aside>
@@ -786,9 +819,11 @@ function RecordCard({ item, setEditing, removeItem, setToast }: { item: RecordIt
     );
   }
   if (item.section === "pharmacies") {
+    const state = pharmacyState(item);
+    const location = item.subtitle || item.data.city || "";
     return (
       <article className="record-card pharmacy-card">
-        <div className="card-top"><span className="record-avatar">＋</span><div><h3>{item.title}</h3><p>{item.subtitle || item.data.state}</p></div><CardMenu item={item} setEditing={setEditing} removeItem={removeItem} /></div>
+        <div className="card-top"><span className="record-avatar">＋</span><div><h3>{item.title}</h3><p>{location && location !== state ? `${location} · ${state}` : state}</p></div><CardMenu item={item} setEditing={setEditing} removeItem={removeItem} /></div>
         <div className="contact-row"><span>Phone</span><strong>{item.data.phone || "—"}</strong><button onClick={() => copyText(item.data.phone, "Phone number", setToast)}>Copy</button></div>
         <div className="address-block"><span>Full address {item.data.postcode ? `· ${item.data.postcode}` : ""}</span><p>{item.data.address || "—"}</p><button onClick={() => copyText(item.data.address, "Address", setToast)}>Copy full address</button></div>
       </article>
@@ -936,7 +971,7 @@ function EditModal({ item, setItem, onClose, onSave, saving, setToast, productCa
     products: [],
     promotions: [],
     points: [["points", "Points required", "text"], ["value", "Reward value", "text"], ["terms", "Terms", "textarea"], ["status", "Status", "text"]],
-    pharmacies: [["phone", "Phone number", "text"], ["address", "Full address", "textarea"], ["state", "State", "text"]],
+    pharmacies: [["phone", "Phone number", "text"], ["address", "Full address", "textarea"]],
     payments: [["details", "Payment instructions", "textarea"], ["link", "Payment link", "text"], ["portal", "Portal link", "text"], ["status", "Status", "text"]],
     faq: [["category", "Category", "text"], ["answer", "Answer", "textarea"], ["source", "Source", "text"]],
     calendar: [["date", "Event date", "date"], ["time", "Start time", "time"], ["location", "Location", "text"], ["details", "Event details / remark", "textarea"], ["status", "Status", "text"]],
@@ -1006,6 +1041,9 @@ function EditModal({ item, setItem, onClose, onSave, saving, setToast, productCa
               <MultiNameField label="PIC" value={item.data.pic || ""} onChange={(value) => updateData("pic", value)} placeholder="Type a PIC name" />
               <MultiNameField label="Who Attend" value={item.data.attendees || ""} onChange={(value) => updateData("attendees", value)} placeholder="Type an attendee name" />
             </div>
+          )}
+          {item.section === "pharmacies" && (
+            <label><span>State</span><select required value={item.data.regionState || pharmacyState(item)} onChange={(event) => updateData("regionState", event.target.value)}><option value="">Choose state</option>{PHARMACY_STATE_GROUPS.map((group) => <optgroup key={group.label} label={group.label}>{group.states.map((state) => <option key={state} value={state}>{state}</option>)}</optgroup>)}</select></label>
           )}
           {fields[item.section].map(([key, label, type]) => (
             <label key={key} className={type === "textarea" ? "full" : ""}><span>{label}</span>{type === "textarea" ? <textarea value={item.data[key] || ""} onChange={(event) => updateData(key, event.target.value)} /> : <input type={type} value={item.data[key] || ""} onChange={(event) => updateData(key, event.target.value)} />}</label>

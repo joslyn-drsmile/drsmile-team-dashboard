@@ -393,6 +393,9 @@ main { margin-left: 194px; }
 .category-heading small { display: grid; place-items: center; min-width: 19px; height: 19px; border-radius: 7px; color: #365d80; background: #dceefa; font-size: 8px; }
 .category-list { display: grid; gap: 4px; margin-top: 4px; }
 .pharmacy-state-list { max-height: 430px; overflow-y: auto; padding-right: 2px; }
+.state-group { display: grid; gap: 3px; padding-top: 9px; }
+.state-group + .state-group { margin-top: 5px; border-top: 1px solid rgba(171,198,218,.3); }
+.state-group-title { margin: 0; padding: 3px 9px 1px; color: #8aa0b3; font-size: 7px; font-weight: 850; text-transform: uppercase; letter-spacing: .7px; }
 .category-row { display: grid; grid-template-columns: minmax(0,1fr) 24px; gap: 3px; border-radius: 10px; }
 .category-filter { width: 100%; min-width: 0; min-height: 34px; display: flex; align-items: center; justify-content: space-between; gap: 7px; padding: 7px 9px; border: 0; border-radius: 10px; color: #607890; background: transparent; cursor: pointer; text-align: left; font-size: 10px; font-weight: 720; }
 .category-filter span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
