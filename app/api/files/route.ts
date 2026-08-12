@@ -9,7 +9,7 @@ export async function POST(request: Request) {
     return Response.json({ error: "Use a PNG, JPG or WebP under 5 MB." }, { status: 400 });
   }
   const extension = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
-  const key = `payment-qr/${crypto.randomUUID()}.${extension}`;
+  const key = `workspace-images/${crypto.randomUUID()}.${extension}`;
   await env.FILES.put(key, file.stream(), { httpMetadata: { contentType: file.type } });
   return Response.json({ url: `/api/files/${encodeURIComponent(key)}` });
 }
