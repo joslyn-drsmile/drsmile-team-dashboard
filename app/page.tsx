@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import sheetData from "./sheet-data.json";
 
-type Section = "products" | "promotions" | "points" | "pharmacies" | "payments" | "faq";
+type Section = "products" | "promotions" | "points" | "pharmacies" | "payments" | "faq" | "calendar";
 type RecordItem = {
   id: number;
   section: Section;
@@ -12,7 +12,7 @@ type RecordItem = {
   data: Record<string, string>;
 };
 
-type ImportableSection = Exclude<Section, "payments" | "promotions">;
+type ImportableSection = Exclude<Section, "payments" | "promotions" | "calendar">;
 
 const DEFAULT_PRODUCT_CATEGORIES = ["牙粉", "完整美白疗程", "漱口水", "加购产品", "包包"];
 const ALL_PRODUCTS = "All Item";
@@ -28,6 +28,7 @@ const menus: { id: "home" | Section; label: string; short: string }[] = [
   { id: "pharmacies", label: "Pharmacy List", short: "PH" },
   { id: "payments", label: "Payment Method", short: "PY" },
   { id: "faq", label: "FAQ", short: "FQ" },
+  { id: "calendar", label: "Calendar", short: "CL" },
 ];
 
 const channelFields = [
@@ -94,6 +95,7 @@ const blankBySection: Record<Section, RecordItem> = {
   pharmacies: { id: 0, section: "pharmacies", title: "", subtitle: "", data: { phone: "", address: "", state: "" } },
   payments: { id: 0, section: "payments", title: "", subtitle: "", data: { details: "", link: "", qrUrl: "", portal: "", status: "Available" } },
   faq: { id: 0, section: "faq", title: "", subtitle: "", data: { answer: "", category: "", source: "Google Sheet" } },
+  calendar: { id: 0, section: "calendar", title: "", subtitle: "", data: { date: localDateKey(new Date()), time: "", location: "", details: "", status: "Scheduled" } },
 };
 
 const pageCopy: Record<Section, { eyebrow: string; title: string; description: string }> = {
@@ -103,7 +105,32 @@ const pageCopy: Record<Section, { eyebrow: string; title: string; description: s
   pharmacies: { eyebrow: "Retail network", title: "Pharmacy list", description: "Search every stockist and copy phone numbers or full addresses in one click." },
   payments: { eyebrow: "Order collection", title: "Payment methods", description: "Keep QR codes, payment instructions and gateway links ready for every order." },
   faq: { eyebrow: "Team knowledge", title: "Frequently asked questions", description: "A shared answer bank for fast, consistent customer replies." },
+  calendar: { eyebrow: "Team schedule", title: "Calendar", description: "Plan every DrSmile event by date, activity and location for the whole admin team." },
 };
+
+function localDateKey(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function dateFromKey(value: string) {
+  const [year, month, day] = value.split("-").map(Number);
+  return new Date(year, month - 1, day);
+}
+
+function monthLabel(date: Date) {
+  return new Intl.DateTimeFormat("en-MY", { month: "long", year: "numeric" }).format(date);
+}
+
+function calendarCells(month: Date) {
+  const year = month.getFullYear();
+  const monthIndex = month.getMonth();
+  const leading = (new Date(year, monthIndex, 1).getDay() + 6) % 7;
+  const days = new Date(year, monthIndex + 1, 0).getDate();
+  return [...Array.from({ length: leading }, () => null), ...Array.from({ length: days }, (_, index) => index + 1)];
+}
 
 function copyText(value: string, label: string, setToast: (value: string) => void) {
   if (!value || value === "—") return;
@@ -256,6 +283,7 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState(ALL_PRODUCTS);
   const [newCategory, setNewCategory] = useState("");
   const [selectedState, setSelectedState] = useState(ALL_STATES);
+  const [calendarMonth, setCalendarMonth] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
 
   useEffect(() => {
     fetch("/api/records")
@@ -317,6 +345,12 @@ export default function Home() {
       next.data.month = promotionMonth;
       next.data.promotionName = promotionTitle;
     }
+    setEditing(next);
+  }
+
+  function startCalendarEvent(date: string) {
+    const next = structuredClone(blankBySection.calendar);
+    next.data.date = date;
     setEditing(next);
   }
 
@@ -470,13 +504,13 @@ export default function Home() {
               </div>
               <div className="heading-actions">
                 {active === "promotions" && <label className="month-filter"><span>Track by month</span><input type="month" value={promotionMonth} onChange={(event) => setPromotionMonth(event.target.value)} /></label>}
-                {active !== "payments" && active !== "promotions" && <a className="secondary-button" href={SOURCE_SHEET_URL} target="_blank" rel="noreferrer">Open Sheet ↗</a>}
-                {active !== "payments" && active !== "promotions" && <button className="secondary-button import-button" onClick={() => setImporting(active)}>⇧ Import data</button>}
-                <button className="primary-button" onClick={startAdd}>＋ Add item</button>
+                {active !== "payments" && active !== "promotions" && active !== "calendar" && <a className="secondary-button" href={SOURCE_SHEET_URL} target="_blank" rel="noreferrer">Open Sheet ↗</a>}
+                {active !== "payments" && active !== "promotions" && active !== "calendar" && <button className="secondary-button import-button" onClick={() => setImporting(active)}>⇧ Import data</button>}
+                <button className="primary-button" onClick={startAdd}>＋ {active === "calendar" ? "Add event" : "Add item"}</button>
               </div>
             </div>
 
-            {active !== "payments" && active !== "promotions" && (
+            {active !== "payments" && active !== "promotions" && active !== "calendar" && (
               <div className="sheet-note">
                 <span className="sheet-mark">GS</span>
                 <div><strong>Imported from DrSmile Dashboard</strong><small>Copy rows from the matching Google Sheet tab and use Import data anytime.</small></div>
@@ -486,7 +520,16 @@ export default function Home() {
 
             {active === "payments" && <PaymentStudio setToast={setToast} />}
 
-            <div className={active === "products" || active === "pharmacies" ? "products-browser" : ""}>
+            {active === "calendar" ? (
+              <CalendarWorkspace
+                events={records.filter((record) => record.section === "calendar")}
+                month={calendarMonth}
+                setMonth={setCalendarMonth}
+                onAddDate={startCalendarEvent}
+                setEditing={setEditing}
+                removeItem={removeItem}
+              />
+            ) : <div className={active === "products" || active === "pharmacies" ? "products-browser" : ""}>
               {active === "products" && (
                 <aside className="category-panel" aria-label="Product categories">
                   <div className="category-heading"><span>Categories</span><small>{productCategories.length}</small></div>
@@ -539,7 +582,7 @@ export default function Home() {
                   )}
                 </div>
               </div>
-            </div>
+            </div>}
           </section>
         )}
       </main>
@@ -576,6 +619,7 @@ function Overview({ records, navigate, setToast }: { records: RecordItem[]; navi
     { label: "Pharmacies", value: records.filter((item) => item.section === "pharmacies").length, detail: "Retail partners", accent: "blue", section: "pharmacies" as Section },
     { label: "Payment options", value: records.filter((item) => item.section === "payments").length, detail: "Ready for orders", accent: "pink", section: "payments" as Section },
     { label: "FAQ answers", value: records.filter((item) => item.section === "faq").length, detail: "Shared knowledge", accent: "gold", section: "faq" as Section },
+    { label: "Events", value: records.filter((item) => item.section === "calendar").length, detail: "Shared schedule", accent: "blue", section: "calendar" as Section },
   ];
   const recent = records.slice(-5).reverse();
   return (
@@ -602,6 +646,8 @@ function Overview({ records, navigate, setToast }: { records: RecordItem[]; navi
         ))}
       </div>
 
+      <OverviewCalendar events={records.filter((record) => record.section === "calendar")} onOpen={() => navigate("calendar")} />
+
       <div className="overview-grid">
         <div className="panel quick-panel">
           <div className="panel-heading"><div><p className="eyebrow">Shortcuts</p><h2>Quick actions</h2></div></div>
@@ -611,6 +657,7 @@ function Overview({ records, navigate, setToast }: { records: RecordItem[]; navi
             <button onClick={() => navigate("pharmacies")}><span>PH</span><strong>Find pharmacy</strong><small>Copy address or phone</small></button>
             <button onClick={() => navigate("payments")}><span>PY</span><strong>Create payment</strong><small>Atome or Payex portal</small></button>
             <button onClick={() => navigate("faq")}><span>FQ</span><strong>Find an answer</strong><small>Search team FAQ</small></button>
+            <button onClick={() => navigate("calendar")}><span>CL</span><strong>Team calendar</strong><small>View events and locations</small></button>
           </div>
         </div>
         <div className="panel activity-panel">
@@ -625,6 +672,83 @@ function Overview({ records, navigate, setToast }: { records: RecordItem[]; navi
         </div>
       </div>
     </section>
+  );
+}
+
+function MonthGrid({ month, events, onDayClick, compact = false }: { month: Date; events: RecordItem[]; onDayClick?: (date: string) => void; compact?: boolean }) {
+  const today = localDateKey(new Date());
+  const cells = calendarCells(month);
+  const year = month.getFullYear();
+  const monthIndex = month.getMonth();
+  return (
+    <div className={compact ? "month-grid compact" : "month-grid"}>
+      {['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map((day) => <span className="weekday" key={day}>{day}</span>)}
+      {cells.map((day, index) => {
+        if (!day) return <span className="calendar-blank" key={`blank-${index}`} />;
+        const date = localDateKey(new Date(year, monthIndex, day));
+        const dayEvents = events.filter((event) => event.data.date === date);
+        return (
+          <button type="button" className={`${date === today ? "today " : ""}${dayEvents.length ? "has-events" : ""}`} key={date} onClick={() => onDayClick?.(date)} aria-label={`${date}${dayEvents.length ? `, ${dayEvents.length} events` : ""}`}>
+            <strong>{day}</strong>
+            {!!dayEvents.length && <span className="event-dots">{dayEvents.slice(0, 3).map((event) => <i key={event.id} />)}</span>}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function OverviewCalendar({ events, onOpen }: { events: RecordItem[]; onOpen: () => void }) {
+  const today = new Date();
+  const currentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  const upcoming = events
+    .filter((event) => event.data.date >= localDateKey(today))
+    .sort((left, right) => `${left.data.date}${left.data.time}`.localeCompare(`${right.data.date}${right.data.time}`))
+    .slice(0, 4);
+  return (
+    <section className="panel overview-calendar">
+      <div className="calendar-overview-main">
+        <div className="calendar-title-row"><div><p className="eyebrow">Today · {new Intl.DateTimeFormat("en-MY", { weekday: "long", day: "numeric", month: "long", year: "numeric" }).format(today)}</p><h2>Calendar</h2></div><button onClick={onOpen}>Open calendar ›</button></div>
+        <div className="month-pill"><strong>{monthLabel(currentMonth)}</strong><span>{events.filter((event) => event.data.date?.startsWith(localDateKey(currentMonth).slice(0, 7))).length} events</span></div>
+        <MonthGrid month={currentMonth} events={events} compact />
+      </div>
+      <div className="upcoming-overview">
+        <p className="eyebrow">Coming up</p>
+        <h3>Next activities</h3>
+        {upcoming.length ? upcoming.map((event) => <button key={event.id} onClick={onOpen}><time>{dateFromKey(event.data.date).toLocaleDateString("en-MY", { day: "2-digit", month: "short" })}</time><div><strong>{event.title}</strong><small>{event.data.location || "Location not added"}{event.data.time ? ` · ${event.data.time}` : ""}</small></div></button>) : <div className="no-events"><span>＋</span><p>No upcoming events yet.</p><button onClick={onOpen}>Add the first event</button></div>}
+      </div>
+    </section>
+  );
+}
+
+function CalendarWorkspace({ events, month, setMonth, onAddDate, setEditing, removeItem }: { events: RecordItem[]; month: Date; setMonth: React.Dispatch<React.SetStateAction<Date>>; onAddDate: (date: string) => void; setEditing: (item: RecordItem) => void; removeItem: (item: RecordItem) => void }) {
+  const monthPrefix = `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, "0")}`;
+  const monthEvents = events.filter((event) => event.data.date?.startsWith(monthPrefix)).sort((left, right) => `${left.data.date}${left.data.time}`.localeCompare(`${right.data.date}${right.data.time}`));
+  const today = new Date();
+  function changeMonth(offset: number) { setMonth(new Date(month.getFullYear(), month.getMonth() + offset, 1)); }
+  return (
+    <div className="calendar-workspace">
+      <section className="panel calendar-board">
+        <div className="calendar-board-header">
+          <div><p className="eyebrow">Click a date to add an event</p><h2>{monthLabel(month)}</h2></div>
+          <div><button onClick={() => setMonth(new Date(today.getFullYear(), today.getMonth(), 1))}>Today</button><button onClick={() => changeMonth(-1)} aria-label="Previous month">‹</button><button onClick={() => changeMonth(1)} aria-label="Next month">›</button></div>
+        </div>
+        <MonthGrid month={month} events={monthEvents} onDayClick={onAddDate} />
+      </section>
+      <aside className="panel calendar-agenda">
+        <div className="panel-heading"><div><p className="eyebrow">Monthly agenda</p><h2>{monthEvents.length} {monthEvents.length === 1 ? "event" : "events"}</h2></div></div>
+        <div className="agenda-list">
+          {monthEvents.map((event) => (
+            <article key={event.id}>
+              <time><strong>{dateFromKey(event.data.date).getDate()}</strong><span>{dateFromKey(event.data.date).toLocaleDateString("en-MY", { month: "short" })}</span></time>
+              <div><h3>{event.title}</h3><p>{event.data.time || "All day"} · {event.data.location || "Location not added"}</p>{event.data.details && <small>{event.data.details}</small>}</div>
+              <div className="agenda-actions"><button onClick={() => setEditing(structuredClone(event))}>Edit</button><button className="delete" onClick={() => removeItem(event)}>Delete</button></div>
+            </article>
+          ))}
+          {!monthEvents.length && <div className="no-events"><span>＋</span><p>No events planned for {monthLabel(month)}.</p><button onClick={() => onAddDate(localDateKey(new Date(month.getFullYear(), month.getMonth(), 1)))}>Add event</button></div>}
+        </div>
+      </aside>
+    </div>
   );
 }
 
@@ -805,13 +929,14 @@ function ImportModal({
 
 function EditModal({ item, setItem, onClose, onSave, saving, setToast, productCategories }: { item: RecordItem; setItem: (item: RecordItem) => void; onClose: () => void; onSave: (event: FormEvent<HTMLFormElement>) => void; saving: boolean; setToast: (value: string) => void; productCategories: string[] }) {
   const [uploading, setUploading] = useState(false);
-  const fields: Record<Section, [string, string, "text" | "textarea" | "month"][]> = {
+  const fields: Record<Section, [string, string, "text" | "textarea" | "month" | "date" | "time"][]> = {
     products: [],
     promotions: [],
     points: [["points", "Points required", "text"], ["value", "Reward value", "text"], ["terms", "Terms", "textarea"], ["status", "Status", "text"]],
     pharmacies: [["phone", "Phone number", "text"], ["address", "Full address", "textarea"], ["state", "State", "text"]],
     payments: [["details", "Payment instructions", "textarea"], ["link", "Payment link", "text"], ["portal", "Portal link", "text"], ["status", "Status", "text"]],
     faq: [["category", "Category", "text"], ["answer", "Answer", "textarea"], ["source", "Source", "text"]],
+    calendar: [["date", "Event date", "date"], ["time", "Start time", "time"], ["location", "Location", "text"], ["details", "Event details / remark", "textarea"], ["status", "Status", "text"]],
   };
 
   function updateData(key: string, value: string) {
@@ -842,8 +967,8 @@ function EditModal({ item, setItem, onClose, onSave, saving, setToast, productCa
       <form className="modal" onSubmit={onSave}>
         <div className="modal-heading"><div><p className="eyebrow">{item.id ? "Update item" : "New item"}</p><h2>{item.id ? item.title : `Add to ${menus.find((menu) => menu.id === item.section)?.label}`}</h2></div><button type="button" onClick={onClose} aria-label="Close">×</button></div>
         <div className="form-grid">
-          <label className="full"><span>{item.section === "faq" ? "Question" : item.section === "pharmacies" ? "Shop name" : item.section === "promotions" ? "Title A · Package Name" : "Name"}</span><input required value={item.title} onChange={(event) => setItem({ ...item, title: event.target.value })} placeholder={item.section === "promotions" ? "e.g. 配套A - 美白牙粉x2" : "Enter a clear name"} /></label>
-          <label className="full"><span>{item.section === "pharmacies" ? "Area / location" : item.section === "promotions" ? "SKU" : "Short description"}</span><input value={item.subtitle} onChange={(event) => setItem({ ...item, subtitle: event.target.value })} placeholder={item.section === "promotions" ? "e.g. 8A26" : "Optional supporting detail"} /></label>
+          <label className="full"><span>{item.section === "faq" ? "Question" : item.section === "pharmacies" ? "Shop name" : item.section === "promotions" ? "Title A · Package Name" : item.section === "calendar" ? "Event name" : "Name"}</span><input required value={item.title} onChange={(event) => setItem({ ...item, title: event.target.value })} placeholder={item.section === "promotions" ? "e.g. 配套A - 美白牙粉x2" : item.section === "calendar" ? "e.g. DrSmile Roadshow" : "Enter a clear name"} /></label>
+          <label className="full"><span>{item.section === "pharmacies" ? "Area / location" : item.section === "promotions" ? "SKU" : item.section === "calendar" ? "Event type" : "Short description"}</span><input value={item.subtitle} onChange={(event) => setItem({ ...item, subtitle: event.target.value })} placeholder={item.section === "promotions" ? "e.g. 8A26" : item.section === "calendar" ? "e.g. Roadshow, training or campaign" : "Optional supporting detail"} /></label>
           {item.section === "products" && (
             <>
               <label><span>SKU</span><input value={item.data.sku || ""} onChange={(event) => updateData("sku", event.target.value)} /></label>
