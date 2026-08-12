@@ -229,6 +229,7 @@ export default function Home() {
   const [saving, setSaving] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
   const [importing, setImporting] = useState<ImportableSection | null>(null);
+  const [promotionTitle, setPromotionTitle] = useState("");
   const [promotionMonth, setPromotionMonth] = useState(new Date().toISOString().slice(0, 7));
 
   useEffect(() => {
@@ -244,6 +245,11 @@ export default function Home() {
     return () => window.clearTimeout(timer);
   }, [toast]);
 
+  useEffect(() => {
+    const currentCampaign = records.find((record) => record.section === "promotions" && record.data.month === promotionMonth);
+    setPromotionTitle(currentCampaign?.data.promotionName || "");
+  }, [promotionMonth, records]);
+
   const visible = useMemo(() => {
     const needle = query.toLowerCase().trim();
     const inSection = active === "home" ? records : records.filter((record) => record.section === active && (active !== "promotions" || record.data.month === promotionMonth));
@@ -257,6 +263,28 @@ export default function Home() {
     setActive(next);
     setQuery("");
     setMobileMenu(false);
+  }
+
+  function startAdd() {
+    if (active === "home") return;
+    const next = structuredClone(blankBySection[active]);
+    if (active === "promotions") {
+      next.data.month = promotionMonth;
+      next.data.promotionName = promotionTitle;
+    }
+    setEditing(next);
+  }
+
+  async function savePromotionTitle() {
+    const campaignItems = records.filter((record) => record.section === "promotions" && record.data.month === promotionMonth);
+    if (!campaignItems.length) {
+      setToast("Add a promotion item first");
+      return;
+    }
+    const updated = campaignItems.map((record) => ({ ...record, data: { ...record.data, promotionName: promotionTitle.trim() } }));
+    setRecords((current) => current.map((record) => updated.find((item) => item.id === record.id) || record));
+    await Promise.all(updated.map((record) => fetch("/api/records", { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify(record) })));
+    setToast("Promotion name saved");
   }
 
   async function saveItem(event: FormEvent<HTMLFormElement>) {
@@ -346,13 +374,20 @@ export default function Home() {
               <div>
                 <p className="eyebrow">{pageCopy[active].eyebrow}</p>
                 <h1>{pageCopy[active].title}</h1>
+                {active === "promotions" && (
+                  <label className="campaign-title-editor">
+                    <span>Title B · Promotion Name</span>
+                    <input value={promotionTitle} onChange={(event) => setPromotionTitle(event.target.value)} placeholder="Enter this month’s promotion name" />
+                    <button type="button" onClick={savePromotionTitle}>Save</button>
+                  </label>
+                )}
                 <p>{pageCopy[active].description}</p>
               </div>
               <div className="heading-actions">
                 {active === "promotions" && <label className="month-filter"><span>Track by month</span><input type="month" value={promotionMonth} onChange={(event) => setPromotionMonth(event.target.value)} /></label>}
                 {active !== "payments" && active !== "promotions" && <a className="secondary-button" href={SOURCE_SHEET_URL} target="_blank" rel="noreferrer">Open Sheet ↗</a>}
                 {active !== "payments" && active !== "promotions" && <button className="secondary-button import-button" onClick={() => setImporting(active)}>⇧ Import data</button>}
-                <button className="primary-button" onClick={() => setEditing(structuredClone(blankBySection[active]))}>＋ Add item</button>
+                <button className="primary-button" onClick={startAdd}>＋ Add item</button>
               </div>
             </div>
 
@@ -481,15 +516,12 @@ function RecordCard({ item, setEditing, removeItem, setToast }: { item: RecordIt
     );
   }
   if (item.section === "promotions") {
-    const monthLabel = item.data.month ? new Date(`${item.data.month}-01T00:00:00`).toLocaleDateString("en-MY", { month: "long", year: "numeric" }) : "Monthly promotion";
     return (
       <article className="record-card promotion-card">
-        {item.data.posterUrl ? <img className="poster-image promotion-poster" src={item.data.posterUrl} alt={`${item.title} promotion poster`} /> : <div className="poster-placeholder">POSTER</div>}
-        <div className="promotion-labels">
-          <strong>{item.data.promotionName || "Monthly Promotion"}</strong>
-          {item.subtitle && <span>SKU · {item.subtitle}</span>}
+        <div className="promotion-poster-frame">
+          {item.data.posterUrl ? <img className="promotion-poster" src={item.data.posterUrl} alt={`${item.title} promotion poster`} /> : <div className="poster-placeholder">POSTER</div>}
         </div>
-        <div className="card-top"><span className="record-avatar">PM</span><div><h3>{item.title}</h3><p>{monthLabel}</p></div><CardMenu item={item} setEditing={setEditing} removeItem={removeItem} /></div>
+        <div className="card-top"><span className="record-avatar">PM</span><div><h3>{item.title}</h3><p>{item.subtitle ? `SKU · ${item.subtitle}` : "SKU not added"}</p></div><CardMenu item={item} setEditing={setEditing} removeItem={removeItem} /></div>
         <div className="promotion-prices"><div><span>Online price</span><strong>{item.data.onlinePrice || "—"}</strong></div><div><span>Shopee price</span><strong>{item.data.shopeePrice || "—"}</strong></div></div>
         <div className="package-details"><span>Package details</span><p>{item.data.packageDetails || "No package details added yet."}</p></div>
         <div className="card-footer"><span className="status-chip">{item.data.status || "Active"}</span><button onClick={() => copyText(`${item.data.promotionName || "Promotion"}\n${item.title}\nSKU: ${item.subtitle || "—"}\nOnline: ${item.data.onlinePrice}\nShopee: ${item.data.shopeePrice}\n${item.data.packageDetails}`, "Promotion", setToast)}>Copy details</button></div>
@@ -644,7 +676,7 @@ function EditModal({ item, setItem, onClose, onSave, saving, setToast }: { item:
   const [uploading, setUploading] = useState(false);
   const fields: Record<Section, [string, string, "text" | "textarea" | "month"][]> = {
     products: [["sku", "SKU", "text"], ["alacart", "Ala carte price", "text"], ["facebook", "FB price", "text"], ["facebookPwp", "FB PWP", "text"], ["website", "Website price", "text"], ["websitePwp", "Website PWP", "text"], ["shopee", "Shopee price", "text"], ["pharmacy", "Pharmacy price", "text"], ["status", "Status", "text"]],
-    promotions: [["promotionName", "Title B · Promotion Name", "text"], ["month", "Promotion month", "month"], ["onlinePrice", "Online price", "text"], ["shopeePrice", "Shopee price", "text"], ["packageDetails", "Package details", "textarea"], ["status", "Status", "text"]],
+    promotions: [["month", "Promotion month", "month"], ["onlinePrice", "Online price", "text"], ["shopeePrice", "Shopee price", "text"], ["packageDetails", "Package details", "textarea"], ["status", "Status", "text"]],
     points: [["points", "Points required", "text"], ["value", "Reward value", "text"], ["terms", "Terms", "textarea"], ["status", "Status", "text"]],
     pharmacies: [["phone", "Phone number", "text"], ["address", "Full address", "textarea"], ["state", "State", "text"]],
     payments: [["details", "Payment instructions", "textarea"], ["link", "Payment link", "text"], ["portal", "Portal link", "text"], ["status", "Status", "text"]],
