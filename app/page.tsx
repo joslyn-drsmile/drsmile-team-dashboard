@@ -1039,7 +1039,7 @@ function EditModal({ item, setItem, onClose, onSave, saving, setToast, productCa
 
   return (
     <div className="modal-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
-      <form className="modal" onSubmit={onSave}>
+      <form className={`modal ${item.section === "calendar" ? "calendar-modal" : ""}`} onSubmit={onSave}>
         <div className="modal-heading"><div><p className="eyebrow">{item.id ? "Update item" : "New item"}</p><h2>{item.id ? item.title : `Add to ${menus.find((menu) => menu.id === item.section)?.label}`}</h2></div><button type="button" onClick={onClose} aria-label="Close">×</button></div>
         <div className="form-grid">
           <label className="full"><span>{item.section === "faq" ? "Question" : item.section === "pharmacies" ? "Shop name" : item.section === "promotions" ? "Title A · Package Name" : item.section === "calendar" ? "Event name" : "Name"}</span><input required value={item.title} onChange={(event) => setItem({ ...item, title: event.target.value })} placeholder={item.section === "promotions" ? "e.g. 配套A - 美白牙粉x2" : item.section === "calendar" ? "e.g. DrSmile Roadshow" : "Enter a clear name"} /></label>

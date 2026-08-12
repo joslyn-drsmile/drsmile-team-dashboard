@@ -213,9 +213,11 @@ main { min-height: 100vh; margin-left: 252px; }
 
 .modal-backdrop { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 22px; background: rgba(14,48,87,.54); backdrop-filter: blur(4px); }
 .modal { width: min(700px, 100%); max-height: 90vh; overflow: auto; padding: 27px; border-radius: 15px; background: white; box-shadow: 0 26px 70px rgba(0,0,0,.25); }
+.modal.calendar-modal { width: min(820px, 100%); }
 .modal-heading { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; }.modal-heading h2 { margin: 0; font-size: 22px; letter-spacing: -.8px; }.modal-heading > button { width: 32px; height: 32px; border: 0; border-radius: 8px; background: #f0f3f0; cursor: pointer; font-size: 20px; }
 .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
-.form-grid label { min-width: 0; }.form-grid label.full { grid-column: 1 / -1; }.form-grid label > span { display: block; margin: 0 0 6px; color: #687570; font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: .5px; }
+.form-grid > .full, .form-grid label.full { grid-column: 1 / -1; }
+.form-grid label { min-width: 0; }.form-grid label > span { display: block; margin: 0 0 6px; color: #687570; font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: .5px; }
 .form-grid input:not([type=file]), .form-grid textarea { width: 100%; padding: 10px 11px; border: 1px solid #dbe2dc; border-radius: 8px; outline: 0; color: var(--ink); background: #fbfcfb; font-size: 11px; }.form-grid textarea { min-height: 82px; resize: vertical; line-height: 1.5; }.form-grid input:focus, .form-grid textarea:focus { border-color: #7d927f; box-shadow: 0 0 0 3px rgba(157,183,126,.15); }
 .price-fields { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; }
 .price-field { min-width: 0; }
@@ -424,13 +426,14 @@ main { margin-left: 194px; }
 .name-chips button { width: 15px; height: 15px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; color: #6e8ba1; background: rgba(255,255,255,.56); cursor: pointer; font-size: 11px; }
 .name-entry { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 5px; }.name-entry button { padding: 0 9px; border: 0; border-radius: 8px; color: white; background: #17365d; cursor: pointer; font-size: 8px; font-weight: 820; }
 .team-select { margin-bottom: 6px; }
-.calendar-schedule-fields { display: grid; grid-template-columns: minmax(0,1.4fr) minmax(250px,.6fr); gap: 14px; }
+.calendar-schedule-fields { display: grid; grid-template-columns: 1fr; gap: 12px; }
 .date-range-field, .custom-time-field { min-width: 0; padding: 12px; border: 1px solid #cfe0ed; border-radius: 11px; background: rgba(255,255,255,.48); }
 .date-range-field { display: grid; grid-template-columns: minmax(0,1fr) 24px minmax(0,1fr); gap: 8px; align-items: end; }
 .date-range-field > i { display: grid; place-items: center; height: 38px; color: #78a0bd; font-size: 16px; font-style: normal; }
 .custom-time-field > span { display: flex; align-items: center; justify-content: space-between; color: var(--muted); font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: .6px; }
 .custom-time-field > span small { color: #9aabb8; font-size: 7px; font-weight: 650; letter-spacing: 0; text-transform: none; }
 .time-control { display: grid; grid-template-columns: 47px 9px 47px minmax(98px,1fr); gap: 5px; align-items: center; margin-top: 7px; }
+.time-control { max-width: 330px; }
 .time-control > input { height: 38px; padding: 0 7px !important; text-align: center; font-size: 14px !important; font-weight: 800; }
 .time-control > b { color: #6f8aa0; text-align: center; font-size: 14px; }
 .period-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; padding: 3px; border-radius: 9px; background: #e6f1f8; }
@@ -440,7 +443,6 @@ main { margin-left: 194px; }
   .products-browser { grid-template-columns: 1fr; }
   .category-panel { position: static; }
   .category-list { grid-template-columns: repeat(auto-fit,minmax(125px,1fr)); }
-  .calendar-schedule-fields { grid-template-columns: 1fr; }
 }
 @media (max-width: 560px) {
   .category-list { grid-template-columns: 1fr; }
