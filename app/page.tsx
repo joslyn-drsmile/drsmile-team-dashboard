@@ -14,6 +14,9 @@ type RecordItem = {
 
 type ImportableSection = Exclude<Section, "payments" | "promotions">;
 
+const DEFAULT_PRODUCT_CATEGORIES = ["牙粉", "完整美白疗程", "漱口水", "加购产品", "包包"];
+const ALL_PRODUCTS = "All Item";
+
 const SOURCE_SHEET_URL = "https://docs.google.com/spreadsheets/d/18DC7Df9OCFtrbj5FmZUVcLTwC0hg_2lYnNDFjrpMSaU/edit?gid=1909559648#gid=1909559648";
 
 const menus: { id: "home" | Section; label: string; short: string }[] = [
@@ -84,7 +87,7 @@ const initialRecords: RecordItem[] = [
 ];
 
 const blankBySection: Record<Section, RecordItem> = {
-  products: { id: 0, section: "products", title: "", subtitle: "", data: { sku: "", posterUrl: "", alacart: "", alacartSG: "", pharmacy: "", shopee: "", website: "", websitePwp: "", facebook: "", facebookPwp: "", status: "Active" } },
+  products: { id: 0, section: "products", title: "", subtitle: "", data: { sku: "", category: "", remark: "", posterUrl: "", alacart: "", alacartSG: "", pharmacy: "", shopee: "", website: "", websitePwp: "", facebook: "", facebookPwp: "", status: "Active" } },
   promotions: { id: 0, section: "promotions", title: "", subtitle: "", data: { promotionName: "", month: new Date().toISOString().slice(0, 7), posterUrl: "", onlinePrice: "", shopeePrice: "", packageDetails: "", status: "Active" } },
   points: { id: 0, section: "points", title: "", subtitle: "", data: { points: "", value: "", terms: "", status: "Active" } },
   pharmacies: { id: 0, section: "pharmacies", title: "", subtitle: "", data: { phone: "", address: "", state: "" } },
@@ -147,6 +150,21 @@ function rm(value = "") {
   return /^\d+(\.\d+)?$/.test(clean) ? `RM ${clean}` : clean;
 }
 
+function inferProductCategory(title: string) {
+  const value = title.toLowerCase();
+  if (value.includes("完整美白疗程")) return "完整美白疗程";
+  if (value.includes("漱口水")) return "漱口水";
+  if (value.includes("包") || value.includes("bag") || value.includes("tote")) return "包包";
+  if (value.includes("牙粉") || value.includes("first trial")) return "牙粉";
+  return "加购产品";
+}
+
+function productCategory(item: RecordItem) {
+  return Object.prototype.hasOwnProperty.call(item.data, "category")
+    ? item.data.category
+    : inferProductCategory(item.title);
+}
+
 function importRows(section: ImportableSection, text: string): Omit<RecordItem, "id">[] {
   const rows = parseDelimited(text);
   if (!rows.length) return [];
@@ -159,6 +177,8 @@ function importRows(section: ImportableSection, text: string): Omit<RecordItem, 
       subtitle: "Google Sheet",
       data: {
         sku: row[1] || "—",
+        category: inferProductCategory(row[0]),
+        remark: "",
         alacart: rm(row[2]),
         facebook: rm(row[3]),
         facebookPwp: rm(row[4]),
@@ -231,11 +251,18 @@ export default function Home() {
   const [importing, setImporting] = useState<ImportableSection | null>(null);
   const [promotionTitle, setPromotionTitle] = useState("");
   const [promotionMonth, setPromotionMonth] = useState(new Date().toISOString().slice(0, 7));
+  const [productCategories, setProductCategories] = useState<string[]>(DEFAULT_PRODUCT_CATEGORIES);
+  const [selectedCategory, setSelectedCategory] = useState(ALL_PRODUCTS);
+  const [newCategory, setNewCategory] = useState("");
 
   useEffect(() => {
     fetch("/api/records")
       .then((response) => (response.ok ? response.json() : Promise.reject()))
       .then((payload) => payload.records?.length && setRecords(payload.records))
+      .catch(() => undefined);
+    fetch("/api/categories")
+      .then((response) => (response.ok ? response.json() : Promise.reject()))
+      .then((payload) => Array.isArray(payload.categories) && setProductCategories(payload.categories))
       .catch(() => undefined);
   }, []);
 
@@ -252,22 +279,29 @@ export default function Home() {
 
   const visible = useMemo(() => {
     const needle = query.toLowerCase().trim();
-    const inSection = active === "home" ? records : records.filter((record) => record.section === active && (active !== "promotions" || record.data.month === promotionMonth));
+    const inSection = active === "home" ? records : records.filter((record) => {
+      if (record.section !== active) return false;
+      if (active === "promotions" && record.data.month !== promotionMonth) return false;
+      if (active === "products" && selectedCategory !== ALL_PRODUCTS && productCategory(record) !== selectedCategory) return false;
+      return true;
+    });
     if (!needle) return inSection;
     return inSection.filter((record) =>
       `${record.title} ${record.subtitle} ${Object.values(record.data).join(" ")}`.toLowerCase().includes(needle),
     );
-  }, [active, query, records, promotionMonth]);
+  }, [active, query, records, promotionMonth, selectedCategory]);
 
   function navigate(next: "home" | Section) {
     setActive(next);
     setQuery("");
+    if (next === "products") setSelectedCategory(ALL_PRODUCTS);
     setMobileMenu(false);
   }
 
   function startAdd() {
     if (active === "home") return;
     const next = structuredClone(blankBySection[active]);
+    if (active === "products") next.data.category = selectedCategory === ALL_PRODUCTS ? "" : selectedCategory;
     if (active === "promotions") {
       next.data.month = promotionMonth;
       next.data.promotionName = promotionTitle;
@@ -323,6 +357,46 @@ export default function Home() {
     setRecords((current) => current.filter((record) => record.id !== item.id));
     await fetch(`/api/records?id=${item.id}`, { method: "DELETE" }).catch(() => undefined);
     setToast("Item deleted");
+  }
+
+  async function addProductCategory(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const name = newCategory.trim();
+    if (!name) return;
+    if (productCategories.some((category) => category.toLowerCase() === name.toLowerCase())) {
+      setToast("Category already exists");
+      return;
+    }
+    const response = await fetch("/api/categories", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ name }),
+    }).catch(() => null);
+    if (!response?.ok) {
+      setToast("Category could not be added");
+      return;
+    }
+    const payload = await response.json();
+    setProductCategories(payload.categories);
+    setSelectedCategory(name);
+    setNewCategory("");
+    setToast("Category added");
+  }
+
+  async function deleteProductCategory(name: string) {
+    if (!window.confirm(`Delete category “${name}”? Products will remain under All Item.`)) return;
+    const response = await fetch(`/api/categories?name=${encodeURIComponent(name)}`, { method: "DELETE" }).catch(() => null);
+    if (!response?.ok) {
+      setToast("Category could not be deleted");
+      return;
+    }
+    const payload = await response.json();
+    setProductCategories(payload.categories);
+    setRecords((current) => current.map((record) => record.section === "products" && productCategory(record) === name
+      ? { ...record, data: { ...record.data, category: "" } }
+      : record));
+    if (selectedCategory === name) setSelectedCategory(ALL_PRODUCTS);
+    setToast("Category deleted");
   }
 
   return (
@@ -401,20 +475,44 @@ export default function Home() {
 
             {active === "payments" && <PaymentStudio setToast={setToast} />}
 
-            <div className="list-toolbar">
-              <p><strong>{visible.length}</strong> {visible.length === 1 ? "item" : "items"}</p>
-              <span>Last updated today</span>
-            </div>
-
-            <div className={`record-grid ${active}`}>
-              {visible.map((item) => (
-                <RecordCard key={item.id} item={item} setEditing={setEditing} removeItem={removeItem} setToast={setToast} />
-              ))}
-              {visible.length === 0 && (
-                <div className="empty-state">
-                  <span>⌕</span><h3>No matching items</h3><p>Try a different keyword or add a new item.</p>
-                </div>
+            <div className={active === "products" ? "products-browser" : ""}>
+              {active === "products" && (
+                <aside className="category-panel" aria-label="Product categories">
+                  <div className="category-heading"><span>Categories</span><small>{productCategories.length}</small></div>
+                  <button className={selectedCategory === ALL_PRODUCTS ? "category-filter active" : "category-filter"} onClick={() => setSelectedCategory(ALL_PRODUCTS)}>
+                    <span>All Item</span><em>{records.filter((record) => record.section === "products").length}</em>
+                  </button>
+                  <div className="category-list">
+                    {productCategories.map((category) => (
+                      <div className={selectedCategory === category ? "category-row active" : "category-row"} key={category}>
+                        <button className="category-filter" onClick={() => setSelectedCategory(category)}><span>{category}</span><em>{records.filter((record) => record.section === "products" && productCategory(record) === category).length}</em></button>
+                        <button className="category-delete" onClick={() => deleteProductCategory(category)} aria-label={`Delete ${category}`}>×</button>
+                      </div>
+                    ))}
+                  </div>
+                  <form className="category-add" onSubmit={addProductCategory}>
+                    <input value={newCategory} onChange={(event) => setNewCategory(event.target.value)} placeholder="Add category" aria-label="New category name" maxLength={40} />
+                    <button type="submit" aria-label="Add category">＋</button>
+                  </form>
+                </aside>
               )}
+              <div className="products-results">
+                <div className="list-toolbar">
+                  <p><strong>{visible.length}</strong> {visible.length === 1 ? "item" : "items"}{active === "products" && selectedCategory !== ALL_PRODUCTS ? ` in ${selectedCategory}` : ""}</p>
+                  <span>Last updated today</span>
+                </div>
+
+                <div className={`record-grid ${active}`}>
+                  {visible.map((item) => (
+                    <RecordCard key={item.id} item={item} setEditing={setEditing} removeItem={removeItem} setToast={setToast} />
+                  ))}
+                  {visible.length === 0 && (
+                    <div className="empty-state">
+                      <span>⌕</span><h3>No matching items</h3><p>Try a different keyword or add a new item.</p>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </section>
         )}
@@ -428,6 +526,7 @@ export default function Home() {
           onSave={saveItem}
           saving={saving}
           setToast={setToast}
+          productCategories={productCategories}
         />
       )}
       {importing && (
@@ -509,12 +608,14 @@ function RecordCard({ item, setEditing, removeItem, setToast }: { item: RecordIt
       <article className="record-card product-card">
         {item.data.posterUrl && <div className="product-poster-frame"><img className="product-poster" src={item.data.posterUrl} alt={`${item.title} poster`} /></div>}
         <div className="card-top"><span className="record-avatar">DS</span><div><h3>{item.title}</h3><p>{item.data.sku || item.subtitle}</p></div><CardMenu item={item} setEditing={setEditing} removeItem={removeItem} /></div>
+        <div className="product-category-chip">{productCategory(item) || "Uncategorised"}</div>
         <div className="market-price-row">
           <div><span>Malaysia price</span><strong>{item.data.alacart || "—"}</strong></div>
           <div><span>Singapore price</span><strong>{item.data.alacartSG || "—"}</strong></div>
         </div>
         <div className="channel-grid">{channelFields.map(([key, label, pwpKey]) => <div key={key}><span>{label}</span><strong>{item.data[key] || "—"}</strong>{pwpKey && item.data[pwpKey] && item.data[pwpKey] !== "—" && <small>PWP {item.data[pwpKey]}</small>}</div>)}</div>
-        <div className="card-footer"><span className="status-chip">{item.data.status || "Active"}</span><button onClick={() => copyText(`${item.title}\nMalaysia: ${item.data.alacart || "—"}\nSingapore: ${item.data.alacartSG || "—"}`, "Price", setToast)}>Copy price</button></div>
+        <div className="product-remark"><span>Remark</span><p>{item.data.remark || "—"}</p></div>
+        <div className="card-footer"><span className="status-chip">{item.data.status || "Active"}</span><button onClick={() => copyText(`${item.title}\nMalaysia: ${item.data.alacart || "—"}\nSingapore: ${item.data.alacartSG || "—"}\nRemark: ${item.data.remark || "—"}`, "Price", setToast)}>Copy price</button></div>
       </article>
     );
   }
@@ -675,7 +776,7 @@ function ImportModal({
   );
 }
 
-function EditModal({ item, setItem, onClose, onSave, saving, setToast }: { item: RecordItem; setItem: (item: RecordItem) => void; onClose: () => void; onSave: (event: FormEvent<HTMLFormElement>) => void; saving: boolean; setToast: (value: string) => void }) {
+function EditModal({ item, setItem, onClose, onSave, saving, setToast, productCategories }: { item: RecordItem; setItem: (item: RecordItem) => void; onClose: () => void; onSave: (event: FormEvent<HTMLFormElement>) => void; saving: boolean; setToast: (value: string) => void; productCategories: string[] }) {
   const [uploading, setUploading] = useState(false);
   const fields: Record<Section, [string, string, "text" | "textarea" | "month"][]> = {
     products: [],
@@ -718,6 +819,7 @@ function EditModal({ item, setItem, onClose, onSave, saving, setToast }: { item:
           {item.section === "products" && (
             <>
               <label><span>SKU</span><input value={item.data.sku || ""} onChange={(event) => updateData("sku", event.target.value)} /></label>
+              <label><span>Category</span><select value={productCategory(item)} onChange={(event) => updateData("category", event.target.value)}><option value="">Uncategorised</option>{productCategories.map((category) => <option key={category} value={category}>{category}</option>)}</select></label>
               <div className="price-fields full">
                 <PriceField label="Malaysia Ala Carte" fieldKey="alacart" item={item} updateData={updateData} />
                 <PriceField label="Singapore Ala Carte" fieldKey="alacartSG" item={item} updateData={updateData} defaultCurrency="SGD" />
@@ -728,6 +830,7 @@ function EditModal({ item, setItem, onClose, onSave, saving, setToast }: { item:
                 <PriceField label="Shopee Price" fieldKey="shopee" item={item} updateData={updateData} />
                 <PriceField label="Pharmacy Price" fieldKey="pharmacy" item={item} updateData={updateData} />
               </div>
+              <label className="full"><span>Remark</span><textarea value={item.data.remark || ""} onChange={(event) => updateData("remark", event.target.value)} placeholder="Add product notes for the team" /></label>
               <label><span>Status</span><input value={item.data.status || ""} onChange={(event) => updateData("status", event.target.value)} /></label>
             </>
           )}

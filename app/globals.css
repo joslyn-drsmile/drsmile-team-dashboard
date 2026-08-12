@@ -324,3 +324,41 @@ main { margin-left: 194px; }
 @media (max-width: 1100px) { .record-grid.promotions { grid-template-columns: repeat(auto-fill,minmax(260px,1fr)); } }
 @media (max-width: 800px) { main { margin-left:0; } .sidebar { width: 210px; } }
 @media (max-width: 560px) { .record-grid.promotions { grid-template-columns:1fr; } }
+
+/* Product categories and remarks */
+.products-browser { display: grid; grid-template-columns: 172px minmax(0, 1fr); gap: 18px; align-items: start; }
+.products-results { min-width: 0; }
+.category-panel { position: sticky; top: 82px; padding: 13px; border: 1px solid rgba(255,255,255,.74); border-radius: 15px; background: rgba(255,255,255,.55); box-shadow: 0 18px 48px rgba(54,96,130,.07), inset 0 1px rgba(255,255,255,.82); backdrop-filter: blur(18px); }
+.category-heading { display: flex; align-items: center; justify-content: space-between; padding: 2px 3px 10px; color: #7b8fa5; font-size: 8px; font-weight: 850; text-transform: uppercase; letter-spacing: .8px; }
+.category-heading small { display: grid; place-items: center; min-width: 19px; height: 19px; border-radius: 7px; color: #365d80; background: #dceefa; font-size: 8px; }
+.category-list { display: grid; gap: 4px; margin-top: 4px; }
+.category-row { display: grid; grid-template-columns: minmax(0,1fr) 24px; gap: 3px; border-radius: 10px; }
+.category-filter { width: 100%; min-width: 0; min-height: 34px; display: flex; align-items: center; justify-content: space-between; gap: 7px; padding: 7px 9px; border: 0; border-radius: 10px; color: #607890; background: transparent; cursor: pointer; text-align: left; font-size: 10px; font-weight: 720; }
+.category-filter span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.category-filter em { flex: 0 0 auto; color: #8ca2b5; font-size: 8px; font-style: normal; }
+.category-filter:hover, .category-filter.active, .category-row.active { color: #17365d; background: rgba(215,235,249,.76); }
+.category-row .category-filter { border-radius: 10px 4px 4px 10px; }
+.category-row.active .category-filter { color: #17365d; }
+.category-delete { border: 0; border-radius: 4px 10px 10px 4px; color: #9aabb9; background: transparent; cursor: pointer; font-size: 15px; }
+.category-delete:hover { color: #b34d5b; background: #fff0f2; }
+.category-add { display: grid; grid-template-columns: minmax(0,1fr) 31px; gap: 5px; margin-top: 11px; padding-top: 11px; border-top: 1px solid rgba(171,198,218,.35); }
+.category-add input { width: 100%; min-width: 0; height: 31px; padding: 0 8px; border: 1px solid #d2e1ec; border-radius: 9px; outline: 0; color: #17365d; background: rgba(255,255,255,.72); font-size: 9px; }
+.category-add input:focus { border-color: #9bc4e2; box-shadow: 0 0 0 3px rgba(108,160,201,.11); }
+.category-add button { border: 0; border-radius: 9px; color: white; background: #17365d; cursor: pointer; font-size: 15px; }
+.products-browser .record-grid.products { grid-template-columns: repeat(auto-fill,minmax(270px,1fr)); }
+.product-category-chip { width: fit-content; margin-top: 12px; padding: 5px 8px; border-radius: 8px; color: #507997; background: #deeffa; font-size: 8px; font-weight: 820; }
+.product-category-chip + .market-price-row { margin-top: 10px; }
+.product-remark { margin-top: 8px; padding: 10px; border-radius: 9px; background: rgba(255,255,255,.48); }
+.product-remark span { display: block; color: #7d91a6; font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: .6px; }
+.product-remark p { min-height: 16px; margin: 5px 0 0; white-space: pre-line; color: #53677f; font-size: 9px; line-height: 1.45; }
+.form-grid select { width: 100%; height: 38px; padding: 0 10px; border: 1px solid #cfe0ed; border-radius: 8px; outline: 0; color: var(--ink); background: rgba(255,255,255,.68); font-size: 11px; }
+.form-grid select:focus { border-color: #7d927f; box-shadow: 0 0 0 3px rgba(157,183,126,.15); }
+@media (max-width: 900px) {
+  .products-browser { grid-template-columns: 1fr; }
+  .category-panel { position: static; }
+  .category-list { grid-template-columns: repeat(auto-fit,minmax(125px,1fr)); }
+}
+@media (max-width: 560px) {
+  .category-list { grid-template-columns: 1fr; }
+  .products-browser .record-grid.products { grid-template-columns: 1fr; }
+}
