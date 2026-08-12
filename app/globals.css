@@ -1,14 +1,14 @@
 @import "tailwindcss";
 
 :root {
-  --ink: #12335b;
-  --muted: #6b7f96;
-  --line: #d9e6f3;
-  --paper: #f4f8fc;
+  --ink: #52758d;
+  --muted: #7894a7;
+  --line: #d5e8f3;
+  --paper: #fcf8e7;
   --white: #fff;
-  --lime: #1769d1;
-  --lime-dark: #0e56b1;
-  --nav: #ffffff;
+  --lime: #95c2e2;
+  --lime-dark: #76a9cf;
+  --nav: #dff2fc;
 }
 
 * { box-sizing: border-box; }
@@ -218,3 +218,39 @@ main { min-height: 100vh; margin-left: 252px; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
 }
+
+/* Blue Coast Daylight palette */
+.sidebar { background: #dff2fc; border-right-color: #c9e3f2; box-shadow: 8px 0 30px rgba(82,117,141,.08); }
+.workspace-pill, .search { background: rgba(255,255,255,.6); border-color: #c9e3f2; }
+.workspace-pill > span, .nav-icon, nav em, .sheet-mark, .record-avatar, .payment-logo { background: #a6d0f1; color: #52758d; }
+nav button { color: #62839a; }
+nav button:hover { color: #52758d; background: rgba(255,255,255,.56); }
+nav button.active { color: #43667f; background: #95c2e2; box-shadow: 0 7px 18px rgba(149,194,226,.3); }
+nav button.active .nav-icon, nav button.active em { color: #43667f; background: rgba(255,255,255,.35); }
+.topbar { background: rgba(252,248,231,.9); }
+.avatar, .primary-button, .quick-grid span, .faq-number { background: #95c2e2; color: #43667f; }
+.primary-button { border-color: #95c2e2; box-shadow: 0 7px 18px rgba(149,194,226,.28); }
+.primary-button:hover { background: #86b6d8; }
+.sheet-note, .panel, .stat-card, .record-card { border-color: #d5e8f3; }
+.sheet-note { background: rgba(223,242,252,.58); }
+.welcome { border-color: #c9e3f2; background: linear-gradient(135deg, #fcf8e7 0%, #dff2fc 58%, #a6d0f1 100%); box-shadow: 0 14px 34px rgba(82,117,141,.1); }
+.welcome h1 span, .sidebar-bottom a span, .sheet-note > span:last-child, .faq-content summary, .faq-content button { color: #6f9fbe; }
+.orb-one { background: #95c2e2; }
+.orb-two { background: #dff2fc; }
+.smile-card { background: #fcf8e7; }
+.smile-card i { color: #95c2e2; }
+.stat-icon, .stat-card.blue .stat-icon, .stat-card.pink .stat-icon, .stat-card.gold .stat-icon, .stat-card.lime .stat-icon,
+.activity-list button > span, .panel-heading button, .status-chip, .point-value, .import-preview { background: #dff2fc; color: #6f9fbe; }
+.quick-grid button, .channel-grid div, .faq-content p, .import-area { background: rgba(223,242,252,.42); border-color: #d5e8f3; }
+.price-highlight { background: #95c2e2; color: #43667f; }
+.price-highlight span { color: #52758d; }
+.price-highlight small { color: #52758d; background: #fcf8e7; }
+.channel-grid small, .point-value span, .import-preview strong { color: #6f9fbe; }
+.payment-studio { color: #43667f; background: linear-gradient(135deg, #a6d0f1, #95c2e2); box-shadow: 0 12px 28px rgba(149,194,226,.28); }
+.payment-studio > div > span, .payment-studio .eyebrow, .payment-studio label > span { color: #52758d; }
+.payment-studio input, .payment-studio select { color: #43667f; background: rgba(255,255,255,.32); border-color: rgba(255,255,255,.58); }
+.studio-actions button { color: #43667f; background: rgba(255,255,255,.35); }
+.studio-actions a { color: #52758d; background: #fcf8e7; }
+.modal-backdrop, .menu-backdrop { background: rgba(82,117,141,.42); }
+.toast { background: #95c2e2; color: #43667f; box-shadow: 0 15px 36px rgba(149,194,226,.32); }
+.toast span { color: #52758d; background: #fcf8e7; }
