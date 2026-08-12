@@ -22,13 +22,13 @@ const SOURCE_SHEET_URL = "https://docs.google.com/spreadsheets/d/18DC7Df9OCFtrbj
 
 const menus: { id: "home" | Section; label: string; short: string }[] = [
   { id: "home", label: "Overview", short: "OV" },
+  { id: "calendar", label: "Calendar", short: "CL" },
   { id: "products", label: "Products & Pricing", short: "PR" },
   { id: "promotions", label: "Promotion", short: "PM" },
   { id: "points", label: "Point Redeem", short: "PT" },
   { id: "pharmacies", label: "Pharmacy List", short: "PH" },
   { id: "payments", label: "Payment Method", short: "PY" },
   { id: "faq", label: "FAQ", short: "FQ" },
-  { id: "calendar", label: "Calendar", short: "CL" },
 ];
 
 const channelFields = [
@@ -95,7 +95,7 @@ const blankBySection: Record<Section, RecordItem> = {
   pharmacies: { id: 0, section: "pharmacies", title: "", subtitle: "", data: { phone: "", address: "", state: "" } },
   payments: { id: 0, section: "payments", title: "", subtitle: "", data: { details: "", link: "", qrUrl: "", portal: "", status: "Available" } },
   faq: { id: 0, section: "faq", title: "", subtitle: "", data: { answer: "", category: "", source: "Google Sheet" } },
-  calendar: { id: 0, section: "calendar", title: "", subtitle: "", data: { date: localDateKey(new Date()), time: "", location: "", details: "", status: "Scheduled" } },
+  calendar: { id: 0, section: "calendar", title: "", subtitle: "", data: { date: localDateKey(new Date()), time: "", location: "", pic: "", attendees: "", details: "", status: "Scheduled" } },
 };
 
 const pageCopy: Record<Section, { eyebrow: string; title: string; description: string }> = {
@@ -690,7 +690,10 @@ function MonthGrid({ month, events, onDayClick, compact = false }: { month: Date
         return (
           <button type="button" className={`${date === today ? "today " : ""}${dayEvents.length ? "has-events" : ""}`} key={date} onClick={() => onDayClick?.(date)} aria-label={`${date}${dayEvents.length ? `, ${dayEvents.length} events` : ""}`}>
             <strong>{day}</strong>
-            {!!dayEvents.length && <span className="event-dots">{dayEvents.slice(0, 3).map((event) => <i key={event.id} />)}</span>}
+            {!!dayEvents.length && (compact
+              ? <span className="event-dots">{dayEvents.slice(0, 3).map((event) => <i key={event.id} />)}</span>
+              : <span className="calendar-events">{dayEvents.slice(0, 3).map((event, eventIndex) => <span className={`calendar-event-pill tone-${eventIndex % 3}`} key={event.id}><b>{event.title}</b>{event.data.time && <small>{event.data.time}</small>}</span>)}{dayEvents.length > 3 && <em>+{dayEvents.length - 3} more</em>}</span>
+            )}
           </button>
         );
       })}
@@ -741,7 +744,7 @@ function CalendarWorkspace({ events, month, setMonth, onAddDate, setEditing, rem
           {monthEvents.map((event) => (
             <article key={event.id}>
               <time><strong>{dateFromKey(event.data.date).getDate()}</strong><span>{dateFromKey(event.data.date).toLocaleDateString("en-MY", { month: "short" })}</span></time>
-              <div><h3>{event.title}</h3><p>{event.data.time || "All day"} · {event.data.location || "Location not added"}</p>{event.data.details && <small>{event.data.details}</small>}</div>
+              <div><h3>{event.title}</h3><p>{event.data.time || "All day"} · {event.data.location || "Location not added"}</p>{event.data.pic && <span className="agenda-people">PIC · {event.data.pic}</span>}{event.data.attendees && <span className="agenda-people">Attend · {event.data.attendees}</span>}{event.data.details && <small>{event.data.details}</small>}</div>
               <div className="agenda-actions"><button onClick={() => setEditing(structuredClone(event))}>Edit</button><button className="delete" onClick={() => removeItem(event)}>Delete</button></div>
             </article>
           ))}
@@ -998,6 +1001,12 @@ function EditModal({ item, setItem, onClose, onSave, saving, setToast, productCa
               <label><span>Status</span><input value={item.data.status || ""} onChange={(event) => updateData("status", event.target.value)} /></label>
             </>
           )}
+          {item.section === "calendar" && (
+            <div className="multi-people-fields full">
+              <MultiNameField label="PIC" value={item.data.pic || ""} onChange={(value) => updateData("pic", value)} placeholder="Type a PIC name" />
+              <MultiNameField label="Who Attend" value={item.data.attendees || ""} onChange={(value) => updateData("attendees", value)} placeholder="Type an attendee name" />
+            </div>
+          )}
           {fields[item.section].map(([key, label, type]) => (
             <label key={key} className={type === "textarea" ? "full" : ""}><span>{label}</span>{type === "textarea" ? <textarea value={item.data[key] || ""} onChange={(event) => updateData(key, event.target.value)} /> : <input type={type} value={item.data[key] || ""} onChange={(event) => updateData(key, event.target.value)} />}</label>
           ))}
@@ -1011,6 +1020,26 @@ function EditModal({ item, setItem, onClose, onSave, saving, setToast, productCa
         <div className="modal-actions"><button type="button" onClick={onClose}>Cancel</button><button className="primary-button" type="submit" disabled={saving || uploading}>{saving ? "Saving…" : "Save shared item"}</button></div>
       </form>
     </div>
+  );
+}
+
+function MultiNameField({ label, value, onChange, placeholder }: { label: string; value: string; onChange: (value: string) => void; placeholder: string }) {
+  const [draft, setDraft] = useState("");
+  const names = value.split(",").map((name) => name.trim()).filter(Boolean);
+  function addName() {
+    const name = draft.trim();
+    if (!name) return;
+    if (!names.some((existing) => existing.toLowerCase() === name.toLowerCase())) onChange([...names, name].join(", "));
+    setDraft("");
+  }
+  function removeName(name: string) { onChange(names.filter((entry) => entry !== name).join(", ")); }
+  return (
+    <label className="multi-name-field">
+      <span>{label} · Multiple selection</span>
+      <div className="name-chips">{names.map((name) => <span key={name}>{name}<button type="button" onClick={() => removeName(name)} aria-label={`Remove ${name}`}>×</button></span>)}</div>
+      <div className="name-entry"><input value={draft} onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === ",") { event.preventDefault(); addName(); } }} placeholder={placeholder} /><button type="button" onClick={addName}>＋ Add</button></div>
+      <small>Enter a name, then press Enter. Add as many people as needed.</small>
+    </label>
   );
 }
 
