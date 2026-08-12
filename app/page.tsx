@@ -84,7 +84,7 @@ const initialRecords: RecordItem[] = [
 ];
 
 const blankBySection: Record<Section, RecordItem> = {
-  products: { id: 0, section: "products", title: "", subtitle: "", data: { sku: "", posterUrl: "", alacart: "", pharmacy: "", shopee: "", website: "", websitePwp: "", facebook: "", facebookPwp: "", status: "Active" } },
+  products: { id: 0, section: "products", title: "", subtitle: "", data: { sku: "", posterUrl: "", alacart: "", alacartSG: "", pharmacy: "", shopee: "", website: "", websitePwp: "", facebook: "", facebookPwp: "", status: "Active" } },
   promotions: { id: 0, section: "promotions", title: "", subtitle: "", data: { promotionName: "", month: new Date().toISOString().slice(0, 7), posterUrl: "", onlinePrice: "", shopeePrice: "", packageDetails: "", status: "Active" } },
   points: { id: 0, section: "points", title: "", subtitle: "", data: { points: "", value: "", terms: "", status: "Active" } },
   pharmacies: { id: 0, section: "pharmacies", title: "", subtitle: "", data: { phone: "", address: "", state: "" } },
@@ -509,9 +509,12 @@ function RecordCard({ item, setEditing, removeItem, setToast }: { item: RecordIt
       <article className="record-card product-card">
         {item.data.posterUrl && <div className="product-poster-frame"><img className="product-poster" src={item.data.posterUrl} alt={`${item.title} poster`} /></div>}
         <div className="card-top"><span className="record-avatar">DS</span><div><h3>{item.title}</h3><p>{item.data.sku || item.subtitle}</p></div><CardMenu item={item} setEditing={setEditing} removeItem={removeItem} /></div>
-        <div className="price-highlight"><span>Ala carte</span><strong>{item.data.alacart || "—"}</strong><small>{item.data.sku || "No SKU"}</small></div>
+        <div className="market-price-row">
+          <div><span>Malaysia price</span><strong>{item.data.alacart || "—"}</strong></div>
+          <div><span>Singapore price</span><strong>{item.data.alacartSG || "—"}</strong></div>
+        </div>
         <div className="channel-grid">{channelFields.map(([key, label, pwpKey]) => <div key={key}><span>{label}</span><strong>{item.data[key] || "—"}</strong>{pwpKey && item.data[pwpKey] && item.data[pwpKey] !== "—" && <small>PWP {item.data[pwpKey]}</small>}</div>)}</div>
-        <div className="card-footer"><span className="status-chip">{item.data.status || "Active"}</span><button onClick={() => copyText(`${item.title} — ${item.data.alacart}`, "Price", setToast)}>Copy price</button></div>
+        <div className="card-footer"><span className="status-chip">{item.data.status || "Active"}</span><button onClick={() => copyText(`${item.title}\nMalaysia: ${item.data.alacart || "—"}\nSingapore: ${item.data.alacartSG || "—"}`, "Price", setToast)}>Copy price</button></div>
       </article>
     );
   }
@@ -675,8 +678,8 @@ function ImportModal({
 function EditModal({ item, setItem, onClose, onSave, saving, setToast }: { item: RecordItem; setItem: (item: RecordItem) => void; onClose: () => void; onSave: (event: FormEvent<HTMLFormElement>) => void; saving: boolean; setToast: (value: string) => void }) {
   const [uploading, setUploading] = useState(false);
   const fields: Record<Section, [string, string, "text" | "textarea" | "month"][]> = {
-    products: [["sku", "SKU", "text"], ["alacart", "Ala carte price", "text"], ["facebook", "FB price", "text"], ["facebookPwp", "FB PWP", "text"], ["website", "Website price", "text"], ["websitePwp", "Website PWP", "text"], ["shopee", "Shopee price", "text"], ["pharmacy", "Pharmacy price", "text"], ["status", "Status", "text"]],
-    promotions: [["month", "Promotion month", "month"], ["onlinePrice", "Online price", "text"], ["shopeePrice", "Shopee price", "text"], ["packageDetails", "Package details", "textarea"], ["status", "Status", "text"]],
+    products: [],
+    promotions: [],
     points: [["points", "Points required", "text"], ["value", "Reward value", "text"], ["terms", "Terms", "textarea"], ["status", "Status", "text"]],
     pharmacies: [["phone", "Phone number", "text"], ["address", "Full address", "textarea"], ["state", "State", "text"]],
     payments: [["details", "Payment instructions", "textarea"], ["link", "Payment link", "text"], ["portal", "Portal link", "text"], ["status", "Status", "text"]],
@@ -712,6 +715,33 @@ function EditModal({ item, setItem, onClose, onSave, saving, setToast }: { item:
         <div className="form-grid">
           <label className="full"><span>{item.section === "faq" ? "Question" : item.section === "pharmacies" ? "Shop name" : item.section === "promotions" ? "Title A · Package Name" : "Name"}</span><input required value={item.title} onChange={(event) => setItem({ ...item, title: event.target.value })} placeholder={item.section === "promotions" ? "e.g. 配套A - 美白牙粉x2" : "Enter a clear name"} /></label>
           <label className="full"><span>{item.section === "pharmacies" ? "Area / location" : item.section === "promotions" ? "SKU" : "Short description"}</span><input value={item.subtitle} onChange={(event) => setItem({ ...item, subtitle: event.target.value })} placeholder={item.section === "promotions" ? "e.g. 8A26" : "Optional supporting detail"} /></label>
+          {item.section === "products" && (
+            <>
+              <label><span>SKU</span><input value={item.data.sku || ""} onChange={(event) => updateData("sku", event.target.value)} /></label>
+              <div className="price-fields full">
+                <PriceField label="Malaysia Ala Carte" fieldKey="alacart" item={item} updateData={updateData} />
+                <PriceField label="Singapore Ala Carte" fieldKey="alacartSG" item={item} updateData={updateData} defaultCurrency="SGD" />
+                <PriceField label="FB Price" fieldKey="facebook" item={item} updateData={updateData} />
+                <PriceField label="FB PWP" fieldKey="facebookPwp" item={item} updateData={updateData} />
+                <PriceField label="Website Price" fieldKey="website" item={item} updateData={updateData} />
+                <PriceField label="Website PWP" fieldKey="websitePwp" item={item} updateData={updateData} />
+                <PriceField label="Shopee Price" fieldKey="shopee" item={item} updateData={updateData} />
+                <PriceField label="Pharmacy Price" fieldKey="pharmacy" item={item} updateData={updateData} />
+              </div>
+              <label><span>Status</span><input value={item.data.status || ""} onChange={(event) => updateData("status", event.target.value)} /></label>
+            </>
+          )}
+          {item.section === "promotions" && (
+            <>
+              <label><span>Promotion month</span><input type="month" value={item.data.month || ""} onChange={(event) => updateData("month", event.target.value)} /></label>
+              <div className="price-fields full">
+                <PriceField label="Online Price" fieldKey="onlinePrice" item={item} updateData={updateData} />
+                <PriceField label="Shopee Price" fieldKey="shopeePrice" item={item} updateData={updateData} />
+              </div>
+              <label className="full"><span>Package details</span><textarea value={item.data.packageDetails || ""} onChange={(event) => updateData("packageDetails", event.target.value)} /></label>
+              <label><span>Status</span><input value={item.data.status || ""} onChange={(event) => updateData("status", event.target.value)} /></label>
+            </>
+          )}
           {fields[item.section].map(([key, label, type]) => (
             <label key={key} className={type === "textarea" ? "full" : ""}><span>{label}</span>{type === "textarea" ? <textarea value={item.data[key] || ""} onChange={(event) => updateData(key, event.target.value)} /> : <input type={type} value={item.data[key] || ""} onChange={(event) => updateData(key, event.target.value)} />}</label>
           ))}
@@ -725,5 +755,25 @@ function EditModal({ item, setItem, onClose, onSave, saving, setToast }: { item:
         <div className="modal-actions"><button type="button" onClick={onClose}>Cancel</button><button className="primary-button" type="submit" disabled={saving || uploading}>{saving ? "Saving…" : "Save shared item"}</button></div>
       </form>
     </div>
+  );
+}
+
+function PriceField({ label, fieldKey, item, updateData, defaultCurrency = "RM" }: { label: string; fieldKey: string; item: RecordItem; updateData: (key: string, value: string) => void; defaultCurrency?: "RM" | "SGD" }) {
+  const currencyKey = `${fieldKey}Currency`;
+  const stored = item.data[fieldKey] || "";
+  const inferredCurrency = stored.trim().toUpperCase().startsWith("SGD") ? "SGD" : stored.trim().toUpperCase().startsWith("RM") ? "RM" : defaultCurrency;
+  const currency = (item.data[currencyKey] || inferredCurrency) as "RM" | "SGD";
+  const amount = stored === "—" ? "" : stored.replace(/^(RM|SGD)\s*/i, "").trim();
+
+  function changeCurrency(next: string) {
+    updateData(currencyKey, next);
+    updateData(fieldKey, amount ? `${next} ${amount}` : "");
+  }
+
+  return (
+    <label className="price-field">
+      <span>{label}</span>
+      <div><select value={currency} onChange={(event) => changeCurrency(event.target.value)} aria-label={`${label} currency`}><option value="RM">RM</option><option value="SGD">SGD</option></select><input inputMode="decimal" value={amount} onChange={(event) => updateData(fieldKey, event.target.value ? `${currency} ${event.target.value}` : "")} placeholder="0.00" /></div>
+    </label>
   );
 }
