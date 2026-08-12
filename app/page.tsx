@@ -90,7 +90,7 @@ const initialRecords: RecordItem[] = [
 const blankBySection: Record<Section, RecordItem> = {
   products: { id: 0, section: "products", title: "", subtitle: "", data: { sku: "", category: "", remark: "", posterUrl: "", alacart: "", alacartSG: "", pharmacy: "", shopee: "", website: "", websitePwp: "", facebook: "", facebookPwp: "", status: "Active" } },
   promotions: { id: 0, section: "promotions", title: "", subtitle: "", data: { promotionName: "", month: new Date().toISOString().slice(0, 7), posterUrl: "", onlinePrice: "", shopeePrice: "", packageDetails: "", status: "Active" } },
-  points: { id: 0, section: "points", title: "", subtitle: "", data: { points: "", value: "", terms: "", status: "Active" } },
+  points: { id: 0, section: "points", title: "", subtitle: "", data: { points: "", value: "", terms: "", posterUrl: "", status: "Active" } },
   pharmacies: { id: 0, section: "pharmacies", title: "", subtitle: "", data: { phone: "", address: "", state: "" } },
   payments: { id: 0, section: "payments", title: "", subtitle: "", data: { details: "", link: "", qrUrl: "", portal: "", status: "Available" } },
   faq: { id: 0, section: "faq", title: "", subtitle: "", data: { answer: "", category: "", source: "Google Sheet" } },
@@ -198,7 +198,7 @@ function importRows(section: ImportableSection, text: string): Omit<RecordItem, 
       section,
       title: row[0],
       subtitle: "Point Redeem",
-      data: { points: `${row[1]} points`, value: "Redeem reward", terms: "Based on DrSmile Point Redeem sheet", status: "Active" },
+      data: { points: `${row[1]} points`, value: "Redeem reward", terms: "Based on DrSmile Point Redeem sheet", posterUrl: "", status: "Active" },
     }));
   }
 
@@ -690,6 +690,7 @@ function RecordCard({ item, setEditing, removeItem, setToast }: { item: RecordIt
   }
   return (
     <article className="record-card point-card">
+      {item.data.posterUrl && <div className="point-poster-frame"><img className="point-poster" src={item.data.posterUrl} alt={`${item.title} reward`} /></div>}
       <div className="card-top"><span className="record-avatar">PT</span><div><h3>{item.title}</h3><p>{item.subtitle}</p></div><CardMenu item={item} setEditing={setEditing} removeItem={removeItem} /></div>
       <div className="point-value"><strong>{item.data.points || "—"}</strong><span>Redeem</span></div>
       <p>{item.data.terms}</p><div className="card-footer"><span className="status-chip">{item.data.status || "Active"}</span><button onClick={() => copyText(`${item.title}: ${item.data.points} = ${item.data.value}. ${item.data.terms}`, "Reward details", setToast)}>Copy details</button></div>
@@ -821,15 +822,16 @@ function EditModal({ item, setItem, onClose, onSave, saving, setToast, productCa
     if (!file) return;
     setUploading(true);
     try {
+      const uploadFile = await prepareImageForUpload(file);
       const form = new FormData();
-      form.append("file", file);
+      form.append("file", uploadFile);
       const response = await fetch("/api/files", { method: "POST", body: form });
-      if (!response.ok) throw new Error();
-      const payload = await response.json();
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.error || "Image upload failed");
       updateData(target, payload.url);
       setToast(target === "posterUrl" ? "Poster uploaded" : "QR uploaded");
-    } catch {
-      setToast("QR upload will be available after publishing");
+    } catch (error) {
+      setToast(error instanceof Error ? error.message : "Image upload failed");
     } finally {
       setUploading(false);
     }
@@ -874,7 +876,7 @@ function EditModal({ item, setItem, onClose, onSave, saving, setToast, productCa
           {fields[item.section].map(([key, label, type]) => (
             <label key={key} className={type === "textarea" ? "full" : ""}><span>{label}</span>{type === "textarea" ? <textarea value={item.data[key] || ""} onChange={(event) => updateData(key, event.target.value)} /> : <input type={type} value={item.data[key] || ""} onChange={(event) => updateData(key, event.target.value)} />}</label>
           ))}
-          {(item.section === "products" || item.section === "promotions") && (
+          {(item.section === "products" || item.section === "promotions" || item.section === "points") && (
             <label className="full upload-field"><span>Poster image</span><input type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => uploadImage(event.target.files?.[0], "posterUrl")} /><small>{uploading ? "Uploading…" : item.data.posterUrl ? "Poster attached — it will display in a neat 4×4 square crop." : "PNG, JPG or WebP · displayed as a 4×4 square · maximum 5 MB"}</small></label>
           )}
           {item.section === "payments" && (
@@ -885,6 +887,29 @@ function EditModal({ item, setItem, onClose, onSave, saving, setToast, productCa
       </form>
     </div>
   );
+}
+
+async function prepareImageForUpload(file: File) {
+  if (!file.type.startsWith("image/")) throw new Error("Please choose a PNG or JPEG image");
+  if (file.size > 5_000_000) throw new Error("Image must be under 5 MB");
+  if (file.size < 850_000) return file;
+
+  const bitmap = await createImageBitmap(file);
+  const maxSide = 1600;
+  const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+  canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+  const context = canvas.getContext("2d");
+  if (!context) throw new Error("This image could not be prepared");
+  context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  bitmap.close();
+
+  for (const quality of [0.84, 0.72, 0.6]) {
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/jpeg", quality));
+    if (blob && blob.size < 850_000) return new File([blob], `${file.name.replace(/\.[^.]+$/, "")}.jpg`, { type: "image/jpeg" });
+  }
+  throw new Error("Image is too detailed. Please use a smaller file");
 }
 
 function PriceField({ label, fieldKey, item, updateData, defaultCurrency = "RM" }: { label: string; fieldKey: string; item: RecordItem; updateData: (key: string, value: string) => void; defaultCurrency?: "RM" | "SGD" }) {
