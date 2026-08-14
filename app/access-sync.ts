@@ -6,18 +6,32 @@ function config() {
   return { url: values.GOOGLE_APPS_SCRIPT_URL || "", secret: values.GOOGLE_APPS_SCRIPT_SECRET || "" };
 }
 
-async function callSheet(action: "push" | "pull", members?: Awaited<ReturnType<typeof listAccessSettings>>) {
+async function callSheet(action: "push" | "pull" | "push_broadcasts", members?: Awaited<ReturnType<typeof listAccessSettings>>, broadcasts?: unknown[]) {
   const settings = config();
   if (!settings.url || !settings.secret) throw new Error("Google Apps Script connection is not configured yet");
   const response = await fetch(settings.url, {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ action, secret: settings.secret, members }),
+    body: JSON.stringify({ action, secret: settings.secret, members, broadcasts }),
   });
   if (!response.ok) throw new Error(`Google Sheet returned ${response.status}`);
   const payload = await response.json() as { ok?: boolean; error?: string; members?: AccessSettingsInput[] };
   if (!payload.ok) throw new Error(payload.error || "Google Sheet sync failed");
   return payload;
+}
+
+export async function pushBroadcastsToSheet() {
+  try {
+    const result = await env.DB.prepare("SELECT id, title, data, updated_at FROM records WHERE section = 'broadcasts' ORDER BY json_extract(data, '$.date'), json_extract(data, '$.time'), id").all<Record<string, unknown>>();
+    const broadcasts = result.results.map((row) => ({ id: Number(row.id), title: String(row.title), data: JSON.parse(String(row.data || "{}")), updatedAt: String(row.updated_at || "") }));
+    await callSheet("push_broadcasts", undefined, broadcasts);
+    await setSyncStatus("synced", "Broadcast Schedule sheet is up to date");
+    return { synced: true, status: "synced", message: "Broadcast Schedule sheet is up to date" };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Broadcast Schedule sync failed";
+    await setSyncStatus("pending", message);
+    return { synced: false, status: "pending", message };
+  }
 }
 
 export async function pushAccessToSheet() {

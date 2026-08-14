@@ -1,5 +1,5 @@
 const DRSMILE_SHEET_ID = '18DC7Df9OCFtrbj5FmZUVcLTwC0hg_2lYnNDFjrpMSaU';
-const MENUS = ['products', 'promotions', 'points', 'pharmacies', 'payments', 'faq', 'calendar'];
+const MENUS = ['products', 'promotions', 'points', 'pharmacies', 'payments', 'faq', 'calendar', 'broadcasts'];
 
 function doPost(e) {
   try {
@@ -8,10 +8,22 @@ function doPost(e) {
     if (!expected || request.secret !== expected) return json_({ ok: false, error: 'Unauthorized' });
     if (request.action === 'push') return json_(pushAccess_(request.members || []));
     if (request.action === 'pull') return json_(pullAccess_());
+    if (request.action === 'push_broadcasts') return json_(pushBroadcasts_(request.broadcasts || []));
     return json_({ ok: false, error: 'Unknown action' });
   } catch (error) {
     return json_({ ok: false, error: String(error && error.message || error) });
   }
+}
+
+function pushBroadcasts_(broadcasts) {
+  const sheet = sheet_(SpreadsheetApp.openById(DRSMILE_SHEET_ID), 'Broadcast Schedule');
+  const rows = [['Record ID', 'Date', 'Time', 'Channel', 'Broadcast Title', 'Description / BC Content', 'PIC', 'Updated At']];
+  broadcasts.forEach(function(item) {
+    const data = item.data || {};
+    rows.push([item.id, data.date || '', data.time || '', data.channel || '', item.title || '', data.description || '', data.pic || '', item.updatedAt || new Date().toISOString()]);
+  });
+  write_(sheet, rows);
+  return { ok: true, updatedAt: new Date().toISOString() };
 }
 
 function pushAccess_(members) {

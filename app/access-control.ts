@@ -1,6 +1,6 @@
 import { env } from "cloudflare:workers";
 
-export const MENU_KEYS = ["products", "promotions", "points", "pharmacies", "payments", "faq", "calendar"] as const;
+export const MENU_KEYS = ["products", "promotions", "points", "pharmacies", "payments", "faq", "calendar", "broadcasts"] as const;
 export type MenuKey = (typeof MENU_KEYS)[number];
 export type PermissionAction = "view" | "add" | "edit" | "delete";
 export type PermissionSet = { view: boolean; add: boolean; edit: boolean; delete: boolean };

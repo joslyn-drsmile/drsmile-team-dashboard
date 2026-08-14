@@ -138,6 +138,7 @@ main { min-height: 100vh; margin-left: 252px; }
 .calendar-event-pill { min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 4px; padding: 5px 6px; border-radius: 6px; color: #365b78; background: #dceefa; }
 .calendar-event-pill.tone-1 { color: #685a88; background: #eee8fa; }.calendar-event-pill.tone-2 { color: #41745f; background: #e1f3ea; }
 .calendar-event-pill b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 7px; }.calendar-event-pill small { flex: 0 0 auto; font-size: 6px; opacity: .78; }
+.calendar-event-pill[role="button"] { cursor: pointer; }.calendar-event-pill[role="button"]:focus-visible { outline: 2px solid #17365d; outline-offset: 1px; }
 .calendar-events > em { padding-left: 4px; color: #7e91a4; font-size: 7px; font-style: normal; font-weight: 750; }
 .month-grid.compact { gap: 4px; }
 .month-grid.compact > button, .month-grid.compact .calendar-blank { min-height: 48px; border-radius: 9px; background: transparent; }
@@ -162,6 +163,16 @@ main { min-height: 100vh; margin-left: 252px; }
 .agenda-people { display: block; overflow: hidden; margin-top: 4px; color: #527590; font-size: 7px; text-overflow: ellipsis; white-space: nowrap; }
 .agenda-actions { grid-column: 2; display: flex; gap: 5px; }.agenda-actions button { padding: 4px 7px; border: 0; border-radius: 6px; color: #52718a; background: rgba(255,255,255,.72); cursor: pointer; font-size: 8px; font-weight: 800; }.agenda-actions .delete { color: #aa5a62; background: #fff0f2; }
 .no-events { display: grid; place-items: center; padding: 28px 12px; border: 1px dashed rgba(161,190,213,.62); border-radius: 11px; text-align: center; }.no-events > span { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 10px; color: #537b99; background: #deeffa; font-size: 17px; }.no-events p { margin: 9px 0; color: #8495a4; font-size: 9px; }.no-events button { border: 0; color: #315d80; background: transparent; cursor: pointer; font-size: 9px; font-weight: 850; }
+
+/* Broadcast schedule */
+.broadcast-filters { display:flex; align-items:center; gap:6px; width:fit-content; margin:0 0 12px auto; padding:5px; border:1px solid rgba(198,219,234,.72); border-radius:12px; background:rgba(255,255,255,.58); }
+.broadcast-filters > span { padding:0 7px; color:#7c91a5; font-size:8px; font-weight:850; text-transform:uppercase; letter-spacing:.6px; }.broadcast-filters button { min-height:30px; padding:0 11px; border:0; border-radius:8px; color:#637e94; background:transparent; cursor:pointer; font-size:9px; font-weight:800; }.broadcast-filters button.active { color:white; background:#17365d; box-shadow:0 5px 12px rgba(23,54,93,.18); }
+.broadcast-agenda-item { align-items:start; }.broadcast-title-button { max-width:100%; padding:0; border:0; color:inherit; background:transparent; cursor:pointer; text-align:left; }.broadcast-title-button h3 { margin-top:0; }
+.broadcast-channel-tags { display:flex; flex-wrap:wrap; gap:4px; margin:6px 0 2px; }.broadcast-channel-tags span { padding:3px 6px; border-radius:6px; font-size:7px; font-weight:900; }.broadcast-channel-tags .facebook { color:#315f9b; background:#dceafb; }.broadcast-channel-tags .whatsapp { color:#34705c; background:#dff3ea; }
+.agenda-list .broadcast-description { display:-webkit-box; overflow:hidden; margin-top:7px; color:#536f86; white-space:pre-line; line-height:1.45; -webkit-box-orient:vertical; -webkit-line-clamp:3; }
+.broadcast-date-time { display:grid; grid-template-columns:minmax(0,1fr) minmax(250px,1fr); gap:12px; align-items:stretch; }.broadcast-date-time > label { padding:12px; border:1px solid #cfe0ed; border-radius:11px; background:rgba(255,255,255,.48); }.broadcast-date-time > label > span { display:block; margin-bottom:7px; color:var(--muted); font-size:8px; font-weight:800; text-transform:uppercase; letter-spacing:.6px; }
+.broadcast-channel-field { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin:0; padding:12px; border:1px solid #cfe0ed; border-radius:11px; background:rgba(255,255,255,.48); }.broadcast-channel-field legend { padding:0 5px; color:var(--muted); font-size:8px; font-weight:800; text-transform:uppercase; letter-spacing:.6px; }.broadcast-channel-field label { display:grid; grid-template-columns:auto 34px 1fr; gap:8px; align-items:center; padding:9px; border:1px solid #dce8f1; border-radius:10px; background:rgba(255,255,255,.68); cursor:pointer; }.broadcast-channel-field label.active { border-color:#9fc9e5; background:#e6f4fd; }.broadcast-channel-field input { width:15px; height:15px; accent-color:#17365d; }.broadcast-channel-field label > span { width:30px; height:30px; display:grid; place-items:center; border-radius:8px; color:#315d80; background:#dceefa; font-size:8px; font-weight:900; }.broadcast-channel-field strong { color:#294d69; font-size:10px; }
+.broadcast-detail { width:min(620px,calc(100vw - 32px)); }.broadcast-detail-meta { display:flex; flex-wrap:wrap; gap:6px; margin:17px 0; }.broadcast-detail-meta span { padding:5px 8px; border-radius:8px; color:#456d89; background:#e1f1fb; font-size:8px; font-weight:800; }.broadcast-detail-copy { min-height:120px; margin:0; padding:16px; border:1px solid #dbe8f1; border-radius:12px; color:#294760; background:rgba(255,255,255,.72); white-space:pre-wrap; font-size:11px; line-height:1.7; }.broadcast-detail-pic { color:#668197; font-size:9px; }
 
 .record-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 13px; }
 .record-grid.faq { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -285,6 +296,8 @@ main { min-height: 100vh; margin-left: 252px; }
   .calendar-board, .calendar-agenda, .overview-calendar { padding: 16px; }
   .calendar-board-header { align-items: flex-start; }.calendar-board-header h2 { font-size: 18px; }
   .multi-people-fields { grid-template-columns: 1fr; }
+  .broadcast-filters { width:100%; margin-left:0; }.broadcast-filters > span { margin-right:auto; }.broadcast-filters button { padding:0 8px; }
+  .broadcast-date-time, .broadcast-channel-field { grid-template-columns:1fr; }
 }
 
 /* Sign-in and owner access controls */

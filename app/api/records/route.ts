@@ -1,6 +1,7 @@
 import { env } from "cloudflare:workers";
 import sheetData from "../../sheet-data.json";
 import { accessDenied, can, getAccessContext } from "../../access-control";
+import { pushBroadcastsToSheet } from "../../access-sync";
 
 type IncomingRecord = {
   id?: number;
@@ -103,7 +104,8 @@ export async function POST(request: Request) {
   const now = new Date().toISOString();
   const result = await env.DB.prepare("INSERT INTO records (section, title, subtitle, data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)")
     .bind(item.section, item.title.trim(), item.subtitle ?? "", JSON.stringify(item.data ?? {}), now, now).run();
-  return Response.json({ record: { ...item, id: Number(result.meta.last_row_id), title: item.title.trim(), subtitle: item.subtitle ?? "", data: item.data ?? {} } });
+  const sync = item.section === "broadcasts" ? await pushBroadcastsToSheet() : undefined;
+  return Response.json({ record: { ...item, id: Number(result.meta.last_row_id), title: item.title.trim(), subtitle: item.subtitle ?? "", data: item.data ?? {} }, sync });
 }
 
 export async function PUT(request: Request) {
@@ -115,7 +117,8 @@ export async function PUT(request: Request) {
   if (!existing || existing.section !== item.section || !can(context, existing.section, "edit")) return accessDenied();
   await env.DB.prepare("UPDATE records SET section = ?, title = ?, subtitle = ?, data = ?, updated_at = ? WHERE id = ?")
     .bind(item.section, item.title.trim(), item.subtitle ?? "", JSON.stringify(item.data ?? {}), new Date().toISOString(), item.id).run();
-  return Response.json({ record: { ...item, title: item.title.trim(), subtitle: item.subtitle ?? "", data: item.data ?? {} } });
+  const sync = item.section === "broadcasts" ? await pushBroadcastsToSheet() : undefined;
+  return Response.json({ record: { ...item, title: item.title.trim(), subtitle: item.subtitle ?? "", data: item.data ?? {} }, sync });
 }
 
 export async function DELETE(request: Request) {
@@ -126,5 +129,6 @@ export async function DELETE(request: Request) {
   const context = await getAccessContext(request);
   if (!existing || !can(context, existing.section, "delete")) return accessDenied();
   await env.DB.prepare("DELETE FROM records WHERE id = ?").bind(id).run();
-  return Response.json({ ok: true });
+  const sync = existing.section === "broadcasts" ? await pushBroadcastsToSheet() : undefined;
+  return Response.json({ ok: true, sync });
 }

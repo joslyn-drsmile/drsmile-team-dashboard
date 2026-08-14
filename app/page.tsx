@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import sheetData from "./sheet-data.json";
 
-type Section = "products" | "promotions" | "points" | "pharmacies" | "payments" | "faq" | "calendar";
+type Section = "products" | "promotions" | "points" | "pharmacies" | "payments" | "faq" | "calendar" | "broadcasts";
 type RecordItem = {
   id: number;
   section: Section;
@@ -12,7 +12,7 @@ type RecordItem = {
   data: Record<string, string>;
 };
 
-type ImportableSection = Exclude<Section, "payments" | "promotions" | "calendar">;
+type ImportableSection = Exclude<Section, "payments" | "promotions" | "calendar" | "broadcasts">;
 type PermissionSet = { view: boolean; add: boolean; edit: boolean; delete: boolean };
 type AccessMember = { id: string; name: string; role: string; email: string; active: boolean; isOwner: boolean; updatedAt: string; permissions: Record<Section, PermissionSet> };
 type CurrentAccess = { member: AccessMember; permissions: Record<Section, PermissionSet> };
@@ -43,6 +43,7 @@ const SOURCE_SHEET_URL = "https://docs.google.com/spreadsheets/d/18DC7Df9OCFtrbj
 const menus: { id: "home" | Section; label: string; short: string }[] = [
   { id: "home", label: "Overview", short: "OV" },
   { id: "calendar", label: "Calendar", short: "CL" },
+  { id: "broadcasts", label: "Broadcast Schedule", short: "BC" },
   { id: "products", label: "Products & Pricing", short: "PR" },
   { id: "promotions", label: "Promotion", short: "PM" },
   { id: "points", label: "Point Redeem", short: "PT" },
@@ -116,6 +117,7 @@ const blankBySection: Record<Section, RecordItem> = {
   payments: { id: 0, section: "payments", title: "", subtitle: "", data: { details: "", link: "", qrUrl: "", portal: "", status: "Available" } },
   faq: { id: 0, section: "faq", title: "", subtitle: "", data: { answer: "", category: "", source: "Google Sheet" } },
   calendar: { id: 0, section: "calendar", title: "", subtitle: "", data: { date: localDateKey(new Date()), endDate: localDateKey(new Date()), time: "", location: "", pic: "", attendees: "", details: "", status: "Scheduled" } },
+  broadcasts: { id: 0, section: "broadcasts", title: "", subtitle: "Broadcast", data: { date: localDateKey(new Date()), time: "", channel: "", description: "", pic: "" } },
 };
 
 const pageCopy: Record<Section, { eyebrow: string; title: string; description: string }> = {
@@ -126,6 +128,7 @@ const pageCopy: Record<Section, { eyebrow: string; title: string; description: s
   payments: { eyebrow: "Order collection", title: "Payment methods", description: "Keep QR codes, payment instructions and gateway links ready for every order." },
   faq: { eyebrow: "Team knowledge", title: "Frequently asked questions", description: "A shared answer bank for fast, consistent customer replies." },
   calendar: { eyebrow: "Team schedule", title: "Calendar", description: "Plan every DrSmile event by date, activity and location for the whole admin team." },
+  broadcasts: { eyebrow: "Monthly content schedule", title: "Broadcast Schedule", description: "Plan every Facebook and WhatsApp broadcast in one clear monthly view." },
 };
 
 function localDateKey(date: Date) {
@@ -359,6 +362,8 @@ export default function Home() {
   const [newCategory, setNewCategory] = useState("");
   const [selectedState, setSelectedState] = useState(ALL_STATES);
   const [calendarMonth, setCalendarMonth] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+  const [broadcastMonth, setBroadcastMonth] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+  const [broadcastChannel, setBroadcastChannel] = useState("All");
 
   useEffect(() => {
     fetch("/api/me")
@@ -398,13 +403,14 @@ export default function Home() {
       if (active === "promotions" && record.data.month !== promotionMonth) return false;
       if (active === "products" && selectedCategory !== ALL_PRODUCTS && productCategory(record) !== selectedCategory) return false;
       if (active === "pharmacies" && selectedState !== ALL_STATES && pharmacyState(record) !== selectedState) return false;
+      if (active === "broadcasts" && broadcastChannel !== "All" && !record.data.channel?.split(",").map((value) => value.trim()).includes(broadcastChannel)) return false;
       return true;
     });
     if (!needle) return inSection;
     return inSection.filter((record) =>
       `${record.title} ${record.subtitle} ${Object.values(record.data).join(" ")}`.toLowerCase().includes(needle),
     );
-  }, [active, query, records, promotionMonth, selectedCategory, selectedState]);
+  }, [active, query, records, promotionMonth, selectedCategory, selectedState, broadcastChannel]);
 
   function allowed(section: Section, action: keyof PermissionSet) {
     return !!access?.permissions[section]?.[action];
@@ -439,6 +445,13 @@ export default function Home() {
     setEditing(next);
   }
 
+  function startBroadcast(date = localDateKey(new Date(broadcastMonth.getFullYear(), broadcastMonth.getMonth(), 1))) {
+    if (!allowed("broadcasts", "add")) return;
+    const next = structuredClone(blankBySection.broadcasts);
+    next.data.date = date;
+    setEditing(next);
+  }
+
   async function savePromotionTitle() {
     if (!allowed("promotions", "edit")) return;
     const campaignItems = records.filter((record) => record.section === "promotions" && record.data.month === promotionMonth);
@@ -462,6 +475,10 @@ export default function Home() {
     event.preventDefault();
     if (!editing) return;
     if (!allowed(editing.section, editing.id ? "edit" : "add")) return;
+    if (editing.section === "broadcasts" && (!editing.data.date || !editing.data.time || !editing.data.channel || !editing.data.description?.trim() || !editing.data.pic)) {
+      setToast("Complete date, time, channel, description and PIC");
+      return;
+    }
     setSaving(true);
     const optimistic = editing.id
       ? records.map((record) => (record.id === editing.id ? editing : record))
@@ -484,7 +501,7 @@ export default function Home() {
           ? current.map((record) => (record.id === editing.id ? payload.record : record))
           : current.map((record) => (record.id === optimistic[optimistic.length - 1].id ? payload.record : record)),
       );
-      setToast("Shared changes saved");
+      setToast(payload.sync && !payload.sync.synced ? "Broadcast saved · Sheet sync pending" : "Shared changes saved");
     } catch (error) {
       setRecords(records);
       setToast(error instanceof Error ? error.message : "Shared changes could not be saved");
@@ -504,7 +521,8 @@ export default function Home() {
       setToast("Item could not be deleted");
       return;
     }
-    setToast("Item deleted");
+    const payload = await response.json().catch(() => ({}));
+    setToast(payload.sync && !payload.sync.synced ? "Broadcast deleted · Sheet sync pending" : "Item deleted");
   }
 
   async function addProductCategory(event: FormEvent<HTMLFormElement>) {
@@ -616,13 +634,13 @@ export default function Home() {
               </div>
               <div className="heading-actions">
                 {active === "promotions" && <label className="month-filter"><span>Track by month</span><input type="month" value={promotionMonth} onChange={(event) => setPromotionMonth(event.target.value)} /></label>}
-                {active !== "payments" && active !== "promotions" && active !== "calendar" && <a className="secondary-button" href={SOURCE_SHEET_URL} target="_blank" rel="noreferrer">Open Sheet ↗</a>}
-                {active !== "payments" && active !== "promotions" && active !== "calendar" && allowed(active, "add") && allowed(active, "edit") && allowed(active, "delete") && <button className="secondary-button import-button" onClick={() => setImporting(active)}>⇧ Import data</button>}
-                {allowed(active, "add") && <button className="primary-button" onClick={startAdd}>＋ {active === "calendar" ? "Add event" : "Add item"}</button>}
+                {active !== "payments" && active !== "promotions" && active !== "calendar" && active !== "broadcasts" && <a className="secondary-button" href={SOURCE_SHEET_URL} target="_blank" rel="noreferrer">Open Sheet ↗</a>}
+                {active !== "payments" && active !== "promotions" && active !== "calendar" && active !== "broadcasts" && allowed(active, "add") && allowed(active, "edit") && allowed(active, "delete") && <button className="secondary-button import-button" onClick={() => setImporting(active as ImportableSection)}>⇧ Import data</button>}
+                {allowed(active, "add") && <button className="primary-button" onClick={active === "broadcasts" ? () => startBroadcast() : startAdd}>＋ {active === "calendar" ? "Add event" : active === "broadcasts" ? "Add broadcast" : "Add item"}</button>}
               </div>
             </div>
 
-            {active !== "payments" && active !== "promotions" && active !== "calendar" && (
+            {active !== "payments" && active !== "promotions" && active !== "calendar" && active !== "broadcasts" && (
               <div className="sheet-note">
                 <span className="sheet-mark">GS</span>
                 <div><strong>Imported from DrSmile Dashboard</strong><small>Copy rows from the matching Google Sheet tab and use Import data anytime.</small></div>
@@ -643,6 +661,21 @@ export default function Home() {
                 canAdd={allowed("calendar", "add")}
                 canEdit={allowed("calendar", "edit")}
                 canDelete={allowed("calendar", "delete")}
+              />
+            ) : active === "broadcasts" ? (
+              <BroadcastWorkspace
+                broadcasts={visible.filter((record) => record.section === "broadcasts")}
+                month={broadcastMonth}
+                setMonth={setBroadcastMonth}
+                channel={broadcastChannel}
+                setChannel={setBroadcastChannel}
+                onAddDate={startBroadcast}
+                setEditing={setEditing}
+                removeItem={removeItem}
+                setToast={setToast}
+                canAdd={allowed("broadcasts", "add")}
+                canEdit={allowed("broadcasts", "edit")}
+                canDelete={allowed("broadcasts", "delete")}
               />
             ) : <div className={active === "products" || active === "pharmacies" ? "products-browser" : ""}>
               {active === "products" && (
@@ -740,6 +773,7 @@ function Overview({ records, navigate, setToast, permissions }: { records: Recor
     { label: "Payment options", value: records.filter((item) => item.section === "payments").length, detail: "Ready for orders", accent: "pink", section: "payments" as Section },
     { label: "FAQ answers", value: records.filter((item) => item.section === "faq").length, detail: "Shared knowledge", accent: "gold", section: "faq" as Section },
     { label: "Events", value: records.filter((item) => item.section === "calendar").length, detail: "Shared schedule", accent: "blue", section: "calendar" as Section },
+    { label: "Broadcasts", value: records.filter((item) => item.section === "broadcasts").length, detail: "Facebook & WhatsApp", accent: "lime", section: "broadcasts" as Section },
   ].filter((item) => permissions[item.section].view);
   const recent = records.slice(-5).reverse();
   return (
@@ -778,6 +812,7 @@ function Overview({ records, navigate, setToast, permissions }: { records: Recor
             {permissions.payments.view && <button onClick={() => navigate("payments")}><span>PY</span><strong>Create payment</strong><small>Atome or Payex portal</small></button>}
             {permissions.faq.view && <button onClick={() => navigate("faq")}><span>FQ</span><strong>Find an answer</strong><small>Search team FAQ</small></button>}
             {permissions.calendar.view && <button onClick={() => navigate("calendar")}><span>CL</span><strong>Team calendar</strong><small>View events and locations</small></button>}
+            {permissions.broadcasts.view && <button onClick={() => navigate("broadcasts")}><span>BC</span><strong>Broadcast schedule</strong><small>Plan Facebook and WhatsApp</small></button>}
           </div>
         </div>
         <div className="panel activity-panel">
@@ -795,7 +830,7 @@ function Overview({ records, navigate, setToast, permissions }: { records: Recor
   );
 }
 
-function MonthGrid({ month, events, onDayClick, compact = false }: { month: Date; events: RecordItem[]; onDayClick?: (date: string) => void; compact?: boolean }) {
+function MonthGrid({ month, events, onDayClick, onEventClick, compact = false }: { month: Date; events: RecordItem[]; onDayClick?: (date: string) => void; onEventClick?: (event: RecordItem) => void; compact?: boolean }) {
   const today = localDateKey(new Date());
   const cells = calendarCells(month);
   const year = month.getFullYear();
@@ -812,7 +847,7 @@ function MonthGrid({ month, events, onDayClick, compact = false }: { month: Date
             <strong>{day}</strong>
             {!!dayEvents.length && (compact
               ? <span className="event-dots">{dayEvents.slice(0, 3).map((event) => <i key={event.id} />)}</span>
-              : <span className="calendar-events">{dayEvents.slice(0, 3).map((event, eventIndex) => <span className={`calendar-event-pill tone-${eventIndex % 3}`} key={event.id}><b>{event.title}</b>{event.data.time && <small>{formatEventTime(event.data.time)}</small>}</span>)}{dayEvents.length > 3 && <em>+{dayEvents.length - 3} more</em>}</span>
+              : <span className="calendar-events">{dayEvents.slice(0, 3).map((event, eventIndex) => <span className={`calendar-event-pill tone-${eventIndex % 3}`} key={event.id} role={onEventClick ? "button" : undefined} tabIndex={onEventClick ? 0 : undefined} onClick={(click) => { if (!onEventClick) return; click.stopPropagation(); onEventClick(event); }} onKeyDown={(key) => { if (onEventClick && (key.key === "Enter" || key.key === " ")) { key.preventDefault(); key.stopPropagation(); onEventClick(event); } }}><b>{event.title}</b>{event.data.time && <small>{event.section === "broadcasts" ? `${event.data.channel?.replace("Facebook", "FB").replace("WhatsApp", "WA")} · ` : ""}{formatEventTime(event.data.time)}</small>}</span>)}{dayEvents.length > 3 && <em>+{dayEvents.length - 3} more</em>}</span>
             )}
           </button>
         );
@@ -873,6 +908,48 @@ function CalendarWorkspace({ events, month, setMonth, onAddDate, setEditing, rem
         </div>
       </aside>
     </div>
+  );
+}
+
+function BroadcastWorkspace({ broadcasts, month, setMonth, channel, setChannel, onAddDate, setEditing, removeItem, setToast, canAdd, canEdit, canDelete }: { broadcasts: RecordItem[]; month: Date; setMonth: React.Dispatch<React.SetStateAction<Date>>; channel: string; setChannel: (value: string) => void; onAddDate: (date?: string) => void; setEditing: (item: RecordItem) => void; removeItem: (item: RecordItem) => void; setToast: (value: string) => void; canAdd: boolean; canEdit: boolean; canDelete: boolean }) {
+  const [selected, setSelected] = useState<RecordItem | null>(null);
+  const monthKey = localDateKey(month).slice(0, 7);
+  const monthBroadcasts = broadcasts
+    .filter((item) => item.data.date?.startsWith(monthKey))
+    .sort((left, right) => `${left.data.date}${left.data.time}`.localeCompare(`${right.data.date}${right.data.time}`));
+  const today = new Date();
+  function changeMonth(offset: number) { setMonth(new Date(month.getFullYear(), month.getMonth() + offset, 1)); }
+  function channelNames(item: RecordItem) { return item.data.channel?.split(",").map((value) => value.trim()).filter(Boolean) || []; }
+  return (
+    <>
+      <div className="broadcast-filters" aria-label="Broadcast channel filter">
+        <span>Channel</span>
+        {["All", "Facebook", "WhatsApp"].map((value) => <button type="button" key={value} className={channel === value ? "active" : ""} onClick={() => setChannel(value)}>{value === "WhatsApp" ? "WA" : value}</button>)}
+      </div>
+      <div className="calendar-workspace broadcast-workspace">
+        <section className="panel calendar-board">
+          <div className="calendar-board-header">
+            <div><p className="eyebrow">Click a date to add a broadcast</p><h2>{monthLabel(month)}</h2></div>
+            <div><button onClick={() => setMonth(new Date(today.getFullYear(), today.getMonth(), 1))}>Today</button><button onClick={() => changeMonth(-1)} aria-label="Previous month">‹</button><button onClick={() => changeMonth(1)} aria-label="Next month">›</button></div>
+          </div>
+          <MonthGrid month={month} events={monthBroadcasts} onDayClick={canAdd ? onAddDate : undefined} onEventClick={setSelected} />
+        </section>
+        <aside className="panel calendar-agenda broadcast-agenda">
+          <div className="panel-heading"><div><p className="eyebrow">Monthly broadcasts</p><h2>{monthBroadcasts.length} scheduled</h2></div></div>
+          <div className="agenda-list">
+            {monthBroadcasts.map((item) => (
+              <article className="broadcast-agenda-item" key={item.id}>
+                <time><strong>{dateFromKey(item.data.date).getDate()}</strong><span>{dateFromKey(item.data.date).toLocaleDateString("en-MY", { month: "short" })}</span></time>
+                <div><button className="broadcast-title-button" onClick={() => setSelected(item)}><h3>{item.title}</h3></button><p>{formatEventTime(item.data.time)}</p><div className="broadcast-channel-tags">{channelNames(item).map((name) => <span className={name === "Facebook" ? "facebook" : "whatsapp"} key={name}>{name === "Facebook" ? "FB" : "WA"}</span>)}</div>{item.data.pic && <span className="agenda-people">PIC · {item.data.pic}</span>}<p className="broadcast-description">{item.data.description}</p></div>
+                <div className="agenda-actions"><button onClick={() => copyText(item.data.description, "Broadcast description", setToast)}>Copy</button>{canEdit && <button onClick={() => setEditing(structuredClone(item))}>Edit</button>}{canDelete && <button className="delete" onClick={() => removeItem(item)}>Delete</button>}</div>
+              </article>
+            ))}
+            {!monthBroadcasts.length && <div className="no-events"><span>BC</span><p>No broadcasts planned for {monthLabel(month)}.</p>{canAdd && <button onClick={() => onAddDate(localDateKey(new Date(month.getFullYear(), month.getMonth(), 1)))}>Add broadcast</button>}</div>}
+          </div>
+        </aside>
+      </div>
+      {selected && <div className="modal-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && setSelected(null)}><section className="modal broadcast-detail" role="dialog" aria-modal="true" aria-label={selected.title}><div className="modal-heading"><div><p className="eyebrow">Broadcast details</p><h2>{selected.title}</h2></div><button type="button" onClick={() => setSelected(null)} aria-label="Close">×</button></div><div className="broadcast-detail-meta"><span>{selected.data.date}</span><span>{formatEventTime(selected.data.time)}</span>{channelNames(selected).map((name) => <span key={name}>{name}</span>)}</div><p className="broadcast-detail-copy">{selected.data.description}</p><p className="broadcast-detail-pic">PIC · {selected.data.pic}</p><div className="modal-actions"><button type="button" onClick={() => copyText(selected.data.description, "Broadcast description", setToast)}>Copy Description</button>{canEdit && <button className="primary-button" type="button" onClick={() => { setSelected(null); setEditing(structuredClone(selected)); }}>Edit broadcast</button>}</div></section></div>}
+    </>
   );
 }
 
@@ -1165,6 +1242,7 @@ function EditModal({ item, setItem, onClose, onSave, saving, setToast, productCa
     payments: [["details", "Payment instructions", "textarea"], ["link", "Payment link", "text"], ["portal", "Portal link", "text"], ["status", "Status", "text"]],
     faq: [["category", "Category", "text"], ["answer", "Answer", "textarea"], ["source", "Source", "text"]],
     calendar: [["location", "Location", "text"], ["details", "Event details / remark", "textarea"], ["status", "Status", "text"]],
+    broadcasts: [],
   };
 
   function updateData(key: string, value: string) {
@@ -1194,11 +1272,11 @@ function EditModal({ item, setItem, onClose, onSave, saving, setToast, productCa
 
   return (
     <div className="modal-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
-      <form className={`modal ${item.section === "calendar" ? "calendar-modal" : ""}`} onSubmit={onSave}>
+      <form className={`modal ${item.section === "calendar" || item.section === "broadcasts" ? "calendar-modal" : ""}`} onSubmit={onSave}>
         <div className="modal-heading"><div><p className="eyebrow">{item.id ? "Update item" : "New item"}</p><h2>{item.id ? item.title : `Add to ${menus.find((menu) => menu.id === item.section)?.label}`}</h2></div><button type="button" onClick={onClose} aria-label="Close">×</button></div>
         <div className="form-grid">
-          <label className="full"><span>{item.section === "faq" ? "Question" : item.section === "pharmacies" ? "Shop name" : item.section === "promotions" ? "Title A · Package Name" : item.section === "calendar" ? "Event name" : "Name"}</span><input required value={item.title} onChange={(event) => setItem({ ...item, title: event.target.value })} placeholder={item.section === "promotions" ? "e.g. 配套A - 美白牙粉x2" : item.section === "calendar" ? "e.g. DrSmile Roadshow" : "Enter a clear name"} /></label>
-          <label className="full"><span>{item.section === "pharmacies" ? "Area / location" : item.section === "promotions" ? "SKU" : item.section === "calendar" ? "Event type" : "Short description"}</span><input value={item.subtitle} onChange={(event) => setItem({ ...item, subtitle: event.target.value })} placeholder={item.section === "promotions" ? "e.g. 8A26" : item.section === "calendar" ? "e.g. Roadshow, training or campaign" : "Optional supporting detail"} /></label>
+          <label className="full"><span>{item.section === "faq" ? "Question" : item.section === "pharmacies" ? "Shop name" : item.section === "promotions" ? "Title A · Package Name" : item.section === "calendar" ? "Event name" : item.section === "broadcasts" ? "Broadcast title" : "Name"}</span><input required value={item.title} onChange={(event) => setItem({ ...item, title: event.target.value })} placeholder={item.section === "promotions" ? "e.g. 配套A - 美白牙粉x2" : item.section === "calendar" ? "e.g. DrSmile Roadshow" : item.section === "broadcasts" ? "e.g. August VIP Repurchase" : "Enter a clear name"} /></label>
+          {item.section !== "broadcasts" && <label className="full"><span>{item.section === "pharmacies" ? "Area / location" : item.section === "promotions" ? "SKU" : item.section === "calendar" ? "Event type" : "Short description"}</span><input value={item.subtitle} onChange={(event) => setItem({ ...item, subtitle: event.target.value })} placeholder={item.section === "promotions" ? "e.g. 8A26" : item.section === "calendar" ? "e.g. Roadshow, training or campaign" : "Optional supporting detail"} /></label>}
           {item.section === "products" && (
             <>
               <label><span>SKU</span><input value={item.data.sku || ""} onChange={(event) => updateData("sku", event.target.value)} /></label>
@@ -1244,6 +1322,14 @@ function EditModal({ item, setItem, onClose, onSave, saving, setToast, productCa
               </div>
             </>
           )}
+          {item.section === "broadcasts" && (
+            <>
+              <div className="calendar-schedule-fields full"><div className="broadcast-date-time"><label><span>Broadcast date</span><input required type="date" value={item.data.date || ""} onChange={(event) => updateData("date", event.target.value)} /></label><TimeField value={item.data.time || ""} onChange={(value) => updateData("time", value)} required /></div></div>
+              <BroadcastChannelField value={item.data.channel || ""} onChange={(value) => updateData("channel", value)} />
+              <label className="full"><span>Description / BC content</span><textarea required value={item.data.description || ""} onChange={(event) => updateData("description", event.target.value)} placeholder="Type the broadcast message your team will send" /></label>
+              <div className="full"><MultiNameField label="PIC" value={item.data.pic || ""} onChange={(value) => updateData("pic", value)} /></div>
+            </>
+          )}
           {item.section === "pharmacies" && (
             <label><span>State</span><select required value={item.data.regionState || pharmacyState(item)} onChange={(event) => updateData("regionState", event.target.value)}><option value="">Choose state</option>{PHARMACY_STATE_GROUPS.map((group) => <optgroup key={group.label} label={group.label}>{group.states.map((state) => <option key={state} value={state}>{state}</option>)}</optgroup>)}</select></label>
           )}
@@ -1283,7 +1369,13 @@ function MultiNameField({ label, value, onChange }: { label: string; value: stri
   );
 }
 
-function TimeField({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+function BroadcastChannelField({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+  const selected = value.split(",").map((channel) => channel.trim()).filter(Boolean);
+  function toggle(channel: string) { onChange(selected.includes(channel) ? selected.filter((item) => item !== channel).join(", ") : [...selected, channel].join(", ")); }
+  return <fieldset className="broadcast-channel-field full"><legend>Channel · Multiple selection</legend>{["Facebook", "WhatsApp"].map((channel) => <label key={channel} className={selected.includes(channel) ? "active" : ""}><input type="checkbox" checked={selected.includes(channel)} onChange={() => toggle(channel)} /><span>{channel === "Facebook" ? "FB" : "WA"}</span><strong>{channel}</strong></label>)}</fieldset>;
+}
+
+function TimeField({ value, onChange, required = false }: { value: string; onChange: (value: string) => void; required?: boolean }) {
   const parsedHour = value ? Number(value.split(":")[0]) : 9;
   const [hour, setHour] = useState(value ? String(parsedHour % 12 || 12).padStart(2, "0") : "");
   const [minute, setMinute] = useState(value ? (value.split(":")[1] || "00") : "");
@@ -1308,7 +1400,7 @@ function TimeField({ value, onChange }: { value: string; onChange: (value: strin
 
   return (
     <div className="custom-time-field">
-      <span>Start time <small>Optional</small></span>
+      <span>{required ? "Broadcast time" : "Start time"}<small>{required ? "Required" : "Optional"}</small></span>
       <div className="time-control">
         <input inputMode="numeric" maxLength={2} value={hour} onChange={(event) => { const next = event.target.value.replace(/\D/g, "").slice(0, 2); setHour(next); commit(next, minute, period); }} onBlur={() => hour && setHour(hour.padStart(2, "0"))} placeholder="09" aria-label="Hour" />
         <b>:</b>
