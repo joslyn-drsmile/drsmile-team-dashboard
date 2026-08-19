@@ -1029,12 +1029,12 @@ function SettingsPage({ currentEmail, setToast }: { currentEmail: string; setToa
           <article className="member-access-card" key={member.id}>
             <header>
               <div className="member-badge">{member.name.slice(0, 2).toUpperCase()}</div>
-              <div><strong>{member.name}</strong><small>{member.isOwner ? "Fixed administrator · All access" : member.email ? "Active team access" : "Add login email to enable access"}</small></div>
+              <div><strong>{member.name}</strong><small>{member.isOwner ? "Main account · Full control" : member.email ? "Active team access" : "Add login email to enable access"}</small></div>
               <label className="active-toggle"><input type="checkbox" checked={member.active} disabled={member.isOwner} onChange={(event) => updateMember(member.id, { active: event.target.checked })} /><span>Active</span></label>
             </header>
             <div className="member-fields">
               <label><span>Name</span><input value={member.name} disabled={member.id === "admin-joslyn"} onChange={(event) => updateMember(member.id, { name: event.target.value })} /></label>
-              <label><span>Role</span><input value={member.role} onChange={(event) => updateMember(member.id, { role: event.target.value })} /></label>
+              <label><span>Role</span><input value={member.role} disabled={member.id === "admin-joslyn"} onChange={(event) => updateMember(member.id, { role: event.target.value })} /></label>
               <label className="email-field"><span>Login email</span><input type="email" value={member.email} disabled={member.id === "admin-joslyn"} placeholder="name@company.com" onChange={(event) => updateMember(member.id, { email: event.target.value })} /></label>
             </div>
             <div className="permission-table-wrap">

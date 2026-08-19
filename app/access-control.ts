@@ -21,16 +21,18 @@ export type AccessContext = {
 };
 
 const OWNER_EMAIL = "joslyn.drsmile@gmail.com";
+const OWNER_NAME = "Joslyn";
+const OWNER_ROLE = "Main Account";
 const FULL_ACCESS: PermissionSet = { view: true, add: true, edit: true, delete: true };
 const READ_ONLY: PermissionSet = { view: true, add: false, edit: false, delete: false };
 const seeds = [
-  ["admin-oscar", "Oscar", "Boss", "", 1],
-  ["admin-elaine", "Elaine", "Boss", "", 1],
+  ["admin-oscar", "Oscar", "Boss", "", 0],
+  ["admin-elaine", "Elaine", "Boss", "", 0],
   ["admin-wen-yi", "Wen Yi", "Marketer", "", 0],
   ["admin-joey", "Joey", "Marketer", "", 0],
   ["admin-zi-hui", "Zi Hui", "Marketer", "", 0],
   ["admin-jae-wye", "Jae Wye", "Marketer", "", 0],
-  ["admin-joslyn", "Joslyn", "CS", OWNER_EMAIL, 1],
+  ["admin-joslyn", OWNER_NAME, OWNER_ROLE, OWNER_EMAIL, 1],
   ["admin-shina", "Shina", "CS & Admin", "", 0],
   ["admin-corrine", "Corrine", "After Sales", "", 0],
 ] as const;
@@ -74,8 +76,11 @@ export async function ensureAccessSchema() {
       VALUES (?, ?, ?, NULLIF(?, ''), 1, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         is_owner = excluded.is_owner,
+        name = CASE WHEN members.id = 'admin-joslyn' THEN ? ELSE members.name END,
+        role = CASE WHEN members.id = 'admin-joslyn' THEN ? ELSE members.role END,
+        active = CASE WHEN members.id = 'admin-joslyn' THEN 1 ELSE members.active END,
         email = CASE WHEN members.id = 'admin-joslyn' THEN ? ELSE members.email END`)
-      .bind(id, name, role, email, owner, now, id === "admin-joslyn" ? OWNER_EMAIL : email),
+      .bind(id, name, role, email, owner, now, OWNER_NAME, OWNER_ROLE, id === "admin-joslyn" ? OWNER_EMAIL : email),
   ));
 
   const permissionStatements = seeds.flatMap(([memberId]) => MENU_KEYS.map((menu) =>
@@ -197,14 +202,23 @@ export async function saveAccessSettings(input: AccessSettingsInput[]) {
     if (!member.id || !member.name?.trim()) throw new Error("Every member needs a name");
     const previous = byId.get(member.id);
     const isOwner = Boolean(previous?.is_owner);
-    const email = member.id === "admin-joslyn" ? OWNER_EMAIL : normalizeEmail(member.email);
+    const isMainAccount = member.id === "admin-joslyn";
+    const email = isMainAccount ? OWNER_EMAIL : normalizeEmail(member.email);
     if (email && seenEmails.has(email)) throw new Error(`Duplicate email: ${email}`);
     if (email) seenEmails.add(email);
     statements.push(env.DB.prepare(`INSERT INTO members (id, name, role, email, active, is_owner, updated_at)
       VALUES (?, ?, ?, NULLIF(?, ''), ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET name = excluded.name, role = excluded.role, email = excluded.email,
         active = excluded.active, is_owner = excluded.is_owner, updated_at = excluded.updated_at`)
-      .bind(member.id, member.name.trim(), member.role?.trim() || "", email, isOwner ? 1 : member.active ? 1 : 0, isOwner ? 1 : 0, now));
+      .bind(
+        member.id,
+        isMainAccount ? OWNER_NAME : member.name.trim(),
+        isMainAccount ? OWNER_ROLE : member.role?.trim() || "",
+        email,
+        isOwner ? 1 : member.active ? 1 : 0,
+        isOwner ? 1 : 0,
+        now,
+      ));
     for (const menu of MENU_KEYS) {
       const permission = isOwner ? FULL_ACCESS : member.permissions?.[menu] || READ_ONLY;
       statements.push(env.DB.prepare(`INSERT INTO menu_permissions
