@@ -1049,7 +1049,7 @@ function SettingsPage({ currentEmail, setToast }: { currentEmail: string; setToa
           </article>
         ))}
       </div>
-      <p className="settings-footnote">Signed in as {currentEmail}. Overview is always available. Oscar and Elaine become fixed administrators after their login emails are added.</p>
+      <p className="settings-footnote">Signed in as {currentEmail}. Joslyn is the fixed Main Account with full control. Overview is always available to active members.</p>
     </section>
   );
 }
