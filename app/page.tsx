@@ -575,7 +575,7 @@ export default function Home() {
     <div className="app-shell">
       <aside className={`sidebar ${mobileMenu ? "is-open" : ""}`}>
         <button className="brand" onClick={() => navigate("home")} aria-label="DrSmile dashboard home">
-          <img src="/drsmile-logo.png" alt="DrSmile Whitening" />
+          <img src={`${import.meta.env.BASE_URL || "/"}drsmile-logo.png`} alt="DrSmile Whitening" />
         </button>
         <div className="workspace-pill">
           <span>DS</span>

@@ -11,9 +11,13 @@
     "start": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext start",
     "test": "pnpm run build && node --test tests/rendered-html.test.mjs",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
-    "db:generate": "drizzle-kit generate"
+    "db:generate": "drizzle-kit generate",
+    "pages:dev": "vite --config vite.pages.config.ts",
+    "pages:build": "vite build --config vite.pages.config.ts",
+    "pages:preview": "vite preview --config vite.pages.config.ts"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.57.4",
     "drizzle-orm": "0.45.2",
     "next": "16.2.6",
     "react": "19.2.6",

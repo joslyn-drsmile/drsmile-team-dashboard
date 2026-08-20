@@ -1,0 +1,33 @@
+.supabase-auth-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: radial-gradient(circle at top right, #cfeaff, transparent 40%), #eef7ff;
+}
+
+.supabase-auth-card {
+  width: min(460px, 100%);
+  padding: 42px;
+  border: 1px solid #d7e9f8;
+  border-radius: 30px;
+  background: rgba(255, 255, 255, .95);
+  box-shadow: 0 24px 70px rgba(21, 57, 96, .14);
+}
+
+.supabase-auth-card > img { width: 210px; height: auto; margin-bottom: 28px; }
+.supabase-auth-card h1 { margin: 8px 0 10px; color: #102c4f; font-size: 36px; }
+.supabase-auth-card > p:not(.eyebrow) { color: #6f8298; line-height: 1.6; }
+.supabase-auth-card form { display: grid; gap: 18px; margin-top: 28px; }
+.supabase-auth-card label { display: grid; gap: 8px; color: #1c3657; font-weight: 700; }
+.supabase-auth-card input { width: 100%; padding: 15px 16px; border: 1px solid #c8dced; border-radius: 14px; background: #fafdff; color: #102c4f; font: inherit; }
+.supabase-auth-card .primary-button { width: 100%; justify-content: center; }
+.auth-link { margin-top: 18px; border: 0; background: transparent; color: #245d9b; font-weight: 700; cursor: pointer; }
+.auth-message { margin-top: 18px; padding: 12px 14px; border-radius: 12px; background: #edf7ff; color: #315879; }
+.supabase-session { min-height: 100vh; }
+.supabase-signout { position: fixed; z-index: 30; right: 24px; bottom: 22px; border: 1px solid #c8dced; border-radius: 999px; padding: 10px 16px; background: white; color: #173a62; font-weight: 800; box-shadow: 0 8px 28px rgba(16, 44, 79, .14); cursor: pointer; }
+
+@media (max-width: 560px) {
+  .supabase-auth-card { padding: 28px 22px; border-radius: 24px; }
+  .supabase-auth-card h1 { font-size: 30px; }
+}
