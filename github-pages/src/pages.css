@@ -26,6 +26,7 @@
 .auth-message { margin-top: 18px; padding: 12px 14px; border-radius: 12px; background: #edf7ff; color: #315879; }
 .supabase-session { min-height: 100vh; }
 .supabase-signout { position: fixed; z-index: 30; right: 24px; bottom: 22px; border: 1px solid #c8dced; border-radius: 999px; padding: 10px 16px; background: white; color: #173a62; font-weight: 800; box-shadow: 0 8px 28px rgba(16, 44, 79, .14); cursor: pointer; }
+.preview-badge { position: fixed; z-index: 50; right: 18px; bottom: 18px; padding: 9px 13px; border: 1px solid #b8d8ed; border-radius: 999px; background: rgba(255,255,255,.94); color: #315d80; box-shadow: 0 8px 24px rgba(16,44,79,.12); font-size: 11px; font-weight: 800; }
 
 @media (max-width: 560px) {
   .supabase-auth-card { padding: 28px 22px; border-radius: 24px; }
