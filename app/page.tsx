@@ -109,6 +109,32 @@ const initialRecords: RecordItem[] = [
   ...paymentRecords,
 ];
 
+const PRODUCT_IMAGE_BY_TITLE: Record<string, string> = {
+  "美白牙粉 + Free 1 x 牙刷": "/product-images/toothpowder.jpg",
+  "2 美白牙粉 + Free 2 x 牙刷": "/product-images/toothpowder.jpg",
+  "3 美白牙粉 + Free 3 x 牙刷": "/product-images/toothpowder.jpg",
+  "4 美白牙粉 + Free 4 x 牙刷": "/product-images/toothpowder.jpg",
+  "美白牙粉": "/product-images/toothpowder.jpg",
+  "First Trial": "/product-images/first-trial.jpeg",
+  "完整美白疗程": "/product-images/complete-treatment.jpg",
+  "𝐏𝐀𝐏⁺ 焕白牙贴": "/product-images/whitening-strips.jpg",
+  "美白精华": "/product-images/whitening-essence.jpg",
+  "Dr Smile 软毛牙刷": "/product-images/toothbrush.jpg",
+  "蜂胶茶树油漱口水": "/product-images/mouthwash.jpg",
+  "西柚漱口水": "/product-images/mouthwash.jpg",
+  "葡萄漱口水": "/product-images/mouthwash.jpg",
+  "4盒牙线棒": "/product-images/toothbrush-bundle.jpg",
+  "防水洗漱包": "/product-images/cosmic-bag.jpg",
+  "2瓶杀菌漱口水": "/product-images/mouthwash-bundle.jpg",
+  "高订香薰": "/product-images/cosmic-bag.jpg",
+  "化妆包": "/product-images/cosmic-bag.jpg",
+  "Drsmile tote bag": "/product-images/tote-bag.jpg",
+  "Mug": "/product-images/mug.png",
+  "漱口水礼盒 1 Set": "/product-images/mouthwash-bundle.jpg",
+  "漱口水礼盒 2 Set": "/product-images/mouthwash-bundle.jpg",
+  "漱口水礼盒 3 Set": "/product-images/mouthwash-bundle.jpg",
+};
+
 const blankBySection: Record<Section, RecordItem> = {
   products: { id: 0, section: "products", title: "", subtitle: "", data: { sku: "", category: "", remark: "", posterUrl: "", alacart: "", alacartSG: "", pharmacy: "", shopee: "", website: "", websitePwp: "", facebook: "", facebookPwp: "", status: "Active" } },
   promotions: { id: 0, section: "promotions", title: "", subtitle: "", data: { promotionName: "", month: new Date().toISOString().slice(0, 7), posterUrl: "", onlinePrice: "", shopeePrice: "", packageDetails: "", status: "Active" } },
@@ -766,68 +792,42 @@ export default function Home() {
 }
 
 function Overview({ records, navigate, setToast, permissions }: { records: RecordItem[]; navigate: (next: "home" | Section) => void; setToast: (value: string) => void; permissions: Record<Section, PermissionSet> }) {
-  const stats = [
-    { label: "Products", value: records.filter((item) => item.section === "products").length, detail: "Across 4 channels", accent: "lime", section: "products" as Section },
-    { label: "Promotions", value: records.filter((item) => item.section === "promotions").length, detail: "Monthly campaigns", accent: "blue", section: "promotions" as Section },
-    { label: "Pharmacies", value: records.filter((item) => item.section === "pharmacies").length, detail: "Retail partners", accent: "blue", section: "pharmacies" as Section },
-    { label: "Payment options", value: records.filter((item) => item.section === "payments").length, detail: "Ready for orders", accent: "pink", section: "payments" as Section },
-    { label: "FAQ answers", value: records.filter((item) => item.section === "faq").length, detail: "Shared knowledge", accent: "gold", section: "faq" as Section },
-    { label: "Events", value: records.filter((item) => item.section === "calendar").length, detail: "Shared schedule", accent: "blue", section: "calendar" as Section },
-    { label: "Broadcasts", value: records.filter((item) => item.section === "broadcasts").length, detail: "Facebook & WhatsApp", accent: "lime", section: "broadcasts" as Section },
-  ].filter((item) => permissions[item.section].view);
-  const recent = records.slice(-5).reverse();
+  const schedule = records
+    .filter((item) => (item.section === "calendar" && permissions.calendar.view) || (item.section === "broadcasts" && permissions.broadcasts.view))
+    .sort((left, right) => `${left.data.date || "9999"}${left.data.time || ""}`.localeCompare(`${right.data.date || "9999"}${right.data.time || ""}`));
   return (
     <section className="page overview">
-      <div className="welcome">
-        <div>
-          <p className="eyebrow">Google Sheet powered · DrSmile workspace</p>
-          <h1>Everything your team needs,<br /><span>ready for every order.</span></h1>
-          <p>123 product, reward, pharmacy and FAQ records imported from your team sheet — searchable and easy to copy.</p>
+      <div className="welcome overview-hero">
+        <div className="hero-message">
+          <p className="eyebrow">DrSmile Team Workspace</p>
+          <h1>This is where we<br /><span>grow together.</span></h1>
+          <p>One team. One journey. One DrSmile.</p>
         </div>
-        <div className="welcome-art">
-          <span className="orb orb-one" /><span className="orb orb-two" />
-          <div className="smile-card"><strong>DrSmile</strong><span>team hub</span><i>◡</i></div>
-        </div>
+        <OverviewCalendar events={schedule} onOpen={() => navigate("calendar")} />
       </div>
-
-      <div className="stats-grid six">
-        {stats.map((stat) => (
-          <button key={stat.label} className={`stat-card ${stat.accent}`} onClick={() => navigate(stat.section)}>
-            <span className="stat-icon">{stat.label.slice(0, 2).toUpperCase()}</span>
-            <div><p>{stat.label}</p><strong>{stat.value}</strong><small>{stat.detail}</small></div>
-            <em>↗</em>
-          </button>
-        ))}
-      </div>
-
-      {permissions.calendar.view && <OverviewCalendar events={records.filter((record) => record.section === "calendar")} onOpen={() => navigate("calendar")} />}
-
-      <div className="overview-grid">
-        <div className="panel quick-panel">
-          <div className="panel-heading"><div><p className="eyebrow">Shortcuts</p><h2>Quick actions</h2></div></div>
-          <div className="quick-grid">
-            {permissions.products.view && <button onClick={() => navigate("products")}><span>PR</span><strong>Check pricing</strong><small>Compare price and PWP</small></button>}
-            {permissions.promotions.view && <button onClick={() => navigate("promotions")}><span>PM</span><strong>Monthly promotion</strong><small>Poster, package and prices</small></button>}
-            {permissions.pharmacies.view && <button onClick={() => navigate("pharmacies")}><span>PH</span><strong>Find pharmacy</strong><small>Copy address or phone</small></button>}
-            {permissions.payments.view && <button onClick={() => navigate("payments")}><span>PY</span><strong>Create payment</strong><small>Atome or Payex portal</small></button>}
-            {permissions.faq.view && <button onClick={() => navigate("faq")}><span>FQ</span><strong>Find an answer</strong><small>Search team FAQ</small></button>}
-            {permissions.calendar.view && <button onClick={() => navigate("calendar")}><span>CL</span><strong>Team calendar</strong><small>View events and locations</small></button>}
-            {permissions.broadcasts.view && <button onClick={() => navigate("broadcasts")}><span>BC</span><strong>Broadcast schedule</strong><small>Plan Facebook and WhatsApp</small></button>}
-          </div>
-        </div>
-        <div className="panel activity-panel">
-          <div className="panel-heading"><div><p className="eyebrow">Workspace</p><h2>Recently updated</h2></div><button onClick={() => setToast("You’re viewing the latest shared data")}>Live</button></div>
-          <div className="activity-list">
-            {recent.map((item) => (
-              <button key={item.id} onClick={() => navigate(item.section)}>
-                <span>{item.title.slice(0, 2).toUpperCase()}</span><div><strong>{item.title}</strong><small>{menus.find((menu) => menu.id === item.section)?.label}</small></div><em>›</em>
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
+      <ScheduleList items={schedule} navigate={navigate} setToast={setToast} />
     </section>
   );
+}
+
+function ScheduleList({ items, navigate, setToast }: { items: RecordItem[]; navigate: (next: Section) => void; setToast: (value: string) => void }) {
+  return <section className="panel combined-schedule">
+    <div className="schedule-heading"><div><p className="eyebrow">All events & broadcasts</p><h2>Schedule</h2></div><span>{items.length} scheduled</span></div>
+    <div className="schedule-table">
+      <div className="schedule-row schedule-labels"><span>Date</span><span>Type</span><span>Schedule details</span><span>PIC</span><span /></div>
+      {items.map((item) => {
+        const broadcast = item.section === "broadcasts";
+        return <article className="schedule-row" key={`${item.section}-${item.id}`}>
+          <time><strong>{eventDateLabel(item)}</strong><small>{formatEventTime(item.data.time) || "All day"}</small></time>
+          <span className={`schedule-type ${broadcast ? "broadcast" : "event"}`}>{broadcast ? "Broadcast" : "Event"}</span>
+          <div className="schedule-details"><strong>{item.title}</strong><p>{broadcast ? item.data.description : [item.data.location, item.data.details].filter(Boolean).join(" · ") || "No details added"}</p>{broadcast && <div className="broadcast-channel-tags">{item.data.channel?.split(",").map((name) => name.trim()).filter(Boolean).map((name) => <span className={name === "Facebook" ? "facebook" : "whatsapp"} key={name}>{name === "Facebook" ? "FB" : "WA"}</span>)}</div>}</div>
+          <span className="schedule-pic">{item.data.pic || "—"}</span>
+          <div className="schedule-row-actions">{broadcast && <button onClick={() => copyText(item.data.description, "Broadcast description", setToast)}>Copy</button>}<button onClick={() => navigate(item.section)}>Open ›</button></div>
+        </article>;
+      })}
+      {!items.length && <div className="schedule-empty">No events or broadcasts have been scheduled yet.</div>}
+    </div>
+  </section>;
 }
 
 function MonthGrid({ month, events, onDayClick, onEventClick, compact = false }: { month: Date; events: RecordItem[]; onDayClick?: (date: string) => void; onEventClick?: (event: RecordItem) => void; compact?: boolean }) {
@@ -859,22 +859,11 @@ function MonthGrid({ month, events, onDayClick, onEventClick, compact = false }:
 function OverviewCalendar({ events, onOpen }: { events: RecordItem[]; onOpen: () => void }) {
   const today = new Date();
   const currentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-  const upcoming = events
-    .filter((event) => eventEndDate(event) >= localDateKey(today))
-    .sort((left, right) => `${left.data.date}${left.data.time}`.localeCompare(`${right.data.date}${right.data.time}`))
-    .slice(0, 4);
   return (
-    <section className="panel overview-calendar">
-      <div className="calendar-overview-main">
-        <div className="calendar-title-row"><div><p className="eyebrow">Today · {new Intl.DateTimeFormat("en-MY", { weekday: "long", day: "numeric", month: "long", year: "numeric" }).format(today)}</p><h2>Calendar</h2></div><button onClick={onOpen}>Open calendar ›</button></div>
-        <div className="month-pill"><strong>{monthLabel(currentMonth)}</strong><span>{events.filter((event) => eventSpansDate(event, localDateKey(currentMonth)) || event.data.date?.startsWith(localDateKey(currentMonth).slice(0, 7))).length} events</span></div>
-        <MonthGrid month={currentMonth} events={events} compact />
-      </div>
-      <div className="upcoming-overview">
-        <p className="eyebrow">Coming up</p>
-        <h3>Next activities</h3>
-        {upcoming.length ? upcoming.map((event) => <button key={event.id} onClick={onOpen}><time>{eventDateLabel(event)}</time><div><strong>{event.title}</strong><small>{event.data.location || "Location not added"}{event.data.time ? ` · ${formatEventTime(event.data.time)}` : ""}</small></div></button>) : <div className="no-events"><span>＋</span><p>No upcoming events yet.</p><button onClick={onOpen}>Add the first event</button></div>}
-      </div>
+    <section className="hero-calendar" aria-label="This month calendar">
+      <div className="hero-calendar-heading"><div><p>Calendar</p><strong>{monthLabel(currentMonth)}</strong></div><button onClick={onOpen}>Open ›</button></div>
+      <MonthGrid month={currentMonth} events={events} compact />
+      <p className="hero-today">Today · {new Intl.DateTimeFormat("en-MY", { weekday: "long", day: "numeric", month: "long" }).format(today)}</p>
     </section>
   );
 }
@@ -912,7 +901,6 @@ function CalendarWorkspace({ events, month, setMonth, onAddDate, setEditing, rem
 }
 
 function BroadcastWorkspace({ broadcasts, month, setMonth, channel, setChannel, onAddDate, setEditing, removeItem, setToast, canAdd, canEdit, canDelete }: { broadcasts: RecordItem[]; month: Date; setMonth: React.Dispatch<React.SetStateAction<Date>>; channel: string; setChannel: (value: string) => void; onAddDate: (date?: string) => void; setEditing: (item: RecordItem) => void; removeItem: (item: RecordItem) => void; setToast: (value: string) => void; canAdd: boolean; canEdit: boolean; canDelete: boolean }) {
-  const [selected, setSelected] = useState<RecordItem | null>(null);
   const monthKey = localDateKey(month).slice(0, 7);
   const monthBroadcasts = broadcasts
     .filter((item) => item.data.date?.startsWith(monthKey))
@@ -921,35 +909,26 @@ function BroadcastWorkspace({ broadcasts, month, setMonth, channel, setChannel, 
   function changeMonth(offset: number) { setMonth(new Date(month.getFullYear(), month.getMonth() + offset, 1)); }
   function channelNames(item: RecordItem) { return item.data.channel?.split(",").map((value) => value.trim()).filter(Boolean) || []; }
   return (
-    <>
+    <section className="broadcast-sheet-wrap">
       <div className="broadcast-filters" aria-label="Broadcast channel filter">
         <span>Channel</span>
         {["All", "Facebook", "WhatsApp"].map((value) => <button type="button" key={value} className={channel === value ? "active" : ""} onClick={() => setChannel(value)}>{value === "WhatsApp" ? "WA" : value}</button>)}
       </div>
-      <div className="calendar-workspace broadcast-workspace">
-        <section className="panel calendar-board">
-          <div className="calendar-board-header">
-            <div><p className="eyebrow">Click a date to add a broadcast</p><h2>{monthLabel(month)}</h2></div>
-            <div><button onClick={() => setMonth(new Date(today.getFullYear(), today.getMonth(), 1))}>Today</button><button onClick={() => changeMonth(-1)} aria-label="Previous month">‹</button><button onClick={() => changeMonth(1)} aria-label="Next month">›</button></div>
-          </div>
-          <MonthGrid month={month} events={monthBroadcasts} onDayClick={canAdd ? onAddDate : undefined} onEventClick={setSelected} />
-        </section>
-        <aside className="panel calendar-agenda broadcast-agenda">
-          <div className="panel-heading"><div><p className="eyebrow">Monthly broadcasts</p><h2>{monthBroadcasts.length} scheduled</h2></div></div>
-          <div className="agenda-list">
-            {monthBroadcasts.map((item) => (
-              <article className="broadcast-agenda-item" key={item.id}>
-                <time><strong>{dateFromKey(item.data.date).getDate()}</strong><span>{dateFromKey(item.data.date).toLocaleDateString("en-MY", { month: "short" })}</span></time>
-                <div><button className="broadcast-title-button" onClick={() => setSelected(item)}><h3>{item.title}</h3></button><p>{formatEventTime(item.data.time)}</p><div className="broadcast-channel-tags">{channelNames(item).map((name) => <span className={name === "Facebook" ? "facebook" : "whatsapp"} key={name}>{name === "Facebook" ? "FB" : "WA"}</span>)}</div>{item.data.pic && <span className="agenda-people">PIC · {item.data.pic}</span>}<p className="broadcast-description">{item.data.description}</p></div>
-                <div className="agenda-actions"><button onClick={() => copyText(item.data.description, "Broadcast description", setToast)}>Copy</button>{canEdit && <button onClick={() => setEditing(structuredClone(item))}>Edit</button>}{canDelete && <button className="delete" onClick={() => removeItem(item)}>Delete</button>}</div>
-              </article>
-            ))}
-            {!monthBroadcasts.length && <div className="no-events"><span>BC</span><p>No broadcasts planned for {monthLabel(month)}.</p>{canAdd && <button onClick={() => onAddDate(localDateKey(new Date(month.getFullYear(), month.getMonth(), 1)))}>Add broadcast</button>}</div>}
-          </div>
-        </aside>
+      <div className="panel broadcast-sheet">
+        <div className="broadcast-sheet-header"><div><p className="eyebrow">Monthly broadcast list</p><h2>{monthLabel(month)}</h2></div><div><button onClick={() => setMonth(new Date(today.getFullYear(), today.getMonth(), 1))}>Today</button><button onClick={() => changeMonth(-1)} aria-label="Previous month">‹</button><button onClick={() => changeMonth(1)} aria-label="Next month">›</button></div></div>
+        <div className="broadcast-table">
+          <div className="broadcast-row broadcast-labels"><span>Date</span><span>Channel</span><span>Description</span><span>PIC</span><span /></div>
+          {monthBroadcasts.map((item) => <article className="broadcast-row" key={item.id}>
+            <time><strong>{eventDateLabel(item)}</strong><small>{formatEventTime(item.data.time)}</small></time>
+            <div className="broadcast-channel-tags">{channelNames(item).map((name) => <span className={name === "Facebook" ? "facebook" : "whatsapp"} key={name}>{name === "Facebook" ? "FB" : "WA"}</span>)}</div>
+            <div className="broadcast-copy"><strong>{item.title}</strong><p>{item.data.description}</p></div>
+            <span className="broadcast-pic">{item.data.pic || "—"}</span>
+            <div className="broadcast-row-actions"><button onClick={() => copyText(item.data.description, "Broadcast description", setToast)}>Copy</button>{canEdit && <button onClick={() => setEditing(structuredClone(item))}>Edit</button>}{canDelete && <button className="delete" onClick={() => removeItem(item)}>Delete</button>}</div>
+          </article>)}
+          {!monthBroadcasts.length && <div className="schedule-empty">No broadcasts planned for {monthLabel(month)}.{canAdd && <button onClick={() => onAddDate(localDateKey(new Date(month.getFullYear(), month.getMonth(), 1)))}>Add broadcast</button>}</div>}
+        </div>
       </div>
-      {selected && <div className="modal-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && setSelected(null)}><section className="modal broadcast-detail" role="dialog" aria-modal="true" aria-label={selected.title}><div className="modal-heading"><div><p className="eyebrow">Broadcast details</p><h2>{selected.title}</h2></div><button type="button" onClick={() => setSelected(null)} aria-label="Close">×</button></div><div className="broadcast-detail-meta"><span>{selected.data.date}</span><span>{formatEventTime(selected.data.time)}</span>{channelNames(selected).map((name) => <span key={name}>{name}</span>)}</div><p className="broadcast-detail-copy">{selected.data.description}</p><p className="broadcast-detail-pic">PIC · {selected.data.pic}</p><div className="modal-actions"><button type="button" onClick={() => copyText(selected.data.description, "Broadcast description", setToast)}>Copy Description</button>{canEdit && <button className="primary-button" type="button" onClick={() => { setSelected(null); setEditing(structuredClone(selected)); }}>Edit broadcast</button>}</div></section></div>}
-    </>
+    </section>
   );
 }
 
@@ -1056,9 +1035,10 @@ function SettingsPage({ currentEmail, setToast }: { currentEmail: string; setToa
 
 function RecordCard({ item, setEditing, removeItem, setToast, canEdit, canDelete }: { item: RecordItem; setEditing: (item: RecordItem) => void; removeItem: (item: RecordItem) => void; setToast: (value: string) => void; canEdit: boolean; canDelete: boolean }) {
   if (item.section === "products") {
+    const posterUrl = item.data.posterUrl || PRODUCT_IMAGE_BY_TITLE[item.title];
     return (
       <article className="record-card product-card">
-        {item.data.posterUrl && <div className="product-poster-frame"><img className="product-poster" src={item.data.posterUrl} alt={`${item.title} poster`} /></div>}
+        {posterUrl ? <div className="product-poster-frame"><img className="product-poster" src={posterUrl} alt={`${item.title} poster`} /></div> : <div className="product-poster-frame"><div className="poster-placeholder">PRODUCT</div></div>}
         <div className="card-top"><span className="record-avatar">DS</span><div><h3>{item.title}</h3><p>{item.data.sku || item.subtitle}</p></div><CardMenu item={item} setEditing={setEditing} removeItem={removeItem} canEdit={canEdit} canDelete={canDelete} /></div>
         <div className="product-category-chip">{productCategory(item) || "Uncategorised"}</div>
         <div className="market-price-row">
