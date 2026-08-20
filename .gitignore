@@ -39,6 +39,7 @@ yarn-error.log*
 next-env.d.ts
 /dist/
 /dist-pages/
+/dist-vercel/
 *.tsbuildinfo
 /.wrangler/
 /outputs/
