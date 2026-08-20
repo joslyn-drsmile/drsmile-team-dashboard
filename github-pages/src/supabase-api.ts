@@ -7,9 +7,6 @@ type PermissionRow = { member_id: string; menu: string; can_view: boolean; can_a
 
 const menuKeys = ["products", "promotions", "points", "pharmacies", "payments", "faq", "calendar", "broadcasts"];
 const previewMode = import.meta.env.VITE_PREVIEW_MODE === "true";
-const previewRecordsKey = "drsmile-preview-records-v1";
-const previewCategoriesKey = "drsmile-preview-categories-v1";
-const previewMembersKey = "drsmile-preview-members-v1";
 const defaultCategories = ["牙粉", "完整美白疗程", "漱口水", "加购产品", "包包"];
 const defaultPayments = [
   { section: "payments", title: "Bank Transfer", subtitle: "Manual payment", data: { details: "Add bank name and account number", link: "", qrUrl: "", status: "Available" } },
@@ -36,92 +33,6 @@ function previewOwner() {
     updatedAt: new Date().toISOString(),
     permissions: fullPermissions(),
   };
-}
-
-function readPreviewRecords() {
-  const saved = window.localStorage.getItem(previewRecordsKey);
-  if (saved) return JSON.parse(saved) as Array<Record<string, unknown>>;
-  const records = [...(sheetData.records as Array<Record<string, unknown>>), ...defaultPayments]
-    .map((item, index) => ({ ...item, id: Number(item.id) || index + 1 }));
-  window.localStorage.setItem(previewRecordsKey, JSON.stringify(records));
-  return records;
-}
-
-function savePreviewRecords(records: Array<Record<string, unknown>>) {
-  window.localStorage.setItem(previewRecordsKey, JSON.stringify(records));
-}
-
-async function previewRecordsRequest(request: Request, url: URL) {
-  let records = readPreviewRecords();
-  if (request.method === "GET") return json({ records });
-  if (request.method === "DELETE") {
-    const id = Number(url.searchParams.get("id"));
-    records = records.filter((item) => Number(item.id) !== id);
-    savePreviewRecords(records);
-    return json({ ok: true });
-  }
-  const payload = await request.json();
-  if (request.method === "POST" && payload.mode === "replace") {
-    const replacement = (payload.records as Array<Record<string, unknown>>).map((item, index) => ({ ...item, id: Date.now() + index }));
-    records = [...records.filter((item) => item.section !== payload.section), ...replacement];
-    savePreviewRecords(records);
-    return json({ records: replacement });
-  }
-  const record = {
-    id: request.method === "POST" ? Date.now() : Number(payload.id),
-    section: payload.section,
-    title: String(payload.title || "").trim(),
-    subtitle: payload.subtitle || "",
-    data: payload.data || {},
-  };
-  records = request.method === "POST"
-    ? [...records, record]
-    : records.map((item) => Number(item.id) === Number(record.id) ? record : item);
-  savePreviewRecords(records);
-  return json({ record });
-}
-
-async function previewCategoriesRequest(request: Request, url: URL) {
-  let categories = JSON.parse(window.localStorage.getItem(previewCategoriesKey) || JSON.stringify(defaultCategories)) as string[];
-  if (request.method === "POST") {
-    const payload = await request.json();
-    const name = String(payload.name || "").trim();
-    if (name && !categories.some((value) => value.toLowerCase() === name.toLowerCase())) categories.push(name);
-  } else if (request.method === "DELETE") {
-    categories = categories.filter((value) => value !== (url.searchParams.get("name") || ""));
-  }
-  window.localStorage.setItem(previewCategoriesKey, JSON.stringify(categories));
-  return json({ categories });
-}
-
-async function previewAccessRequest(request: Request) {
-  if (request.method !== "GET") {
-    const payload = await request.json();
-    window.localStorage.setItem(previewMembersKey, JSON.stringify(payload.members || []));
-  }
-  const owner = previewOwner();
-  const members = JSON.parse(window.localStorage.getItem(previewMembersKey) || "null") || [owner];
-  return json({ members, sync: { status: "preview", message: "Preview data saved in this browser", lastSync: new Date().toISOString() } });
-}
-
-async function previewUploadRequest(request: Request) {
-  const form = await request.formData();
-  const file = form.get("file");
-  if (!(file instanceof File)) return errorResponse("Choose an image", 400);
-  if (!/image\/(png|jpeg|webp)/.test(file.type)) return errorResponse("Use PNG, JPEG or WebP", 400);
-  if (file.size > 5 * 1024 * 1024) return errorResponse("Image must be 5 MB or smaller", 400);
-  return json({ url: URL.createObjectURL(file) });
-}
-
-async function previewRoute(request: Request, url: URL) {
-  const owner = previewOwner();
-  if (url.pathname === "/api/me") return json({ authenticated: true, authorized: true, member: owner, permissions: owner.permissions });
-  if (url.pathname === "/api/records") return previewRecordsRequest(request, url);
-  if (url.pathname === "/api/categories") return previewCategoriesRequest(request, url);
-  if (url.pathname === "/api/access") return previewAccessRequest(request);
-  if (url.pathname === "/api/access/sync") return json({ synced: true, status: "preview", message: "Preview data saved in this browser" });
-  if (url.pathname === "/api/files") return previewUploadRequest(request);
-  return errorResponse("Not found", 404);
 }
 
 function json(value: unknown, status = 200) {
@@ -254,10 +165,52 @@ async function accessRequest(request: Request) {
   return accessRequest(new Request("https://local/api/access", { method: "GET" }));
 }
 
+async function sharedAccessRequest(request: Request) {
+  if (request.method === "GET") {
+    const [{ data: members, error }, { data: permissions, error: permissionsError }] = await Promise.all([
+      supabase.from("members").select("*").order("is_owner", { ascending: false }).order("name"),
+      supabase.from("menu_permissions").select("*"),
+    ]);
+    if (error || permissionsError) return errorResponse((error || permissionsError)?.message || "Could not load access settings", 403);
+    return json({
+      members: (members as MemberRow[]).map((member) => memberOutput(member, (permissions || []) as PermissionRow[])),
+      sync: { status: "supabase", message: "Shared Supabase database", lastSync: new Date().toISOString() },
+    });
+  }
+
+  const payload = await request.json();
+  const now = new Date().toISOString();
+  const members = (payload.members as Array<Record<string, unknown>>).filter((member) => member.id !== "admin-joslyn");
+  const memberRows = members.map((member) => ({
+    id: member.id,
+    name: String(member.name || "").trim(),
+    role: String(member.role || "").trim(),
+    email: String(member.email || "").trim().toLowerCase() || null,
+    active: !!member.active,
+    is_owner: false,
+    updated_at: now,
+  }));
+  if (memberRows.length) {
+    const { error } = await supabase.from("members").upsert(memberRows);
+    if (error) return errorResponse(error.message, 400);
+  }
+  const permissionRows = members.flatMap((member) => menuKeys.map((menu) => {
+    const selected = (member.permissions as Record<string, Permission>)?.[menu];
+    return { member_id: member.id, menu, can_view: !!selected?.view, can_add: !!selected?.add, can_edit: !!selected?.edit, can_delete: !!selected?.delete, updated_at: now };
+  }));
+  if (permissionRows.length) {
+    const { error } = await supabase.from("menu_permissions").upsert(permissionRows);
+    if (error) return errorResponse(error.message, 400);
+  }
+  return sharedAccessRequest(new Request("https://local/api/access", { method: "GET" }));
+}
+
 async function uploadRequest(request: Request) {
   const form = await request.formData();
   const file = form.get("file");
   if (!(file instanceof File)) return errorResponse("Choose an image", 400);
+  if (!/image\/(png|jpeg|webp)/.test(file.type)) return errorResponse("Use PNG, JPEG or WebP", 400);
+  if (file.size > 5 * 1024 * 1024) return errorResponse("Image must be 5 MB or smaller", 400);
   const extension = file.name.split(".").pop()?.toLowerCase() || "jpg";
   const path = `shared/${crypto.randomUUID()}.${extension}`;
   const { error } = await supabase.storage.from("dashboard-images").upload(path, file, { contentType: file.type, upsert: false });
@@ -271,7 +224,16 @@ async function route(input: RequestInfo | URL, init?: RequestInit) {
   const url = new URL(request.url);
   if (!url.pathname.startsWith("/api/")) return originalFetch(input, init);
   try {
-    if (previewMode) return previewRoute(request, url);
+    if (previewMode) {
+      const owner = previewOwner();
+      if (url.pathname === "/api/me") return json({ authenticated: false, authorized: true, member: owner, permissions: owner.permissions });
+      if (url.pathname === "/api/records") return recordsRequest(request, url);
+      if (url.pathname === "/api/categories") return categoriesRequest(request, url);
+      if (url.pathname === "/api/access") return sharedAccessRequest(request);
+      if (url.pathname === "/api/access/sync") return json({ synced: true, status: "supabase", message: "Shared Supabase database" });
+      if (url.pathname === "/api/files") return uploadRequest(request);
+      return errorResponse("Not found", 404);
+    }
     if (url.pathname === "/api/me") {
       const access = await currentAccess();
       return access ? json({ authenticated: true, authorized: true, member: access, permissions: access.permissions }) : json({ authenticated: true, authorized: false }, 403);

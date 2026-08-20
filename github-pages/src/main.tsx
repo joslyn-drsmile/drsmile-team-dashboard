@@ -13,6 +13,6 @@ const dashboard = <Dashboard />;
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    {previewMode ? <><div className="preview-badge">Preview mode · login temporarily disabled</div>{dashboard}</> : <AuthGate>{dashboard}</AuthGate>}
+    {previewMode ? <><div className="preview-badge">Shared mode · login temporarily disabled</div>{dashboard}</> : <AuthGate>{dashboard}</AuthGate>}
   </StrictMode>,
 );
