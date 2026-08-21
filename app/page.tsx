@@ -135,6 +135,16 @@ const PRODUCT_IMAGE_BY_TITLE: Record<string, string> = {
   "漱口水礼盒 3 Set": "/product-images/mouthwash-bundle.jpg",
 };
 
+const PROMOTION_IMAGE_BY_TITLE: Record<string, string> = {
+  "配套A - 美白牙粉x2": "/promotion-images/merdeka-set-a.jpg",
+  "配套B - 完整美白疗程 x1": "/promotion-images/merdeka-set-b.jpg",
+  "配套C - 美白牙粉x3": "/promotion-images/merdeka-set-c.jpg",
+  "配套D - 完整美白疗程 x3": "/promotion-images/merdeka-set-d.jpg",
+  "漱口水礼盒 - 1盒": "/promotion-images/mouthwash-gift-box.jpg",
+  "漱口水礼盒 - 2 盒": "/promotion-images/mouthwash-gift-box.jpg",
+  "漱口水礼盒 - 3 盒": "/promotion-images/mouthwash-gift-box.jpg",
+};
+
 const blankBySection: Record<Section, RecordItem> = {
   products: { id: 0, section: "products", title: "", subtitle: "", data: { sku: "", category: "", remark: "", posterUrl: "", alacart: "", alacartSG: "", pharmacy: "", shopee: "", website: "", websitePwp: "", facebook: "", facebookPwp: "", status: "Active" } },
   promotions: { id: 0, section: "promotions", title: "", subtitle: "", data: { promotionName: "", month: new Date().toISOString().slice(0, 7), posterUrl: "", onlinePrice: "", shopeePrice: "", packageDetails: "", status: "Active" } },
@@ -1052,10 +1062,12 @@ function RecordCard({ item, setEditing, removeItem, setToast, canEdit, canDelete
     );
   }
   if (item.section === "promotions") {
+    const savedPoster = item.data.posterUrl && !item.data.posterUrl.startsWith("/api/files/") ? item.data.posterUrl : "";
+    const posterUrl = savedPoster || PROMOTION_IMAGE_BY_TITLE[item.title];
     return (
       <article className="record-card promotion-card">
         <div className="promotion-poster-frame">
-          {item.data.posterUrl ? <img className="promotion-poster" src={item.data.posterUrl} alt={`${item.title} promotion poster`} /> : <div className="poster-placeholder">POSTER</div>}
+          {posterUrl ? <img className="promotion-poster" src={posterUrl} alt={`${item.title} promotion poster`} /> : <div className="poster-placeholder">POSTER</div>}
         </div>
         <div className="card-top"><span className="record-avatar">PM</span><div><h3>{item.title}</h3><p>{item.subtitle ? `SKU · ${item.subtitle}` : "SKU not added"}</p></div><CardMenu item={item} setEditing={setEditing} removeItem={removeItem} canEdit={canEdit} canDelete={canDelete} /></div>
         <div className="promotion-prices"><div><span>Online price</span><strong>{item.data.onlinePrice || "—"}</strong></div><div><span>Shopee price</span><strong>{item.data.shopeePrice || "—"}</strong></div></div>
