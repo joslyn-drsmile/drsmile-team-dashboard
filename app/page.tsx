@@ -511,8 +511,8 @@ export default function Home() {
     event.preventDefault();
     if (!editing) return;
     if (!allowed(editing.section, editing.id ? "edit" : "add")) return;
-    if (editing.section === "broadcasts" && (!editing.data.date || !editing.data.time || !editing.data.channel || !editing.data.description?.trim() || !editing.data.pic)) {
-      setToast("Complete date, time, channel, description and PIC");
+    if (editing.section === "broadcasts" && (!editing.data.date || !editing.data.time || !editing.data.channel || !editing.data.pic)) {
+      setToast("Complete date, time, channel and PIC");
       return;
     }
     setSaving(true);
@@ -537,6 +537,11 @@ export default function Home() {
           ? current.map((record) => (record.id === editing.id ? payload.record : record))
           : current.map((record) => (record.id === optimistic[optimistic.length - 1].id ? payload.record : record)),
       );
+      if (editing.section === "broadcasts" && editing.data.date) {
+        const savedDate = dateFromKey(editing.data.date);
+        setBroadcastMonth(new Date(savedDate.getFullYear(), savedDate.getMonth(), 1));
+        setBroadcastChannel("All");
+      }
       setToast(payload.sync && !payload.sync.synced ? "Broadcast saved · Sheet sync pending" : "Shared changes saved");
     } catch (error) {
       setRecords(records);
@@ -931,9 +936,9 @@ function BroadcastWorkspace({ broadcasts, month, setMonth, channel, setChannel, 
           {monthBroadcasts.map((item) => <article className="broadcast-row" key={item.id}>
             <time><strong>{eventDateLabel(item)}</strong><small>{formatEventTime(item.data.time)}</small></time>
             <div className="broadcast-channel-tags">{channelNames(item).map((name) => <span className={name === "Facebook" ? "facebook" : "whatsapp"} key={name}>{name === "Facebook" ? "FB" : "WA"}</span>)}</div>
-            <div className="broadcast-copy"><strong>{item.title}</strong><p>{item.data.description}</p></div>
+            <div className="broadcast-copy"><strong>{item.title}</strong><p>{item.data.description?.trim() || "No description added"}</p></div>
             <span className="broadcast-pic">{item.data.pic || "—"}</span>
-            <div className="broadcast-row-actions"><button onClick={() => copyText(item.data.description, "Broadcast description", setToast)}>Copy</button>{canEdit && <button onClick={() => setEditing(structuredClone(item))}>Edit</button>}{canDelete && <button className="delete" onClick={() => removeItem(item)}>Delete</button>}</div>
+            <div className="broadcast-row-actions">{item.data.description?.trim() && <button onClick={() => copyText(item.data.description, "Broadcast description", setToast)}>Copy</button>}{canEdit && <button onClick={() => setEditing(structuredClone(item))}>Edit</button>}{canDelete && <button className="delete" onClick={() => removeItem(item)}>Delete</button>}</div>
           </article>)}
           {!monthBroadcasts.length && <div className="schedule-empty">No broadcasts planned for {monthLabel(month)}.{canAdd && <button onClick={() => onAddDate(localDateKey(new Date(month.getFullYear(), month.getMonth(), 1)))}>Add broadcast</button>}</div>}
         </div>
@@ -1318,7 +1323,7 @@ function EditModal({ item, setItem, onClose, onSave, saving, setToast, productCa
             <>
               <div className="calendar-schedule-fields full"><div className="broadcast-date-time"><label><span>Broadcast date</span><input required type="date" value={item.data.date || ""} onChange={(event) => updateData("date", event.target.value)} /></label><TimeField value={item.data.time || ""} onChange={(value) => updateData("time", value)} required /></div></div>
               <BroadcastChannelField value={item.data.channel || ""} onChange={(value) => updateData("channel", value)} />
-              <label className="full"><span>Description / BC content</span><textarea required value={item.data.description || ""} onChange={(event) => updateData("description", event.target.value)} placeholder="Type the broadcast message your team will send" /></label>
+              <label className="full"><span>Description / BC content · Optional</span><textarea value={item.data.description || ""} onChange={(event) => updateData("description", event.target.value)} placeholder="Optional — add the broadcast message when it is ready" /></label>
               <div className="full"><MultiNameField label="PIC" value={item.data.pic || ""} onChange={(value) => updateData("pic", value)} /></div>
             </>
           )}
