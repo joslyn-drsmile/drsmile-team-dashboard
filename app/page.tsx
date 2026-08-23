@@ -1324,7 +1324,7 @@ function EditModal({ item, setItem, onClose, onSave, saving, setToast, productCa
               <div className="calendar-schedule-fields full"><div className="broadcast-date-time"><label><span>Broadcast date</span><input required type="date" value={item.data.date || ""} onChange={(event) => updateData("date", event.target.value)} /></label><TimeField value={item.data.time || ""} onChange={(value) => updateData("time", value)} required /></div></div>
               <BroadcastChannelField value={item.data.channel || ""} onChange={(value) => updateData("channel", value)} />
               <label className="full"><span>Description / BC content · Optional</span><textarea value={item.data.description || ""} onChange={(event) => updateData("description", event.target.value)} placeholder="Optional — add the broadcast message when it is ready" /></label>
-              <div className="full"><MultiNameField label="PIC" value={item.data.pic || ""} onChange={(value) => updateData("pic", value)} /></div>
+              <div className="broadcast-pic-field full"><MultiNameField label="PIC" value={item.data.pic || ""} onChange={(value) => updateData("pic", value)} /></div>
             </>
           )}
           {item.section === "pharmacies" && (
@@ -1387,10 +1387,12 @@ function TimeField({ value, onChange, required = false }: { value: string; onCha
     setPeriod(hourNumber >= 12 ? "PM" : "AM");
   }, [value]);
 
-  function commit(nextHour = hour, nextMinute = minute, nextPeriod = period) {
+  function commit(nextHour = hour, nextMinute = minute, nextPeriod = period, force = false) {
     const hourNumber = Number(nextHour);
     const minuteNumber = Number(nextMinute);
-    if (!nextHour || !nextMinute || hourNumber < 1 || hourNumber > 12 || minuteNumber < 0 || minuteNumber > 59) { onChange(""); return; }
+    if (!nextHour || !nextMinute) { if (force) onChange(""); return; }
+    if (!force && (nextHour.length < 2 || nextMinute.length < 2)) return;
+    if (hourNumber < 1 || hourNumber > 12 || minuteNumber < 0 || minuteNumber > 59) { if (force) onChange(""); return; }
     const hour24 = (hourNumber % 12) + (nextPeriod === "PM" ? 12 : 0);
     onChange(`${String(hour24).padStart(2, "0")}:${String(minuteNumber).padStart(2, "0")}`);
   }
@@ -1399,10 +1401,10 @@ function TimeField({ value, onChange, required = false }: { value: string; onCha
     <div className="custom-time-field">
       <span>{required ? "Broadcast time" : "Start time"}<small>{required ? "Required" : "Optional"}</small></span>
       <div className="time-control">
-        <input inputMode="numeric" maxLength={2} value={hour} onChange={(event) => { const next = event.target.value.replace(/\D/g, "").slice(0, 2); setHour(next); commit(next, minute, period); }} onBlur={() => hour && setHour(hour.padStart(2, "0"))} placeholder="09" aria-label="Hour" />
+        <input inputMode="numeric" maxLength={2} value={hour} onFocus={(event) => event.currentTarget.select()} onChange={(event) => { const next = event.target.value.replace(/\D/g, "").slice(0, 2); setHour(next); commit(next, minute, period); }} onBlur={() => { const next = hour.padStart(2, "0"); setHour(next); commit(next, minute.padStart(2, "0"), period, true); }} placeholder="09" aria-label="Hour" />
         <b>:</b>
-        <input inputMode="numeric" maxLength={2} value={minute} onChange={(event) => { const next = event.target.value.replace(/\D/g, "").slice(0, 2); setMinute(next); commit(hour, next, period); }} onBlur={() => minute && setMinute(minute.padStart(2, "0"))} placeholder="00" aria-label="Minute" />
-        <div className="period-toggle"><button type="button" className={period === "AM" ? "active" : ""} onClick={() => { setPeriod("AM"); commit(hour, minute, "AM"); }}>AM</button><button type="button" className={period === "PM" ? "active" : ""} onClick={() => { setPeriod("PM"); commit(hour, minute, "PM"); }}>PM</button></div>
+        <input inputMode="numeric" maxLength={2} value={minute} onFocus={(event) => event.currentTarget.select()} onChange={(event) => { const next = event.target.value.replace(/\D/g, "").slice(0, 2); setMinute(next); commit(hour, next, period); }} onBlur={() => { const next = minute.padStart(2, "0"); setMinute(next); commit(hour.padStart(2, "0"), next, period, true); }} placeholder="00" aria-label="Minute" />
+        <div className="period-toggle"><button type="button" className={period === "AM" ? "active" : ""} onClick={() => { setPeriod("AM"); commit(hour, minute, "AM", true); }}>AM</button><button type="button" className={period === "PM" ? "active" : ""} onClick={() => { setPeriod("PM"); commit(hour, minute, "PM", true); }}>PM</button></div>
       </div>
     </div>
   );

@@ -224,7 +224,7 @@ main { min-height: 100vh; margin-left: 252px; }
 
 .modal-backdrop { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 22px; background: rgba(14,48,87,.54); backdrop-filter: blur(4px); }
 .modal { width: min(700px, 100%); max-height: 90vh; overflow: auto; padding: 27px; border-radius: 15px; background: white; box-shadow: 0 26px 70px rgba(0,0,0,.25); }
-.modal.calendar-modal { width: min(820px, 100%); }
+.modal.calendar-modal { width:min(820px,100%); max-height:calc(100vh - 28px); overscroll-behavior:contain; }
 .modal-heading { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; }.modal-heading h2 { margin: 0; font-size: 22px; letter-spacing: -.8px; }.modal-heading > button { width: 32px; height: 32px; border: 0; border-radius: 8px; background: #f0f3f0; cursor: pointer; font-size: 20px; }
 .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
 .form-grid > .full, .form-grid label.full { grid-column: 1 / -1; }
@@ -237,7 +237,7 @@ main { min-height: 100vh; margin-left: 252px; }
 .price-field select { min-width: 0; height: 38px; padding: 0 9px; border: 1px solid #cfe0ed; border-right: 0; border-radius: 8px 0 0 8px; outline: 0; color: #17365d; background: #e2eff9; font-size: 11px; font-weight: 900; }
 .price-field input:not([type=file]) { height: 38px; border-radius: 0 8px 8px 0; }
 .upload-field { padding: 13px; border: 1px dashed #cdd7cf; border-radius: 9px; background: #f8faf7; }.upload-field input { font-size: 10px; }.upload-field small { display: block; margin-top: 7px; color: #86928d; font-size: 9px; }
-.modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 23px; padding-top: 18px; border-top: 1px solid #e8ece8; }.modal-actions > button:first-child { padding: 0 14px; border: 1px solid var(--line); border-radius: 8px; background: white; cursor: pointer; font-size: 11px; font-weight: 800; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 23px; padding-top: 18px; border-top: 1px solid #e8ece8; }.calendar-modal .modal-actions { position:sticky; z-index:6; bottom:-27px; margin-right:-27px; margin-left:-27px; padding:15px 27px 18px; background:rgba(245,250,253,.96); box-shadow:0 -12px 24px rgba(54,96,130,.07); backdrop-filter:blur(18px); }.modal-actions > button:first-child { padding: 0 14px; border: 1px solid var(--line); border-radius: 8px; background: white; cursor: pointer; font-size: 11px; font-weight: 800; }
 .import-modal { width: min(660px, 100%); }
 .import-steps { margin: 0 0 15px; padding-left: 20px; color: #657c95; font-size: 11px; line-height: 1.7; }
 .import-area { width: 100%; min-height: 180px; resize: vertical; padding: 13px; border: 1px solid #d6e3f1; border-radius: 9px; outline: none; color: var(--ink); background: #f8fbff; font: 11px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
@@ -454,7 +454,9 @@ main { margin-left: 194px; }
 .form-grid select { width: 100%; height: 38px; padding: 0 10px; border: 1px solid #cfe0ed; border-radius: 8px; outline: 0; color: var(--ink); background: rgba(255,255,255,.68); font-size: 11px; }
 .form-grid select:focus { border-color: #7d927f; box-shadow: 0 0 0 3px rgba(157,183,126,.15); }
 .multi-people-fields { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; }
-.multi-name-field { min-width: 0; padding: 11px; border: 1px solid #cfe0ed; border-radius: 10px; background: rgba(255,255,255,.46); }
+.multi-name-field { display:block; width:100%; min-width:0; padding:11px; overflow:hidden; border:1px solid #cfe0ed; border-radius:10px; background:rgba(255,255,255,.46); }
+.broadcast-pic-field { width:100%; min-width:0; padding:0; overflow:hidden; }
+.broadcast-pic-field .multi-name-field { margin:0; }
 .name-chips { display: flex; flex-wrap: wrap; gap: 5px; min-height: 24px; margin-bottom: 7px; }
 .name-chips > span { display: inline-flex; align-items: center; gap: 5px; padding: 5px 7px; border-radius: 8px; color: #315a79; background: #deeffa; font-size: 9px; font-weight: 760; }
 .name-chips button { width: 15px; height: 15px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; color: #6e8ba1; background: rgba(255,255,255,.56); cursor: pointer; font-size: 11px; }
