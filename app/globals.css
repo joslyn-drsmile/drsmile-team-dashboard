@@ -485,12 +485,18 @@ main { margin-left: 194px; }
   .date-range-field > i { height: 12px; transform: rotate(90deg); }
 }
 
-/* Overview: team message, compact calendar and shared schedule */
-.overview-hero { min-height: 0; display: grid; grid-template-columns: minmax(0,1fr) 330px; gap: 38px; align-items: center; padding: 35px 38px; }
-.hero-message { min-width: 0; }
-.overview-hero .hero-message h1 { max-width: 680px; font-size: clamp(40px,5vw,66px); line-height: .98; }
-.overview-hero .hero-message > p:last-child { margin-top: 19px; color: #506f8c; font-size: 15px; font-weight: 720; letter-spacing: .02em; }
-.hero-calendar { padding: 17px 18px 13px; border: 1px solid rgba(255,255,255,.82); border-radius: 17px; background: rgba(255,255,255,.68); box-shadow: 0 16px 38px rgba(57,103,139,.1), inset 0 1px rgba(255,255,255,.9); backdrop-filter: blur(18px); }
+/* Overview: editorial team message, compact calendar and shared schedule */
+.overview-hero { position:relative; min-height:0; display:grid; grid-template-columns:minmax(0,1fr) 330px; gap:48px; align-items:center; overflow:hidden; padding:48px 50px; background:radial-gradient(circle at 17% 18%,rgba(255,255,255,.98),rgba(255,255,255,0) 34%),linear-gradient(122deg,rgba(251,254,255,.93),rgba(209,235,252,.82)); }
+.overview-hero::before { content:""; position:absolute; width:290px; height:290px; left:43%; bottom:-235px; border:42px solid rgba(115,173,216,.09); border-radius:50%; }
+.overview-hero::after { content:""; position:absolute; width:105px; height:1px; left:50px; bottom:40px; background:linear-gradient(90deg,#73a9cf,rgba(115,169,207,0)); }
+.hero-message { position:relative; z-index:1; min-width:0; padding:6px 0 22px; }
+.overview-hero .hero-message .eyebrow { display:flex; align-items:center; gap:10px; margin-bottom:17px; color:#6e8da6; font-size:9px; font-weight:800; letter-spacing:2px; }
+.overview-hero .hero-message .eyebrow::before { content:""; width:28px; height:1px; background:#78a9cb; }
+.overview-hero .hero-message h1 { max-width:760px; color:#173552; font-family:Arial,Helvetica,sans-serif; font-size:clamp(34px,4vw,56px); font-weight:420; line-height:1.03; letter-spacing:-2.7px; }
+.overview-hero .hero-message h1 span { display:inline-block; margin-top:7px; color:#5f98c2; font-family:Georgia,"Times New Roman",serif; font-size:1.2em; font-style:italic; font-weight:400; letter-spacing:-3.5px; transform:translateX(16px); }
+.overview-hero .hero-message > p:last-child { display:flex; align-items:center; gap:11px; margin:23px 0 0; color:#506f8c; font-family:Georgia,"Times New Roman",serif; font-size:14px; font-style:italic; font-weight:400; letter-spacing:.02em; }
+.overview-hero .hero-message > p:last-child::before { content:"✦"; color:#79aed2; font-family:Arial,sans-serif; font-size:11px; font-style:normal; }
+.hero-calendar { position:relative; z-index:1; padding:17px 18px 13px; border:1px solid rgba(255,255,255,.9); border-radius:20px; background:rgba(255,255,255,.73); box-shadow:0 22px 48px rgba(57,103,139,.12),inset 0 1px rgba(255,255,255,.95); backdrop-filter:blur(18px); transform:rotate(.35deg); }
 .hero-calendar-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 7px; }
 .hero-calendar-heading p, .hero-calendar-heading strong { display: block; margin: 0; }.hero-calendar-heading p { color: #8499ac; font-size: 8px; font-weight: 850; text-transform: uppercase; letter-spacing: .8px; }.hero-calendar-heading strong { margin-top: 3px; font-size: 14px; }
 .hero-calendar-heading button { padding: 6px 8px; border: 0; border-radius: 8px; color: #315d80; background: #e2f0fa; cursor: pointer; font-size: 8px; font-weight: 850; }
@@ -498,7 +504,7 @@ main { margin-left: 194px; }
 .hero-today { margin: 9px 0 0; padding-top: 8px; border-top: 1px solid rgba(170,198,219,.3); color: #6f879b; font-size: 8px; text-align: center; }
 .combined-schedule { margin-top: 18px; padding: 0; overflow: hidden; }
 .schedule-heading, .broadcast-sheet-header { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 21px 23px; border-bottom: 1px solid rgba(171,198,218,.32); }
-.schedule-heading h2, .broadcast-sheet-header h2 { margin: 2px 0 0; font-size: 23px; letter-spacing: -.7px; }.schedule-heading > span { padding: 6px 9px; border-radius: 9px; color: #456d89; background: #e1f1fb; font-size: 8px; font-weight: 850; }
+.schedule-heading h2, .broadcast-sheet-header h2 { margin:4px 0 0; color:#173552; font-family:Georgia,"Times New Roman",serif; font-size:25px; font-weight:400; letter-spacing:-.6px; }.schedule-heading > span { padding: 6px 9px; border-radius: 9px; color: #456d89; background: #e1f1fb; font-size: 8px; font-weight: 850; }
 .schedule-table, .broadcast-table { display: grid; }
 .schedule-row { display: grid; grid-template-columns: 135px 82px minmax(240px,1fr) minmax(90px,150px) 105px; gap: 14px; align-items: center; min-width: 0; padding: 14px 23px; border-bottom: 1px solid rgba(179,202,219,.28); }
 .schedule-row:last-child { border-bottom: 0; }.schedule-labels { padding-top: 9px; padding-bottom: 9px; color: #8a9caf; background: rgba(225,240,250,.38); font-size: 8px; font-weight: 850; text-transform: uppercase; letter-spacing: .7px; }
@@ -525,6 +531,7 @@ main { margin-left: 194px; }
 }
 @media (max-width: 760px) {
   .overview-hero { grid-template-columns: 1fr; padding: 28px 22px; }.hero-calendar { width: 100%; max-width: 360px; }
+  .overview-hero::after { left:22px; bottom:19px; }.overview-hero .hero-message h1 span { transform:none; }.overview-hero .hero-message > p:last-child { font-size:13px; }
   .schedule-labels, .broadcast-labels { display: none; }
   .schedule-row, .broadcast-row { grid-template-columns: 1fr auto; gap: 9px 12px; padding: 15px 17px; align-items: start; }
   .schedule-row time, .broadcast-row time { grid-column: 1; }.schedule-type, .broadcast-row > .broadcast-channel-tags { grid-column: 2; grid-row: 1; justify-self: end; }.schedule-details, .broadcast-copy { grid-column: 1 / -1; }.schedule-pic, .broadcast-pic { grid-column: 1 / -1; }.schedule-pic::before, .broadcast-pic::before { content: "PIC · "; color: #8ba0b1; }.schedule-row > :last-child, .broadcast-row > :last-child { grid-column: 1 / -1; justify-content: flex-start; }
