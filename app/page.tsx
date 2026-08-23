@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { CSSProperties, FormEvent, useEffect, useMemo, useState } from "react";
 import sheetData from "./sheet-data.json";
 
 type Section = "products" | "promotions" | "points" | "pharmacies" | "payments" | "faq" | "calendar" | "broadcasts";
@@ -39,6 +39,18 @@ const ADMIN_TEAM = [
 ];
 
 const SOURCE_SHEET_URL = "https://docs.google.com/spreadsheets/d/18DC7Df9OCFtrbj5FmZUVcLTwC0hg_2lYnNDFjrpMSaU/edit?gid=1909559648#gid=1909559648";
+const BROADCAST_FONTS = ["Arial", "Helvetica", "Georgia", "Verdana", "Trebuchet MS"];
+
+function broadcastTextStyle(data: Record<string, string>): CSSProperties {
+  const font = BROADCAST_FONTS.includes(data.descriptionFont) ? data.descriptionFont : "Arial";
+  const size = Math.min(24, Math.max(10, Number(data.descriptionSize) || 14));
+  return {
+    fontFamily: font,
+    fontSize: `${size}px`,
+    fontStyle: data.descriptionItalic === "true" ? "italic" : "normal",
+    fontWeight: data.descriptionBold === "true" ? 700 : 400,
+  };
+}
 
 const menus: { id: "home" | Section; label: string; short: string }[] = [
   { id: "home", label: "Overview", short: "OV" },
@@ -835,9 +847,9 @@ function ScheduleList({ items, navigate, setToast }: { items: RecordItem[]; navi
         return <article className="schedule-row" key={`${item.section}-${item.id}`}>
           <time><strong>{eventDateLabel(item)}</strong><small>{formatEventTime(item.data.time) || "All day"}</small></time>
           <span className={`schedule-type ${broadcast ? "broadcast" : "event"}`}>{broadcast ? "Broadcast" : "Event"}</span>
-          <div className="schedule-details"><strong>{item.title}</strong><p>{broadcast ? item.data.description : [item.data.location, item.data.details].filter(Boolean).join(" · ") || "No details added"}</p>{broadcast && <div className="broadcast-channel-tags">{item.data.channel?.split(",").map((name) => name.trim()).filter(Boolean).map((name) => <span className={name === "Facebook" ? "facebook" : "whatsapp"} key={name}>{name === "Facebook" ? "FB" : "WA"}</span>)}</div>}</div>
+          <div className="schedule-details"><strong>{item.title}</strong><p style={broadcast ? broadcastTextStyle(item.data) : undefined}>{broadcast ? item.data.description?.trim() || "No description added" : [item.data.location, item.data.details].filter(Boolean).join(" · ") || "No details added"}</p>{broadcast && <div className="broadcast-channel-tags">{item.data.channel?.split(",").map((name) => name.trim()).filter(Boolean).map((name) => <span className={name === "Facebook" ? "facebook" : "whatsapp"} key={name}>{name === "Facebook" ? "FB" : "WA"}</span>)}</div>}</div>
           <span className="schedule-pic">{item.data.pic || "—"}</span>
-          <div className="schedule-row-actions">{broadcast && <button onClick={() => copyText(item.data.description, "Broadcast description", setToast)}>Copy</button>}<button onClick={() => navigate(item.section)}>Open ›</button></div>
+          <div className="schedule-row-actions">{broadcast && item.data.description?.trim() && <button onClick={() => copyText(item.data.description, "Broadcast description", setToast)}>Copy</button>}<button onClick={() => navigate(item.section)}>Open ›</button></div>
         </article>;
       })}
       {!items.length && <div className="schedule-empty">No events or broadcasts have been scheduled yet.</div>}
@@ -936,7 +948,7 @@ function BroadcastWorkspace({ broadcasts, month, setMonth, channel, setChannel, 
           {monthBroadcasts.map((item) => <article className="broadcast-row" key={item.id}>
             <time><strong>{eventDateLabel(item)}</strong><small>{formatEventTime(item.data.time)}</small></time>
             <div className="broadcast-channel-tags">{channelNames(item).map((name) => <span className={name === "Facebook" ? "facebook" : "whatsapp"} key={name}>{name === "Facebook" ? "FB" : "WA"}</span>)}</div>
-            <div className="broadcast-copy"><strong>{item.title}</strong><p>{item.data.description?.trim() || "No description added"}</p></div>
+            <div className="broadcast-copy"><strong>{item.title}</strong><p style={broadcastTextStyle(item.data)}>{item.data.description?.trim() || "No description added"}</p></div>
             <span className="broadcast-pic">{item.data.pic || "—"}</span>
             <div className="broadcast-row-actions">{item.data.description?.trim() && <button onClick={() => copyText(item.data.description, "Broadcast description", setToast)}>Copy</button>}{canEdit && <button onClick={() => setEditing(structuredClone(item))}>Edit</button>}{canDelete && <button className="delete" onClick={() => removeItem(item)}>Delete</button>}</div>
           </article>)}
@@ -1323,7 +1335,7 @@ function EditModal({ item, setItem, onClose, onSave, saving, setToast, productCa
             <>
               <div className="calendar-schedule-fields full"><div className="broadcast-date-time"><label><span>Broadcast date</span><input required type="date" value={item.data.date || ""} onChange={(event) => updateData("date", event.target.value)} /></label><TimeField value={item.data.time || ""} onChange={(value) => updateData("time", value)} required /></div></div>
               <BroadcastChannelField value={item.data.channel || ""} onChange={(value) => updateData("channel", value)} />
-              <label className="full"><span>Description / BC content · Optional</span><textarea value={item.data.description || ""} onChange={(event) => updateData("description", event.target.value)} placeholder="Optional — add the broadcast message when it is ready" /></label>
+              <label className="full formatted-text-field"><span>Description / BC content · Optional</span><TextFormatToolbar data={item.data} updateData={updateData} /><textarea style={broadcastTextStyle(item.data)} value={item.data.description || ""} onChange={(event) => updateData("description", event.target.value)} placeholder="Optional — add the broadcast message when it is ready" /></label>
               <div className="full"><MultiNameField label="PIC" value={item.data.pic || ""} onChange={(value) => updateData("pic", value)} /></div>
             </>
           )}
@@ -1370,6 +1382,17 @@ function BroadcastChannelField({ value, onChange }: { value: string; onChange: (
   const selected = value.split(",").map((channel) => channel.trim()).filter(Boolean);
   function toggle(channel: string) { onChange(selected.includes(channel) ? selected.filter((item) => item !== channel).join(", ") : [...selected, channel].join(", ")); }
   return <fieldset className="broadcast-channel-field full"><legend>Channel · Multiple selection</legend>{["Facebook", "WhatsApp"].map((channel) => <label key={channel} className={selected.includes(channel) ? "active" : ""}><input type="checkbox" checked={selected.includes(channel)} onChange={() => toggle(channel)} /><span>{channel === "Facebook" ? "FB" : "WA"}</span><strong>{channel}</strong></label>)}</fieldset>;
+}
+
+function TextFormatToolbar({ data, updateData }: { data: Record<string, string>; updateData: (key: string, value: string) => void }) {
+  const bold = data.descriptionBold === "true";
+  const italic = data.descriptionItalic === "true";
+  return <div className="text-format-toolbar" aria-label="Text formatting">
+    <select aria-label="Font" value={BROADCAST_FONTS.includes(data.descriptionFont) ? data.descriptionFont : "Arial"} onChange={(event) => updateData("descriptionFont", event.target.value)}>{BROADCAST_FONTS.map((font) => <option key={font} value={font}>{font}</option>)}</select>
+    <select aria-label="Font size" value={data.descriptionSize || "14"} onChange={(event) => updateData("descriptionSize", event.target.value)}>{[10, 12, 14, 16, 18, 20, 24].map((size) => <option key={size} value={size}>{size}px</option>)}</select>
+    <button type="button" className={bold ? "active" : ""} aria-pressed={bold} onClick={() => updateData("descriptionBold", String(!bold))}><b>B</b></button>
+    <button type="button" className={italic ? "active" : ""} aria-pressed={italic} onClick={() => updateData("descriptionItalic", String(!italic))}><i>I</i></button>
+  </div>;
 }
 
 function TimeField({ value, onChange, required = false }: { value: string; onChange: (value: string) => void; required?: boolean }) {
