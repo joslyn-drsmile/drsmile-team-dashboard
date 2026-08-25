@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap");
 
 :root {
   --ink: #52758d;
@@ -13,7 +14,7 @@
 
 * { box-sizing: border-box; }
 html, body { margin: 0; min-height: 100%; background: var(--paper); color: var(--ink); }
-body { font-family: Arial, Helvetica, sans-serif; }
+body { font-family: "Poppins", Arial, Helvetica, sans-serif; }
 button, input, textarea, select { font: inherit; }
 button, a { -webkit-tap-highlight-color: transparent; }
 button { color: inherit; }
@@ -297,6 +298,9 @@ main { min-height: 100vh; margin-left: 252px; }
   .calendar-board-header { align-items: flex-start; }.calendar-board-header h2 { font-size: 18px; }
   .multi-people-fields { grid-template-columns: 1fr; }
   .broadcast-filters { width:100%; margin-left:0; }.broadcast-filters > span { margin-right:auto; }.broadcast-filters button { padding:0 8px; }
+  .promotion-filters { width:100%; align-items:stretch; flex-direction:column; }
+  .promotion-market-tabs { width:100%; }.promotion-market-tabs button { flex:1; padding:0 6px; }
+  .month-filter > div { min-width:0; }
   .broadcast-date-time, .broadcast-channel-field { grid-template-columns:1fr; }
 }
 
@@ -364,7 +368,7 @@ nav button.active .nav-icon, nav button.active em { color: #43667f; background: 
 /* Soft glass dashboard redesign */
 :root { --ink: #142744; --muted: #72839a; --line: rgba(160,190,216,.42); --paper: #edf5fb; --nav: rgba(242,248,252,.76); }
 html, body { background: radial-gradient(circle at 84% 8%, #d8edff 0, transparent 31%), linear-gradient(145deg, #eef5fa 0%, #dceaf5 52%, #e9f3f9 100%); color: var(--ink); }
-body { font-family: Inter, "Avenir Next", "Helvetica Neue", Arial, sans-serif; letter-spacing: -.01em; }
+body { font-family: "Poppins", Arial, Helvetica, sans-serif; letter-spacing: -.01em; }
 .sidebar { width: 194px; padding: 20px 12px; background: rgba(238,246,251,.76); border-right: 1px solid rgba(255,255,255,.68); box-shadow: 10px 0 32px rgba(49,91,126,.06); backdrop-filter: blur(24px); }
 .brand { width: 145px; min-height: 40px; padding: 0 7px; }
 .brand img { width: 132px; }
@@ -414,7 +418,14 @@ main { margin-left: 194px; }
 .package-details { margin-top: 9px; padding: 11px; border-radius: 10px; background: rgba(255,255,255,.46); }
 .package-details p { min-height: 48px; margin: 7px 0 0; white-space: pre-line; color:#53677f; font-size:10px; line-height:1.5; }
 .month-filter { display: grid; gap: 4px; padding: 7px 10px; border: 1px solid rgba(255,255,255,.8); border-radius: 12px; background: rgba(255,255,255,.58); }
-.month-filter span { color:#7e91a6; font-size:7px; font-weight:800; text-transform:uppercase; letter-spacing:.7px; }.month-filter input { border:0; outline:0; color:#1b3557; background:transparent; font-size:10px; font-weight:700; }
+.month-filter > span { color:#7e91a6; font-size:7px; font-weight:800; text-transform:uppercase; letter-spacing:.7px; }
+.month-filter > div { display:flex; align-items:center; justify-content:space-between; gap:8px; min-width:154px; }
+.month-filter button { width:25px; height:25px; padding:0; border:0; border-radius:8px; color:#536f86; background:rgba(222,239,250,.72); cursor:pointer; font-size:17px; line-height:1; }
+.month-filter strong { color:#1b3557; font-size:10px; font-weight:700; white-space:nowrap; }
+.promotion-filters { display:flex; align-items:center; gap:8px; }
+.promotion-market-tabs { display:flex; gap:4px; padding:4px; border:1px solid rgba(255,255,255,.8); border-radius:12px; background:rgba(255,255,255,.58); }
+.promotion-market-tabs button { min-height:32px; padding:0 10px; border:0; border-radius:8px; color:#637e94; background:transparent; cursor:pointer; font-size:9px; font-weight:800; }
+.promotion-market-tabs button.active { color:white; background:#17365d; }
 .modal { border:1px solid rgba(255,255,255,.8); background:rgba(245,250,253,.92); backdrop-filter:blur(26px); }
 .form-grid input:not([type=file]), .form-grid textarea { border-color:#cfe0ed; background:rgba(255,255,255,.68); }
 @media (max-width: 1100px) { .record-grid.promotions { grid-template-columns: repeat(auto-fill,minmax(260px,1fr)); } }
@@ -494,10 +505,10 @@ main { margin-left: 194px; }
 .hero-message { position:relative; z-index:1; min-width:0; padding:6px 0 22px; }
 .overview-hero .hero-message .eyebrow { display:flex; align-items:center; gap:10px; margin-bottom:17px; color:#6e8da6; font-size:9px; font-weight:800; letter-spacing:2px; }
 .overview-hero .hero-message .eyebrow::before { content:""; width:28px; height:1px; background:#78a9cb; }
-.overview-hero .hero-message h1 { max-width:760px; color:#173552; font-family:Arial,Helvetica,sans-serif; font-size:clamp(34px,4vw,56px); font-weight:420; line-height:1.03; letter-spacing:-2.7px; }
-.overview-hero .hero-message h1 span { display:inline-block; margin-top:7px; color:#5f98c2; font-family:Georgia,"Times New Roman",serif; font-size:1.2em; font-style:italic; font-weight:400; letter-spacing:-3.5px; transform:translateX(16px); }
-.overview-hero .hero-message > p:last-child { display:flex; align-items:center; gap:11px; margin:23px 0 0; color:#506f8c; font-family:Georgia,"Times New Roman",serif; font-size:14px; font-style:italic; font-weight:400; letter-spacing:.02em; }
-.overview-hero .hero-message > p:last-child::before { content:"✦"; color:#79aed2; font-family:Arial,sans-serif; font-size:11px; font-style:normal; }
+.overview-hero .hero-message h1 { max-width:760px; color:#173552; font-family:"Poppins",Arial,Helvetica,sans-serif; font-size:clamp(34px,4vw,56px); font-weight:420; line-height:1.03; letter-spacing:-2.7px; }
+.overview-hero .hero-message h1 span { display:inline-block; margin-top:7px; color:#5f98c2; font-family:"Poppins",Arial,Helvetica,sans-serif; font-size:1.2em; font-style:italic; font-weight:400; letter-spacing:-3.5px; transform:translateX(16px); }
+.overview-hero .hero-message > p:last-child { display:flex; align-items:center; gap:11px; margin:23px 0 0; color:#506f8c; font-family:"Poppins",Arial,Helvetica,sans-serif; font-size:14px; font-style:italic; font-weight:400; letter-spacing:.02em; }
+.overview-hero .hero-message > p:last-child::before { content:"✦"; color:#79aed2; font-family:"Poppins",Arial,sans-serif; font-size:11px; font-style:normal; }
 .hero-calendar { position:relative; z-index:1; padding:17px 18px 13px; border:1px solid rgba(255,255,255,.9); border-radius:20px; background:rgba(255,255,255,.73); box-shadow:0 22px 48px rgba(57,103,139,.12),inset 0 1px rgba(255,255,255,.95); backdrop-filter:blur(18px); transform:rotate(.35deg); }
 .hero-calendar-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 7px; }
 .hero-calendar-heading p, .hero-calendar-heading strong { display: block; margin: 0; }.hero-calendar-heading p { color: #8499ac; font-size: 8px; font-weight: 850; text-transform: uppercase; letter-spacing: .8px; }.hero-calendar-heading strong { margin-top: 3px; font-size: 14px; }
@@ -506,7 +517,7 @@ main { margin-left: 194px; }
 .hero-today { margin: 9px 0 0; padding-top: 8px; border-top: 1px solid rgba(170,198,219,.3); color: #6f879b; font-size: 8px; text-align: center; }
 .combined-schedule { margin-top: 18px; padding: 0; overflow: hidden; }
 .schedule-heading, .broadcast-sheet-header { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 21px 23px; border-bottom: 1px solid rgba(171,198,218,.32); }
-.schedule-heading h2, .broadcast-sheet-header h2 { margin:4px 0 0; color:#173552; font-family:Georgia,"Times New Roman",serif; font-size:25px; font-weight:400; letter-spacing:-.6px; }.schedule-heading > span { padding: 6px 9px; border-radius: 9px; color: #456d89; background: #e1f1fb; font-size: 8px; font-weight: 850; }
+.schedule-heading h2, .broadcast-sheet-header h2 { margin:4px 0 0; color:#173552; font-family:"Poppins",Arial,Helvetica,sans-serif; font-size:25px; font-weight:400; letter-spacing:-.6px; }.schedule-heading > span { padding: 6px 9px; border-radius: 9px; color: #456d89; background: #e1f1fb; font-size: 8px; font-weight: 850; }
 .schedule-table, .broadcast-table { display: grid; }
 .schedule-row { display: grid; grid-template-columns: 135px 82px minmax(240px,1fr) minmax(90px,150px) 105px; gap: 14px; align-items: center; min-width: 0; padding: 14px 23px; border-bottom: 1px solid rgba(179,202,219,.28); }
 .schedule-row:last-child { border-bottom: 0; }.schedule-labels { padding-top: 9px; padding-bottom: 9px; color: #8a9caf; background: rgba(225,240,250,.38); font-size: 8px; font-weight: 850; text-transform: uppercase; letter-spacing: .7px; }

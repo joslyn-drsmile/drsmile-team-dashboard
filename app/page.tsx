@@ -19,6 +19,8 @@ type CurrentAccess = { member: AccessMember; permissions: Record<Section, Permis
 
 const DEFAULT_PRODUCT_CATEGORIES = ["牙粉", "完整美白疗程", "漱口水", "加购产品", "包包"];
 const ALL_PRODUCTS = "All Item";
+const PROMOTION_MARKETS = ["Malaysia", "Singapore", "Pharmacy"] as const;
+type PromotionMarket = (typeof PROMOTION_MARKETS)[number];
 const ALL_STATES = "All";
 const PHARMACY_STATE_GROUPS = [
   { label: "West Malaysia", states: ["Johor", "Kedah", "Kelantan", "Melaka", "Negeri Sembilan", "Pahang", "Penang", "Perak", "Perlis", "Selangor", "Terengganu"] },
@@ -147,7 +149,7 @@ const PROMOTION_IMAGE_BY_TITLE: Record<string, string> = {
 
 const blankBySection: Record<Section, RecordItem> = {
   products: { id: 0, section: "products", title: "", subtitle: "", data: { sku: "", category: "", remark: "", posterUrl: "", alacart: "", alacartSG: "", pharmacy: "", shopee: "", website: "", websitePwp: "", facebook: "", facebookPwp: "", status: "Active" } },
-  promotions: { id: 0, section: "promotions", title: "", subtitle: "", data: { promotionName: "", month: new Date().toISOString().slice(0, 7), posterUrl: "", onlinePrice: "", shopeePrice: "", packageDetails: "", status: "Active" } },
+  promotions: { id: 0, section: "promotions", title: "", subtitle: "", data: { promotionName: "", month: new Date().toISOString().slice(0, 7), market: "Malaysia", posterUrl: "", onlinePrice: "", shopeePrice: "", packageDetails: "", status: "Active" } },
   points: { id: 0, section: "points", title: "", subtitle: "", data: { points: "", value: "", terms: "", posterUrl: "", status: "Active" } },
   pharmacies: { id: 0, section: "pharmacies", title: "", subtitle: "", data: { phone: "", address: "", city: "", regionState: "" } },
   payments: { id: 0, section: "payments", title: "", subtitle: "", data: { details: "", link: "", qrUrl: "", portal: "", status: "Available" } },
@@ -181,6 +183,17 @@ function dateFromKey(value: string) {
 
 function monthLabel(date: Date) {
   return new Intl.DateTimeFormat("en-MY", { month: "long", year: "numeric" }).format(date);
+}
+
+function shiftMonthKey(value: string, offset: number) {
+  const [year, month] = value.split("-").map(Number);
+  const shifted = new Date(year, month - 1 + offset, 1);
+  return `${shifted.getFullYear()}-${String(shifted.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function monthKeyLabel(value: string) {
+  const [year, month] = value.split("-").map(Number);
+  return monthLabel(new Date(year, month - 1, 1));
 }
 
 function calendarCells(month: Date) {
@@ -393,6 +406,7 @@ export default function Home() {
   const [importing, setImporting] = useState<ImportableSection | null>(null);
   const [promotionTitle, setPromotionTitle] = useState("");
   const [promotionMonth, setPromotionMonth] = useState(new Date().toISOString().slice(0, 7));
+  const [promotionMarket, setPromotionMarket] = useState<PromotionMarket>("Malaysia");
   const [productCategories, setProductCategories] = useState<string[]>(DEFAULT_PRODUCT_CATEGORIES);
   const [selectedCategory, setSelectedCategory] = useState(ALL_PRODUCTS);
   const [newCategory, setNewCategory] = useState("");
@@ -428,15 +442,15 @@ export default function Home() {
   }, [toast]);
 
   useEffect(() => {
-    const currentCampaign = records.find((record) => record.section === "promotions" && record.data.month === promotionMonth);
+    const currentCampaign = records.find((record) => record.section === "promotions" && record.data.month === promotionMonth && (record.data.market || "Malaysia") === promotionMarket);
     setPromotionTitle(currentCampaign?.data.promotionName || "");
-  }, [promotionMonth, records]);
+  }, [promotionMarket, promotionMonth, records]);
 
   const visible = useMemo(() => {
     const needle = query.toLowerCase().trim();
     const inSection = active === "home" ? records : records.filter((record) => {
       if (record.section !== active) return false;
-      if (active === "promotions" && record.data.month !== promotionMonth) return false;
+      if (active === "promotions" && (record.data.month !== promotionMonth || (record.data.market || "Malaysia") !== promotionMarket)) return false;
       if (active === "products" && selectedCategory !== ALL_PRODUCTS && productCategory(record) !== selectedCategory) return false;
       if (active === "pharmacies" && selectedState !== ALL_STATES && pharmacyState(record) !== selectedState) return false;
       if (active === "broadcasts" && broadcastChannel !== "All" && !record.data.channel?.split(",").map((value) => value.trim()).includes(broadcastChannel)) return false;
@@ -446,7 +460,7 @@ export default function Home() {
     return inSection.filter((record) =>
       `${record.title} ${record.subtitle} ${Object.values(record.data).join(" ")}`.toLowerCase().includes(needle),
     );
-  }, [active, query, records, promotionMonth, selectedCategory, selectedState, broadcastChannel]);
+  }, [active, query, records, promotionMarket, promotionMonth, selectedCategory, selectedState, broadcastChannel]);
 
   function allowed(section: Section, action: keyof PermissionSet) {
     return !!access?.permissions[section]?.[action];
@@ -468,6 +482,7 @@ export default function Home() {
     if (active === "products") next.data.category = selectedCategory === ALL_PRODUCTS ? "" : selectedCategory;
     if (active === "promotions") {
       next.data.month = promotionMonth;
+      next.data.market = promotionMarket;
       next.data.promotionName = promotionTitle;
     }
     setEditing(next);
@@ -490,7 +505,7 @@ export default function Home() {
 
   async function savePromotionTitle() {
     if (!allowed("promotions", "edit")) return;
-    const campaignItems = records.filter((record) => record.section === "promotions" && record.data.month === promotionMonth);
+    const campaignItems = records.filter((record) => record.section === "promotions" && record.data.month === promotionMonth && (record.data.market || "Malaysia") === promotionMarket);
     if (!campaignItems.length) {
       setToast("Add a promotion item first");
       return;
@@ -674,7 +689,21 @@ export default function Home() {
                 <p>{pageCopy[active].description}</p>
               </div>
               <div className="heading-actions">
-                {active === "promotions" && <label className="month-filter"><span>Track by month</span><input type="month" value={promotionMonth} onChange={(event) => setPromotionMonth(event.target.value)} /></label>}
+                {active === "promotions" && (
+                  <div className="promotion-filters">
+                    <div className="promotion-market-tabs" aria-label="Promotion category">
+                      {PROMOTION_MARKETS.map((market) => <button type="button" key={market} className={promotionMarket === market ? "active" : ""} onClick={() => setPromotionMarket(market)}>{market}</button>)}
+                    </div>
+                    <div className="month-filter" aria-label="Track promotion by month">
+                      <span>Track by month</span>
+                      <div>
+                        <button type="button" onClick={() => setPromotionMonth((current) => shiftMonthKey(current, -1))} aria-label="Previous promotion month">‹</button>
+                        <strong>{monthKeyLabel(promotionMonth)}</strong>
+                        <button type="button" onClick={() => setPromotionMonth((current) => shiftMonthKey(current, 1))} aria-label="Next promotion month">›</button>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 {active !== "payments" && active !== "promotions" && active !== "calendar" && active !== "broadcasts" && <a className="secondary-button" href={SOURCE_SHEET_URL} target="_blank" rel="noreferrer">Open Sheet ↗</a>}
                 {active !== "payments" && active !== "promotions" && active !== "calendar" && active !== "broadcasts" && allowed(active, "add") && allowed(active, "edit") && allowed(active, "delete") && <button className="secondary-button import-button" onClick={() => setImporting(active as ImportableSection)}>⇧ Import data</button>}
                 {allowed(active, "add") && <button className="primary-button" onClick={active === "broadcasts" ? () => startBroadcast() : startAdd}>＋ {active === "calendar" ? "Add event" : active === "broadcasts" ? "Add broadcast" : "Add item"}</button>}
@@ -1294,6 +1323,7 @@ function EditModal({ item, setItem, onClose, onSave, saving, setToast, productCa
           )}
           {item.section === "promotions" && (
             <>
+              <label><span>Category</span><select value={item.data.market || "Malaysia"} onChange={(event) => updateData("market", event.target.value)}>{PROMOTION_MARKETS.map((market) => <option key={market} value={market}>{market}</option>)}</select></label>
               <label><span>Promotion month</span><input type="month" value={item.data.month || ""} onChange={(event) => updateData("month", event.target.value)} /></label>
               <div className="price-fields full">
                 <PriceField label="Online Price" fieldKey="onlinePrice" item={item} updateData={updateData} />
