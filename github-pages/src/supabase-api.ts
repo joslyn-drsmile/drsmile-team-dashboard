@@ -4,6 +4,7 @@ import sheetData from "../../app/sheet-data.json";
 type Permission = { view: boolean; add: boolean; edit: boolean; delete: boolean };
 type MemberRow = { id: string; name: string; role: string; email: string | null; active: boolean; is_owner: boolean; updated_at: string };
 type PermissionRow = { member_id: string; menu: string; can_view: boolean; can_add: boolean; can_edit: boolean; can_delete: boolean; updated_at: string };
+type RecordRow = { id: number; section: string; title: string; subtitle: string; data: Record<string, string>; updated_at?: string };
 
 const menuKeys = ["products", "promotions", "points", "pharmacies", "payments", "faq", "calendar", "broadcasts"];
 const previewMode = import.meta.env.VITE_PREVIEW_MODE === "true";
@@ -43,6 +44,11 @@ function errorResponse(message: string, status = 400) {
   return json({ error: message }, status);
 }
 
+function recordOutput(row: RecordRow) {
+  const { updated_at: updatedAt, ...record } = row;
+  return { ...record, updatedAt: updatedAt || "" };
+}
+
 function permissionMap(rows: PermissionRow[], owner: boolean) {
   return Object.fromEntries(menuKeys.map((menu) => {
     const row = rows.find((item) => item.menu === menu);
@@ -78,14 +84,14 @@ async function currentAccess() {
 
 async function recordsRequest(request: Request, url: URL) {
   if (request.method === "GET") {
-    let { data, error } = await supabase.from("records").select("id,section,title,subtitle,data").order("id");
+    let { data, error } = await supabase.from("records").select("id,section,title,subtitle,data,updated_at").order("id");
     if (!error && !data?.length) {
       const initial = [...(sheetData.records as Array<Record<string, unknown>>), ...defaultPayments].map((item) => ({ section: item.section, title: item.title, subtitle: item.subtitle || "", data: item.data || {} }));
-      const seeded = await supabase.from("records").insert(initial).select("id,section,title,subtitle,data");
+      const seeded = await supabase.from("records").insert(initial).select("id,section,title,subtitle,data,updated_at");
       data = seeded.data;
       error = seeded.error;
     }
-    return error ? errorResponse(error.message, 403) : json({ records: data || [] });
+    return error ? errorResponse(error.message, 403) : json({ records: ((data || []) as RecordRow[]).map(recordOutput) });
   }
   if (request.method === "DELETE") {
     const id = Number(url.searchParams.get("id"));
@@ -102,16 +108,16 @@ async function recordsRequest(request: Request, url: URL) {
       subtitle: item.subtitle || "",
       data: item.data || {},
     }));
-    const { data, error } = await supabase.from("records").insert(rows).select("id,section,title,subtitle,data");
-    return error ? errorResponse(error.message, 403) : json({ records: data || [] });
+    const { data, error } = await supabase.from("records").insert(rows).select("id,section,title,subtitle,data,updated_at");
+    return error ? errorResponse(error.message, 403) : json({ records: ((data || []) as RecordRow[]).map(recordOutput) });
   }
   const row = { section: payload.section, title: payload.title?.trim(), subtitle: payload.subtitle || "", data: payload.data || {} };
   if (request.method === "POST") {
-    const { data, error } = await supabase.from("records").insert(row).select("id,section,title,subtitle,data").single();
-    return error ? errorResponse(error.message, 403) : json({ record: data });
+    const { data, error } = await supabase.from("records").insert(row).select("id,section,title,subtitle,data,updated_at").single();
+    return error ? errorResponse(error.message, 403) : json({ record: data ? recordOutput(data as RecordRow) : null });
   }
-  const { data, error } = await supabase.from("records").update(row).eq("id", payload.id).select("id,section,title,subtitle,data").single();
-  return error ? errorResponse(error.message, 403) : json({ record: data });
+  const { data, error } = await supabase.from("records").update({ ...row, updated_at: new Date().toISOString() }).eq("id", payload.id).select("id,section,title,subtitle,data,updated_at").single();
+  return error ? errorResponse(error.message, 403) : json({ record: data ? recordOutput(data as RecordRow) : null });
 }
 
 async function categoriesRequest(request: Request, url: URL) {

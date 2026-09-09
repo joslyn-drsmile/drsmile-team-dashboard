@@ -48,7 +48,7 @@ async function ready() {
     );
   }
 
-  const sourceVersion = "drsmile-sheet-2026-07-29-v1";
+  const sourceVersion = "drsmile-sheet-2026-09-09-v2";
   const imported = await env.DB.prepare("SELECT value FROM dashboard_settings WHERE key = 'source_version'").first<{ value: string }>();
   if (imported?.value !== sourceVersion) {
     const now = new Date().toISOString();
@@ -65,14 +65,15 @@ async function ready() {
 }
 
 function output(row: Record<string, unknown>) {
-  return { ...row, data: JSON.parse(String(row.data || "{}")) };
+  const { updated_at: updatedAt, created_at: createdAt, ...record } = row;
+  return { ...record, data: JSON.parse(String(row.data || "{}")), updatedAt: String(updatedAt || createdAt || "") };
 }
 
 export async function GET(request: Request) {
   await ready();
   const context = await getAccessContext(request);
   if (!context) return accessDenied();
-  const result = await env.DB.prepare("SELECT id, section, title, subtitle, data FROM records ORDER BY id ASC").all();
+  const result = await env.DB.prepare("SELECT id, section, title, subtitle, data, created_at, updated_at FROM records ORDER BY id ASC").all();
   return Response.json({ records: result.results.map(output).filter((record) => can(context, String(record.section), "view")) });
 }
 
@@ -95,7 +96,7 @@ export async function POST(request: Request) {
           .bind(payload.section, item.title.trim(), item.subtitle ?? "", JSON.stringify(item.data ?? {}), now, now),
       ));
     }
-    const result = await env.DB.prepare("SELECT id, section, title, subtitle, data FROM records WHERE section = ? ORDER BY id ASC").bind(payload.section).all();
+    const result = await env.DB.prepare("SELECT id, section, title, subtitle, data, created_at, updated_at FROM records WHERE section = ? ORDER BY id ASC").bind(payload.section).all();
     return Response.json({ records: result.results.map(output) });
   }
   const item = payload as IncomingRecord;
@@ -105,7 +106,7 @@ export async function POST(request: Request) {
   const result = await env.DB.prepare("INSERT INTO records (section, title, subtitle, data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)")
     .bind(item.section, item.title.trim(), item.subtitle ?? "", JSON.stringify(item.data ?? {}), now, now).run();
   const sync = item.section === "broadcasts" ? await pushBroadcastsToSheet() : undefined;
-  return Response.json({ record: { ...item, id: Number(result.meta.last_row_id), title: item.title.trim(), subtitle: item.subtitle ?? "", data: item.data ?? {} }, sync });
+  return Response.json({ record: { ...item, id: Number(result.meta.last_row_id), title: item.title.trim(), subtitle: item.subtitle ?? "", data: item.data ?? {}, updatedAt: now }, sync });
 }
 
 export async function PUT(request: Request) {
@@ -115,10 +116,11 @@ export async function PUT(request: Request) {
   const existing = await env.DB.prepare("SELECT section FROM records WHERE id = ?").bind(item.id).first<{ section: string }>();
   const context = await getAccessContext(request);
   if (!existing || existing.section !== item.section || !can(context, existing.section, "edit")) return accessDenied();
+  const updatedAt = new Date().toISOString();
   await env.DB.prepare("UPDATE records SET section = ?, title = ?, subtitle = ?, data = ?, updated_at = ? WHERE id = ?")
-    .bind(item.section, item.title.trim(), item.subtitle ?? "", JSON.stringify(item.data ?? {}), new Date().toISOString(), item.id).run();
+    .bind(item.section, item.title.trim(), item.subtitle ?? "", JSON.stringify(item.data ?? {}), updatedAt, item.id).run();
   const sync = item.section === "broadcasts" ? await pushBroadcastsToSheet() : undefined;
-  return Response.json({ record: { ...item, title: item.title.trim(), subtitle: item.subtitle ?? "", data: item.data ?? {} }, sync });
+  return Response.json({ record: { ...item, title: item.title.trim(), subtitle: item.subtitle ?? "", data: item.data ?? {}, updatedAt }, sync });
 }
 
 export async function DELETE(request: Request) {

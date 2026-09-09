@@ -24,7 +24,7 @@
       "subtitle": "Google Sheet",
       "data": {
         "sku": "2D",
-        "alacart": "—",
+        "alacart": "RM 168",
         "facebook": "RM 158",
         "facebookPwp": "—",
         "website": "—",
@@ -41,8 +41,8 @@
       "subtitle": "Google Sheet",
       "data": {
         "sku": "—",
-        "alacart": "—",
-        "facebook": "—",
+        "alacart": "RM 198",
+        "facebook": "RM 198",
         "facebookPwp": "—",
         "website": "—",
         "websitePwp": "—",
@@ -80,7 +80,7 @@
         "facebookPwp": "—",
         "website": "RM 108",
         "websitePwp": "—",
-        "shopee": "RM 126.49",
+        "shopee": "RM 139",
         "pharmacy": "—",
         "status": "Sheet"
       }
@@ -112,9 +112,9 @@
         "alacart": "RM 337",
         "facebook": "RM 188",
         "facebookPwp": "—",
-        "website": "—",
+        "website": "RM 188",
         "websitePwp": "—",
-        "shopee": "RM 182.4",
+        "shopee": "RM 228",
         "pharmacy": "—",
         "status": "Sheet"
       }
@@ -127,7 +127,7 @@
       "data": {
         "sku": "GT",
         "alacart": "RM 99",
-        "facebook": "—",
+        "facebook": "RM 99",
         "facebookPwp": "RM 39",
         "website": "RM 99",
         "websitePwp": "RM 59",
@@ -177,12 +177,12 @@
       "subtitle": "Google Sheet",
       "data": {
         "sku": "CMW",
-        "alacart": "RM 99",
-        "facebook": "—",
+        "alacart": "RM 59",
+        "facebook": "RM 59",
         "facebookPwp": "RM 39",
         "website": "RM 59",
         "websitePwp": "RM 39",
-        "shopee": "RM 59",
+        "shopee": "RM 49",
         "pharmacy": "—",
         "status": "Sheet"
       }
@@ -194,12 +194,12 @@
       "subtitle": "Google Sheet",
       "data": {
         "sku": "XYCMW",
-        "alacart": "—",
-        "facebook": "—",
+        "alacart": "RM 59",
+        "facebook": "RM 59",
         "facebookPwp": "RM 39",
         "website": "RM 59",
         "websitePwp": "RM 39",
-        "shopee": "—",
+        "shopee": "RM 49",
         "pharmacy": "—",
         "status": "Sheet"
       }
@@ -211,12 +211,12 @@
       "subtitle": "Google Sheet",
       "data": {
         "sku": "PTCMW",
-        "alacart": "—",
-        "facebook": "—",
+        "alacart": "RM 59",
+        "facebook": "RM 59",
         "facebookPwp": "RM 39",
         "website": "RM 59",
         "websitePwp": "RM 39",
-        "shopee": "—",
+        "shopee": "RM 49",
         "pharmacy": "—",
         "status": "Sheet"
       }
@@ -229,7 +229,7 @@
       "data": {
         "sku": "YXB SET",
         "alacart": "RM 39",
-        "facebook": "—",
+        "facebook": "RM 19",
         "facebookPwp": "RM 19",
         "website": "—",
         "websitePwp": "—",
@@ -246,7 +246,7 @@
       "data": {
         "sku": "Wash Bag",
         "alacart": "RM 39",
-        "facebook": "—",
+        "facebook": "RM 19",
         "facebookPwp": "RM 19",
         "website": "—",
         "websitePwp": "—",
@@ -263,7 +263,7 @@
       "data": {
         "sku": "SKS SET",
         "alacart": "RM 39",
-        "facebook": "—",
+        "facebook": "RM 19",
         "facebookPwp": "RM 19",
         "website": "—",
         "websitePwp": "—",
@@ -279,11 +279,11 @@
       "subtitle": "Google Sheet",
       "data": {
         "sku": "RD",
-        "alacart": "RM 39",
-        "facebook": "—",
+        "alacart": "RM 59",
+        "facebook": "RM 39",
         "facebookPwp": "RM 29",
-        "website": "—",
-        "websitePwp": "—",
+        "website": "RM 59",
+        "websitePwp": "RM 29",
         "shopee": "—",
         "pharmacy": "—",
         "status": "Sheet"
@@ -297,7 +297,7 @@
       "data": {
         "sku": "HZB",
         "alacart": "RM 129",
-        "facebook": "—",
+        "facebook": "RM 129",
         "facebookPwp": "RM 39",
         "website": "RM 129",
         "websitePwp": "RM 39",
@@ -314,8 +314,8 @@
       "data": {
         "sku": "tote bag",
         "alacart": "RM 239",
-        "facebook": "—",
-        "facebookPwp": "RM 129",
+        "facebook": "RM 239",
+        "facebookPwp": "RM 39",
         "website": "RM 239",
         "websitePwp": "RM 59",
         "shopee": "—",
@@ -329,12 +329,12 @@
       "title": "Mug",
       "subtitle": "Google Sheet",
       "data": {
-        "sku": "—",
-        "alacart": "RM 129",
-        "facebook": "—",
-        "facebookPwp": "RM 129",
+        "sku": "DSW MUG",
+        "alacart": "RM 109",
+        "facebook": "RM 109",
+        "facebookPwp": "RM 59",
         "website": "RM 109",
-        "websitePwp": "—",
+        "websitePwp": "RM 59",
         "shopee": "—",
         "pharmacy": "—",
         "status": "Sheet"
@@ -349,10 +349,10 @@
         "sku": "CLH",
         "alacart": "RM 177",
         "facebook": "RM 129",
-        "facebookPwp": "—",
+        "facebookPwp": "RM 129",
         "website": "RM 129",
-        "websitePwp": "—",
-        "shopee": "—",
+        "websitePwp": "RM 129",
+        "shopee": "RM 148",
         "pharmacy": "—",
         "status": "Sheet"
       }
@@ -366,10 +366,10 @@
         "sku": "CLH",
         "alacart": "RM 354",
         "facebook": "RM 199",
-        "facebookPwp": "—",
+        "facebookPwp": "RM 199",
         "website": "RM 199",
-        "websitePwp": "—",
-        "shopee": "—",
+        "websitePwp": "RM 199",
+        "shopee": "RM 238",
         "pharmacy": "—",
         "status": "Sheet"
       }
@@ -383,10 +383,10 @@
         "sku": "CLH",
         "alacart": "RM 531",
         "facebook": "RM 258",
-        "facebookPwp": "—",
+        "facebookPwp": "RM 258",
         "website": "RM 258",
-        "websitePwp": "—",
-        "shopee": "—",
+        "websitePwp": "RM 258",
+        "shopee": "RM 318",
         "pharmacy": "—",
         "status": "Sheet"
       }
@@ -508,7 +508,8 @@
         "phone": "011-56218133",
         "address": "D3-0-31, OUG Parklane, Off Jalan Puchong, Jalan 1/152, Kuala Lumpur, Wilayah Persekutuan Kuala Lumpur",
         "postcode": "58200",
-        "state": "Kuala Lumpur"
+        "city": "Kuala Lumpur",
+        "regionState": "Kuala Lumpur"
       }
     },
     {
@@ -520,7 +521,8 @@
         "phone": "011-21109053",
         "address": "11G, Jalan Perdana 4/5, Pandan Perdana, Kuala Lumpur, Wilayah Persekutuan Kuala Lumpur",
         "postcode": "55300",
-        "state": "Kuala Lumpur"
+        "city": "Kuala Lumpur",
+        "regionState": "Kuala Lumpur"
       }
     },
     {
@@ -532,7 +534,8 @@
         "phone": "012-4216707",
         "address": "80, Jalan Metro Perdana Barat 3, Taman Usahawan Kepong, Kuala Lumpur, Wilayah Persekutuan Kuala Lumpur",
         "postcode": "52100",
-        "state": "Kuala Lumpur"
+        "city": "Kuala Lumpur",
+        "regionState": "Kuala Lumpur"
       }
     },
     {
@@ -544,7 +547,8 @@
         "phone": "012-2365577",
         "address": "No. 20, Jalan PJU 10/3C, Desa Aman Puri, Sungai Buloh, Selangor",
         "postcode": "52100",
-        "state": "Sungai Buloh"
+        "city": "Sungai Buloh",
+        "regionState": "Selangor"
       }
     },
     {
@@ -556,7 +560,8 @@
         "phone": "03-61775357",
         "address": "27, Jalan SG 1/3, Taman Sri Gombak, Batu Caves, Selangor",
         "postcode": "68100",
-        "state": "Batu Caves"
+        "city": "Batu Caves",
+        "regionState": "Selangor"
       }
     },
     {
@@ -568,7 +573,8 @@
         "phone": "03-51665075",
         "address": "34, Jalan Dato Yusuf Shahbudin 29, Taman Sentosa, Klang, Selangor",
         "postcode": "41200",
-        "state": "Klang"
+        "city": "Klang",
+        "regionState": "Selangor"
       }
     },
     {
@@ -580,7 +586,8 @@
         "phone": "018-9477164",
         "address": "No. 36, Jalan Wawasan Ampang 2/6, Bandar Baru Ampang, Ampang, Selangor",
         "postcode": "68000",
-        "state": "Ampang"
+        "city": "Ampang",
+        "regionState": "Selangor"
       }
     },
     {
@@ -592,7 +599,8 @@
         "phone": "011-62653889",
         "address": "No. 59, Jalan Damai Perdana 1/9B, Bandar Damai Perdana, Cheras, Selangor",
         "postcode": "43200",
-        "state": "Cheras"
+        "city": "Cheras",
+        "regionState": "Selangor"
       }
     },
     {
@@ -604,7 +612,8 @@
         "phone": "03-58860530",
         "address": "No. 37-G, Jalan Setia Prima S U13/S, Setia Alam, Shah Alam, Selangor",
         "postcode": "40170",
-        "state": "Setia Alam"
+        "city": "Setia Alam",
+        "regionState": "Selangor"
       }
     },
     {
@@ -616,7 +625,8 @@
         "phone": "013-9324300",
         "address": "No. 93, Jalan Utama 34, Taman Mutiara Rini, Skudai, Johor",
         "postcode": "81300",
-        "state": "Johor Bahru (Skudai)"
+        "city": "Johor Bahru (Skudai)",
+        "regionState": "Johor"
       }
     },
     {
@@ -628,7 +638,8 @@
         "phone": "019-3709102",
         "address": "No. 47, Jalan Jaya Putra 7/6, Bandar Jaya Putra, Johor Bahru, Johor",
         "postcode": "81100",
-        "state": "Johor Bahru"
+        "city": "Johor Bahru",
+        "regionState": "Johor"
       }
     },
     {
@@ -640,7 +651,8 @@
         "phone": "010-5805580",
         "address": "No. 36, Jalan Indah 8/15, Taman Bukit Indah, Iskandar Puteri, Johor",
         "postcode": "79100",
-        "state": "Iskandar Puteri"
+        "city": "Iskandar Puteri",
+        "regionState": "Johor"
       }
     },
     {
@@ -652,7 +664,8 @@
         "phone": "012-4233688",
         "address": "No. 8-01, Jalan Nusaria 11/6, Taman Nusantara, Gelang Patah, Johor",
         "postcode": "81550",
-        "state": "Gelang Patah"
+        "city": "Gelang Patah",
+        "regionState": "Johor"
       }
     },
     {
@@ -664,7 +677,8 @@
         "phone": "019-9125580",
         "address": "No. 36, Jalan Eko Botani 3/2, Taman Eko Botani, Iskandar Puteri, Johor",
         "postcode": "79100",
-        "state": "Iskandar Puteri"
+        "city": "Iskandar Puteri",
+        "regionState": "Johor"
       }
     },
     {
@@ -676,7 +690,8 @@
         "phone": "019-5601889",
         "address": "No. 11, Jalan Kenanga 29/6, Bandar Indahpura, Kulai, Johor",
         "postcode": "81000",
-        "state": "Kulai"
+        "city": "Kulai",
+        "regionState": "Johor"
       }
     },
     {
@@ -688,7 +703,8 @@
         "phone": "010-3787612",
         "address": "No. 15, Jalan Harmonium 23/13, Taman Desa Tebrau, Johor Bahru, Johor",
         "postcode": "81100",
-        "state": "Johor Bahru"
+        "city": "Johor Bahru",
+        "regionState": "Johor"
       }
     },
     {
@@ -700,7 +716,8 @@
         "phone": "011-10950199",
         "address": "No. 11, Jalan PKY 2, Pusat Komersial Yayasan, Segamat, Johor",
         "postcode": "85000",
-        "state": "Segamat"
+        "city": "Segamat",
+        "regionState": "Johor"
       }
     },
     {
@@ -712,7 +729,8 @@
         "phone": "017-8593138",
         "address": "No. 59-2, Jalan Balau, Taman Batu Pahat, Batu Pahat, Johor",
         "postcode": "83000",
-        "state": "Batu Pahat"
+        "city": "Batu Pahat",
+        "regionState": "Johor"
       }
     },
     {
@@ -724,7 +742,8 @@
         "phone": "017-7308138",
         "address": "No. 59-2, Jalan Balau, Taman Batu Pahat, Batu Pahat, Johor",
         "postcode": "83000",
-        "state": "Batu Pahat"
+        "city": "Batu Pahat",
+        "regionState": "Johor"
       }
     },
     {
@@ -736,7 +755,8 @@
         "phone": "012-6638138",
         "address": "No. 9, Jalan Megah 1, Taman Megah, Batu Pahat, Johor",
         "postcode": "83000",
-        "state": "Batu Pahat"
+        "city": "Batu Pahat",
+        "regionState": "Johor"
       }
     },
     {
@@ -748,7 +768,8 @@
         "phone": "011-51375985",
         "address": "No. 11, Ground Floor, Jalan Langsat, Taman Suria, Kluang, Johor",
         "postcode": "86000",
-        "state": "Kluang"
+        "city": "Kluang",
+        "regionState": "Johor"
       }
     },
     {
@@ -760,7 +781,8 @@
         "phone": "011-56564972",
         "address": "No. 49-G, Jalan Tun Perak, Taman Lam Sing, Melaka",
         "postcode": "75300",
-        "state": "Melaka"
+        "city": "Melaka",
+        "regionState": "Melaka"
       }
     },
     {
@@ -772,7 +794,8 @@
         "phone": "010-2388222",
         "address": "No. 48-G, Jalan KS 5, Kepayang Sentral, Seremban, Negeri Sembilan",
         "postcode": "70200",
-        "state": "Seremban"
+        "city": "Seremban",
+        "regionState": "Negeri Sembilan"
       }
     },
     {
@@ -784,7 +807,8 @@
         "phone": "011-62722747",
         "address": "No. 32B, Jalan Tokong, Taman Hoover, Ipoh, Perak",
         "postcode": "31650",
-        "state": "Ipoh"
+        "city": "Ipoh",
+        "regionState": "Perak"
       }
     },
     {
@@ -796,7 +820,8 @@
         "phone": "011-56566323",
         "address": "No. 9, Jalan Wira Jaya, Taman Ipoh Jaya Timur 1, Ipoh, Perak",
         "postcode": "31350",
-        "state": "Ipoh"
+        "city": "Ipoh",
+        "regionState": "Perak"
       }
     },
     {
@@ -808,7 +833,8 @@
         "phone": "016-5044818",
         "address": "No. 130, Jalan Dato Kamaruddin, Taman Sening, Taiping, Perak",
         "postcode": "34000",
-        "state": "Taiping"
+        "city": "Taiping",
+        "regionState": "Perak"
       }
     },
     {
@@ -820,79 +846,8 @@
         "phone": "016-2521788",
         "address": "Vantage B-G-3, Jalan Seri Tanjung Pinang 1, Tanjung Tokong, Pulau Pinang",
         "postcode": "10470",
-        "state": "Tanjung Tokong"
-      }
-    },
-    {
-      "id": 227,
-      "section": "pharmacies",
-      "title": "Farmasi Chong (Juru)",
-      "subtitle": "Juru",
-      "data": {
-        "phone": "011-28235522",
-        "address": "No. 716, Jalan Juru, Taman Duku, Bukit Mertajam, Pulau Pinang",
-        "postcode": "14000",
-        "state": "Juru"
-      }
-    },
-    {
-      "id": 228,
-      "section": "pharmacies",
-      "title": "Farmasi Chong (Simpang Ampat)",
-      "subtitle": "Simpang Ampat",
-      "data": {
-        "phone": "011-28785522",
-        "address": "No. 10, Jalan Keruing, Kawasan Perniagaan Simpang Ampat, Pulau Pinang",
-        "postcode": "14100",
-        "state": "Simpang Ampat"
-      }
-    },
-    {
-      "id": 229,
-      "section": "pharmacies",
-      "title": "Farmasi Chong (Bertam Ria)",
-      "subtitle": "Kepala Batas",
-      "data": {
-        "phone": "011-28325522",
-        "address": "No. 1 & 3, Lorong Bertam Ria 2, Taman Bertam Ria, Kepala Batas, Pulau Pinang",
-        "postcode": "13200",
-        "state": "Kepala Batas"
-      }
-    },
-    {
-      "id": 230,
-      "section": "pharmacies",
-      "title": "Farmasi Chong (Sungai Dua)",
-      "subtitle": "Butterworth",
-      "data": {
-        "phone": "011-28335522",
-        "address": "No. 36, Jalan Perniagaan Sungai Dua, Pusat Perniagaan Sungai Dua, Butterworth, Pulau Pinang",
-        "postcode": "13800",
-        "state": "Butterworth"
-      }
-    },
-    {
-      "id": 231,
-      "section": "pharmacies",
-      "title": "Farmasi Chong (Ong Yi How)",
-      "subtitle": "Butterworth",
-      "data": {
-        "phone": "010-2879522",
-        "address": "No. 7388, Jalan Ong Yi How, Butterworth, Pulau Pinang",
-        "postcode": "13400",
-        "state": "Butterworth"
-      }
-    },
-    {
-      "id": 232,
-      "section": "pharmacies",
-      "title": "Farmasi Chong (Kepala Batas)",
-      "subtitle": "Kepala Batas",
-      "data": {
-        "phone": "018-2239522",
-        "address": "No. 15, Jalan Dagangan 10, Pusat Perniagaan Kepala Batas, Kepala Batas, Pulau Pinang",
-        "postcode": "13200",
-        "state": "Kepala Batas"
+        "city": "Tanjung Tokong",
+        "regionState": "Penang"
       }
     },
     {
@@ -904,7 +859,8 @@
         "phone": "09-5676933",
         "address": "B-622, Ground Floor, Jalan Air Putih, Kuantan, Pahang",
         "postcode": "25300",
-        "state": "Kuantan"
+        "city": "Kuantan",
+        "regionState": "Pahang"
       }
     },
     {
@@ -916,7 +872,8 @@
         "phone": "011-10241024",
         "address": "Lot 2185, Ground Floor, Marina Square Phase 2, Jalan Marina Utama, Miri, Sarawak",
         "postcode": "98000",
-        "state": "Miri"
+        "city": "Miri",
+        "regionState": "Sarawak"
       }
     },
     {
@@ -928,7 +885,8 @@
         "phone": "016-6736908",
         "address": "Lot 1708, Ground Floor, Pelita Commercial Centre, Jalan Miri-Pujut, Miri, Sarawak",
         "postcode": "98000",
-        "state": "Miri"
+        "city": "Miri",
+        "regionState": "Sarawak"
       }
     },
     {
@@ -940,7 +898,8 @@
         "phone": "012-8855936",
         "address": "Lot 1945, Ground Floor, Permyjaya Commercial Centre, Jalan Tudan, Miri, Sarawak",
         "postcode": "98000",
-        "state": "Miri"
+        "city": "Miri",
+        "regionState": "Sarawak"
       }
     },
     {
@@ -952,7 +911,8 @@
         "phone": "016-4169553",
         "address": "Sublot 13, Ground Floor, Song Plaza, Jalan Song, Kuching, Sarawak",
         "postcode": "93350",
-        "state": "Kuching"
+        "city": "Kuching",
+        "regionState": "Sarawak"
       }
     },
     {
@@ -964,7 +924,8 @@
         "phone": "016-8976046",
         "address": "Lot 271, Ground Floor, Medan Jaya Commercial Centre, Bintulu, Sarawak",
         "postcode": "97000",
-        "state": "Bintulu"
+        "city": "Bintulu",
+        "regionState": "Sarawak"
       }
     },
     {
@@ -976,7 +937,8 @@
         "phone": "013-9925813",
         "address": "No. 15, Ground Floor, Teku Commercial Centre, Jalan Teku, Sibu, Sarawak",
         "postcode": "96000",
-        "state": "Sibu"
+        "city": "Sibu",
+        "regionState": "Sarawak"
       }
     },
     {
@@ -988,7 +950,8 @@
         "phone": "013-9865813",
         "address": "Hanns Commercial Centre, Jalan Wong King Huo, Sibu, Sarawak",
         "postcode": "96000",
-        "state": "Sibu"
+        "city": "Sibu",
+        "regionState": "Sarawak"
       }
     },
     {
@@ -1000,7 +963,8 @@
         "phone": "019-2595813",
         "address": "No. 8, CSH Commercial Centre, Jalan Tun Ahmad Zaidi Adruce, Sibu, Sarawak",
         "postcode": "96000",
-        "state": "Sibu"
+        "city": "Sibu",
+        "regionState": "Sarawak"
       }
     },
     {
@@ -1012,7 +976,8 @@
         "phone": "013-5785813",
         "address": "Wonderful Commercial Centre, Jalan Tun Zaidi, Sibu, Sarawak",
         "postcode": "96000",
-        "state": "Sibu"
+        "city": "Sibu",
+        "regionState": "Sarawak"
       }
     },
     {
@@ -1024,7 +989,8 @@
         "phone": "019-5895813",
         "address": "Unicity Commercial Centre, Jalan Salim, Sibu, Sarawak",
         "postcode": "96000",
-        "state": "Sibu"
+        "city": "Sibu",
+        "regionState": "Sarawak"
       }
     },
     {
@@ -1036,7 +1002,8 @@
         "phone": "011-57793089",
         "address": "Lot G-31, Ground Floor, Plaza Shell, Jalan Tunku Abdul Rahman, Kota Kinabalu, Sabah",
         "postcode": "88000",
-        "state": "Kota Kinabalu"
+        "city": "Kota Kinabalu",
+        "regionState": "Sabah"
       }
     },
     {

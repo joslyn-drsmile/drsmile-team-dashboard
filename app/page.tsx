@@ -10,6 +10,7 @@ type RecordItem = {
   title: string;
   subtitle: string;
   data: Record<string, string>;
+  updatedAt?: string;
 };
 
 type ImportableSection = Exclude<Section, "payments" | "promotions" | "calendar" | "broadcasts">;
@@ -836,9 +837,21 @@ export default function Home() {
 }
 
 function Overview({ records, navigate, setToast, permissions }: { records: RecordItem[]; navigate: (next: "home" | Section) => void; setToast: (value: string) => void; permissions: Record<Section, PermissionSet> }) {
-  const schedule = records
-    .filter((item) => (item.section === "calendar" && permissions.calendar.view) || (item.section === "broadcasts" && permissions.broadcasts.view))
+  const today = new Date();
+  const monthStart = localDateKey(new Date(today.getFullYear(), today.getMonth(), 1));
+  const monthEnd = localDateKey(new Date(today.getFullYear(), today.getMonth() + 1, 0));
+  const accessibleRecords = records.filter((item) => permissions[item.section]?.view);
+  const schedule = accessibleRecords
+    .filter((item) => {
+      if (item.section === "calendar") return item.data.date <= monthEnd && eventEndDate(item) >= monthStart;
+      if (item.section === "broadcasts") return item.data.date >= monthStart && item.data.date <= monthEnd;
+      return false;
+    })
     .sort((left, right) => `${left.data.date || "9999"}${left.data.time || ""}`.localeCompare(`${right.data.date || "9999"}${right.data.time || ""}`));
+  const recentChanges = accessibleRecords
+    .filter((item) => item.updatedAt)
+    .sort((left, right) => String(right.updatedAt).localeCompare(String(left.updatedAt)))
+    .slice(0, 8);
   return (
     <section className="page overview">
       <div className="welcome overview-hero">
@@ -850,13 +863,14 @@ function Overview({ records, navigate, setToast, permissions }: { records: Recor
         <OverviewCalendar events={schedule} onOpen={() => navigate("calendar")} />
       </div>
       <ScheduleList items={schedule} navigate={navigate} setToast={setToast} />
+      <RecentChanges items={recentChanges} navigate={navigate} />
     </section>
   );
 }
 
 function ScheduleList({ items, navigate, setToast }: { items: RecordItem[]; navigate: (next: Section) => void; setToast: (value: string) => void }) {
   return <section className="panel combined-schedule">
-    <div className="schedule-heading"><div><p className="eyebrow">All events & broadcasts</p><h2>Schedule</h2></div><span>{items.length} scheduled</span></div>
+    <div className="schedule-heading"><div><p className="eyebrow">This month’s events & broadcasts</p><h2>Schedule</h2></div><span>{items.length} scheduled</span></div>
     <div className="schedule-table">
       <div className="schedule-row schedule-labels"><span>Date</span><span>Type</span><span>Schedule details</span><span>PIC</span><span /></div>
       {items.map((item) => {
@@ -869,7 +883,25 @@ function ScheduleList({ items, navigate, setToast }: { items: RecordItem[]; navi
           <div className="schedule-row-actions">{broadcast && <button onClick={() => copyText(item.data.description, "Broadcast description", setToast)}>Copy</button>}<button onClick={() => navigate(item.section)}>Open ›</button></div>
         </article>;
       })}
-      {!items.length && <div className="schedule-empty">No events or broadcasts have been scheduled yet.</div>}
+      {!items.length && <div className="schedule-empty">No events or broadcasts scheduled this month.</div>}
+    </div>
+  </section>;
+}
+
+function RecentChanges({ items, navigate }: { items: RecordItem[]; navigate: (next: Section) => void }) {
+  return <section className="panel recent-changes">
+    <div className="panel-heading"><div><p className="eyebrow">Latest updates</p><h2>Change history</h2></div></div>
+    <div className="change-list">
+      {items.map((item) => {
+        const menu = menus.find((entry) => entry.id === item.section);
+        const updated = item.updatedAt ? new Date(item.updatedAt) : null;
+        return <button type="button" key={`${item.section}-${item.id}`} onClick={() => navigate(item.section)}>
+          <span>{menu?.short || "DS"}</span>
+          <div><strong>{item.title}</strong><small>{menu?.label || item.section}</small></div>
+          <time>{updated && !Number.isNaN(updated.getTime()) ? new Intl.DateTimeFormat("en-MY", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" }).format(updated) : "Updated"}</time>
+        </button>;
+      })}
+      {!items.length && <p className="change-empty">Changes will appear here after an item is updated.</p>}
     </div>
   </section>;
 }
@@ -1399,7 +1431,7 @@ function MultiNameField({ label, value, onChange }: { label: string; value: stri
 function BroadcastChannelField({ value, onChange }: { value: string; onChange: (value: string) => void }) {
   const selected = value.split(",").map((channel) => channel.trim()).filter(Boolean);
   function toggle(channel: string) { onChange(selected.includes(channel) ? selected.filter((item) => item !== channel).join(", ") : [...selected, channel].join(", ")); }
-  return <fieldset className="broadcast-channel-field full"><legend>Channel · Multiple selection</legend>{["Facebook", "WhatsApp"].map((channel) => <label key={channel} className={selected.includes(channel) ? "active" : ""}><input type="checkbox" checked={selected.includes(channel)} onChange={() => toggle(channel)} /><span>{channel === "Facebook" ? "FB" : "WA"}</span><strong>{channel}</strong></label>)}</fieldset>;
+  return <fieldset className="broadcast-channel-field full"><legend>Channel · Multiple selection</legend>{["Facebook", "WhatsApp"].map((channel) => <label key={channel} className={selected.includes(channel) ? "active" : ""}><input type="checkbox" checked={selected.includes(channel)} onChange={() => toggle(channel)} /><strong>{channel}</strong><span>{channel === "Facebook" ? "FB" : "WA"}</span></label>)}</fieldset>;
 }
 
 function TimeField({ value, onChange, required = false }: { value: string; onChange: (value: string) => void; required?: boolean }) {

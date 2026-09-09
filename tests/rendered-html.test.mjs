@@ -16,6 +16,9 @@ test("ships the DrSmile dashboard and removes starter preview code", async () =>
   assert.match(page, /PROMOTION_MARKETS = \["Malaysia", "Singapore", "Pharmacy"\]/);
   assert.match(page, /Previous promotion month/);
   assert.match(page, /Next promotion month/);
+  assert.match(page, /This month’s events & broadcasts/);
+  assert.match(page, /Change history/);
   assert.match(styles, /font-family: "Poppins"/);
+  assert.match(styles, /grid-template-columns:auto 1fr 34px/);
   assert.doesNotMatch(page, /SkeletonPreview|codex-preview/);
 });
