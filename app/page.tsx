@@ -163,7 +163,7 @@ const pageCopy: Record<Section, { eyebrow: string; title: string; description: s
   products: { eyebrow: "Commercial catalogue", title: "Products & pricing", description: "Ala carte, PWP and monthly promotion pricing across every sales channel." },
   promotions: { eyebrow: "Monthly campaign library", title: "Promotion", description: "Keep every month’s poster, package details, online price and Shopee price together." },
   points: { eyebrow: "Customer loyalty", title: "Point redeem", description: "Keep redemption rewards, point values and terms easy for the whole team to reference." },
-  pharmacies: { eyebrow: "Retail network", title: "Pharmacy list", description: "Search every stockist and copy phone numbers or full addresses in one click." },
+  pharmacies: { eyebrow: "Retail network", title: "Pharmacy list", description: "Search every stockist and copy phone numbers or complete shop details in one click." },
   payments: { eyebrow: "Order collection", title: "Payment methods", description: "Keep QR codes, payment instructions and gateway links ready for every order." },
   faq: { eyebrow: "Team knowledge", title: "Frequently asked questions", description: "A shared answer bank for fast, consistent customer replies." },
   calendar: { eyebrow: "Team schedule", title: "Calendar", description: "Plan every DrSmile event by date, activity and location for the whole admin team." },
@@ -1149,7 +1149,7 @@ function RecordCard({ item, setEditing, removeItem, setToast, canEdit, canDelete
       <article className="record-card pharmacy-card">
         <div className="card-top"><span className="record-avatar">＋</span><div><h3>{item.title}</h3><p>{location && location !== state ? `${location} · ${state}` : state}</p></div><CardMenu item={item} setEditing={setEditing} removeItem={removeItem} canEdit={canEdit} canDelete={canDelete} /></div>
         <div className="contact-row"><span>Phone</span><strong>{item.data.phone || "—"}</strong><button onClick={() => copyText(item.data.phone, "Phone number", setToast)}>Copy</button></div>
-        <div className="address-block"><span>Full address {item.data.postcode ? `· ${item.data.postcode}` : ""}</span><p>{item.data.address || "—"}</p><button onClick={() => copyText(item.data.address, "Address", setToast)}>Copy full address</button></div>
+        <div className="address-block"><span>Full address {item.data.postcode ? `· ${item.data.postcode}` : ""}</span><p>{item.data.address || "—"}</p><button onClick={() => copyText([item.title, item.data.phone, item.data.address].filter(Boolean).join("\n"), "Pharmacy details", setToast)}>Copy full details</button></div>
       </article>
     );
   }
