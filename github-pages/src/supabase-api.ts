@@ -225,11 +225,40 @@ async function uploadRequest(request: Request) {
   return json({ url: data.publicUrl });
 }
 
+async function paymentSessionRequest(request: Request) {
+  if (request.method === "DELETE") {
+    await supabase.auth.signOut();
+    return json({ authenticated: false });
+  }
+  if (request.method === "POST") {
+    const payload = await request.json();
+    const email = String(payload.email || "").trim().toLowerCase();
+    const password = String(payload.password || "");
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error || !data.session) return errorResponse(error?.message || "Could not sign in", 401);
+    return json({ authenticated: true, email: data.user.email || email });
+  }
+  const { data } = await supabase.auth.getSession();
+  return json({ authenticated: !!data.session, email: data.session?.user.email || "" });
+}
+
+async function paymentLinksRequest(request: Request) {
+  const { data } = await supabase.auth.getSession();
+  const token = data.session?.access_token;
+  if (!token) return errorResponse("Please sign in to create payment links.", 401);
+  const headers = new Headers(request.headers);
+  headers.set("Authorization", `Bearer ${token}`);
+  const forwarded = new Request(request.url, { method: request.method, headers, body: request.method === "GET" || request.method === "HEAD" ? undefined : await request.clone().arrayBuffer() });
+  return originalFetch(forwarded);
+}
+
 async function route(input: RequestInfo | URL, init?: RequestInit) {
   const request = input instanceof Request ? input : new Request(new URL(String(input), window.location.origin), init);
   const url = new URL(request.url);
   if (!url.pathname.startsWith("/api/")) return originalFetch(input, init);
   try {
+    if (url.pathname === "/api/payment-session") return paymentSessionRequest(request);
+    if (url.pathname === "/api/payment-links") return paymentLinksRequest(request);
     if (previewMode) {
       const owner = previewOwner();
       if (url.pathname === "/api/me") return json({ authenticated: false, authorized: true, member: owner, permissions: owner.permissions });

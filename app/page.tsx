@@ -1193,17 +1193,144 @@ function PaymentStudio({ setToast, canManage }: { setToast: (value: string) => v
   const [gateway, setGateway] = useState("Atome");
   const [amount, setAmount] = useState("");
   const [reference, setReference] = useState("");
-  const portal = gateway === "Atome" ? "https://portal.atome.my/main/dashboard" : "https://portal.payex.io/AutoPayments";
+  const [customerName, setCustomerName] = useState("");
+  const [description, setDescription] = useState("");
+  const [email, setEmail] = useState("joslyn.drsmile@gmail.com");
+  const [password, setPassword] = useState("");
+  const [authenticated, setAuthenticated] = useState(false);
+  const [sessionLoaded, setSessionLoaded] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [result, setResult] = useState<Record<string, unknown> | null>(null);
+  const [payments, setPayments] = useState<Array<Record<string, unknown>>>([]);
+
+  const provider = gateway.toLowerCase();
+
+  function linkOf(item: Record<string, unknown>) {
+    return String(item.paymentLink || item.payment_link || "");
+  }
+
+  function referenceOf(item: Record<string, unknown>) {
+    return String(item.orderId || item.order_id || item.reference || "No reference");
+  }
+
+  function createdAtOf(item: Record<string, unknown>) {
+    const value = String(item.createdAt || item.created_at || "");
+    return value ? new Date(value).toLocaleString("en-MY", { dateStyle: "medium", timeStyle: "short" }) : "Just created";
+  }
+
+  async function loadPayments() {
+    const response = await fetch(`/api/payment-links?provider=${provider}`, { cache: "no-store" });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      setPayments([]);
+      setError(String(payload.error || "Could not load payment links."));
+      return;
+    }
+    setPayments(Array.isArray(payload.payments) ? payload.payments : []);
+    setError(String(payload.syncWarning || ""));
+  }
+
+  useEffect(() => {
+    fetch("/api/payment-session", { cache: "no-store" })
+      .then((response) => response.json())
+      .then((payload) => {
+        setAuthenticated(!!payload.authenticated);
+        if (payload.email) setEmail(payload.email);
+      })
+      .finally(() => setSessionLoaded(true));
+  }, []);
+
+  useEffect(() => {
+    setResult(null);
+    if (authenticated) void loadPayments();
+  }, [authenticated, provider]);
+
+  async function signIn(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setBusy(true);
+    setError("");
+    const response = await fetch("/api/payment-session", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email, password }) });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) setError(String(payload.error || "Could not sign in."));
+    else {
+      setAuthenticated(true);
+      setPassword("");
+      setToast("Payment tools unlocked");
+    }
+    setBusy(false);
+  }
+
+  async function signOutPayment() {
+    await fetch("/api/payment-session", { method: "DELETE" });
+    setAuthenticated(false);
+    setPayments([]);
+    setResult(null);
+  }
+
+  async function createLink(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
+    setResult(null);
+    const numericAmount = Number(amount);
+    if (!Number.isFinite(numericAmount) || numericAmount <= 0) return setError("Enter a valid payment amount.");
+    if (gateway === "Payex" && !customerName.trim()) return setError("Enter the customer name for Payex.");
+    setBusy(true);
+    const response = await fetch(`/api/payment-links?provider=${provider}`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ gateway: provider, amount: numericAmount, orderId: reference.trim(), customerName: customerName.trim(), description: description.trim() }),
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) setError(String(payload.error || "Could not create the payment link."));
+    else {
+      const payment = payload.payment as Record<string, unknown>;
+      setResult(payment);
+      setToast(`${gateway} payment link created`);
+      await loadPayments();
+    }
+    setBusy(false);
+  }
+
+  if (!sessionLoaded) return <div className="payment-studio payment-login"><div><p className="eyebrow">Secure payment tools</p><h2>Checking access…</h2></div></div>;
+
+  if (!authenticated) return (
+    <form className="payment-studio payment-login" onSubmit={signIn}>
+      <div><p className="eyebrow">Secure payment tools</p><h2>Sign in before creating a link</h2><span>The rest of the Dashboard stays shared. Only Atome and Payex creation requires your team account.</span></div>
+      <label><span>Team email</span><input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required /></label>
+      <label><span>Password</span><input type="password" value={password} onChange={(event) => setPassword(event.target.value)} required minLength={8} /></label>
+      <div className="studio-actions"><button className="studio-primary" disabled={busy}>{busy ? "Signing in…" : "Unlock payment tools"}</button></div>
+      {error && <p className="payment-error">{error}</p>}
+    </form>
+  );
+
   return (
-    <div className="payment-studio">
-      <div><p className="eyebrow">Payment link studio</p><h2>Create a payment request</h2><span>Prepare the order, then continue securely in your selected payment portal.</span></div>
-      <label><span>Gateway</span><select value={gateway} onChange={(event) => setGateway(event.target.value)}><option>Atome</option><option>Payex</option></select></label>
-      <label><span>Amount (RM)</span><input inputMode="decimal" value={amount} onChange={(event) => setAmount(event.target.value)} placeholder="0.00" /></label>
-      <label><span>Order reference</span><input value={reference} onChange={(event) => setReference(event.target.value)} placeholder="e.g. DS-1042" /></label>
-      {canManage && <div className="studio-actions">
-        <button onClick={() => copyText(`${gateway} payment • RM ${amount || "0.00"} • ${reference || "No reference"}`, "Payment brief", setToast)}>Copy brief</button>
-        <a href={portal} target="_blank" rel="noreferrer">Continue in {gateway} ↗</a>
+    <div className="payment-workspace">
+      <form className="payment-studio" onSubmit={createLink}>
+        <div><p className="eyebrow">Payment link studio</p><h2>Create inside DrSmile Dashboard</h2><span>Generate the customer link here, then copy or open it immediately.</span></div>
+        <label><span>Gateway</span><select value={gateway} onChange={(event) => setGateway(event.target.value)}><option>Atome</option><option>Payex</option></select></label>
+        <label><span>Amount (RM)</span><input inputMode="decimal" value={amount} onChange={(event) => setAmount(event.target.value)} placeholder="0.00" required /></label>
+        <label><span>Order reference</span><input value={reference} onChange={(event) => setReference(event.target.value)} placeholder="e.g. DS-1042" maxLength={40} /></label>
+        <label><span>Customer name {gateway === "Payex" ? "· required" : "· optional"}</span><input value={customerName} onChange={(event) => setCustomerName(event.target.value)} placeholder="Customer name" maxLength={50} required={gateway === "Payex"} /></label>
+        <label className="payment-description"><span>Description · optional</span><input value={description} onChange={(event) => setDescription(event.target.value)} placeholder="Order or package details" maxLength={200} /></label>
+        {canManage && <div className="studio-actions"><button className="studio-primary" disabled={busy}>{busy ? "Creating…" : `Create ${gateway} link`}</button><button type="button" onClick={signOutPayment}>Lock</button></div>}
+        {error && <p className="payment-error">{error}</p>}
+      </form>
+
+      {result && linkOf(result) && <div className="payment-result">
+        <div><span>Ready to send</span><strong>{gateway} · RM {Number(result.amount || amount).toFixed(2)}</strong><small>{referenceOf(result)}</small></div>
+        <button onClick={() => copyText(linkOf(result), `${gateway} payment link`, setToast)}>Copy link</button>
+        <a href={linkOf(result)} target="_blank" rel="noreferrer">Open payment page ↗</a>
       </div>}
+
+      <section className="payment-history panel">
+        <div className="panel-heading"><div><span>Recent {gateway} links</span><h2>Created by the team</h2></div><button onClick={() => void loadPayments()}>Refresh</button></div>
+        {payments.length ? <div className="payment-history-list">{payments.slice(0, 12).map((item, index) => <article key={String(item.paymentId || item.payment_id || item.id || index)}>
+          <div><strong>RM {Number(item.amount || 0).toFixed(2)}</strong><span>{referenceOf(item)}</span><small>{createdAtOf(item)}</small></div>
+          <span className="status-chip">{String(item.status || "PENDING")}</span>
+          {linkOf(item) ? <><button onClick={() => copyText(linkOf(item), `${gateway} payment link`, setToast)}>Copy link</button><a href={linkOf(item)} target="_blank" rel="noreferrer">Open ↗</a></> : <small>Link syncing…</small>}
+        </article>)}</div> : <div className="payment-empty">No {gateway} links created yet.</div>}
+      </section>
     </div>
   );
 }
