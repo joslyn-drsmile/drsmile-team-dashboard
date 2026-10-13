@@ -1268,6 +1268,17 @@ function PaymentStudio({ setToast, canManage }: { setToast: (value: string) => v
     setResult(null);
   }
 
+  async function resetPaymentPassword() {
+    if (!email.trim()) return setError("Enter your team email first.");
+    setBusy(true);
+    setError("");
+    const response = await fetch("/api/payment-session", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "reset", email }) });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) setError(String(payload.error || "Could not send the password email."));
+    else setToast("Password setup email sent");
+    setBusy(false);
+  }
+
   async function createLink(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
@@ -1299,7 +1310,7 @@ function PaymentStudio({ setToast, canManage }: { setToast: (value: string) => v
       <div><p className="eyebrow">Secure payment tools</p><h2>Sign in before creating a link</h2><span>The rest of the Dashboard stays shared. Only Atome and Payex creation requires your team account.</span></div>
       <label><span>Team email</span><input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required /></label>
       <label><span>Password</span><input type="password" value={password} onChange={(event) => setPassword(event.target.value)} required minLength={8} /></label>
-      <div className="studio-actions"><button className="studio-primary" disabled={busy}>{busy ? "Signing in…" : "Unlock payment tools"}</button></div>
+      <div className="studio-actions"><button className="studio-primary" disabled={busy}>{busy ? "Please wait…" : "Unlock payment tools"}</button><button type="button" onClick={resetPaymentPassword} disabled={busy}>Set / forgot password</button></div>
       {error && <p className="payment-error">{error}</p>}
     </form>
   );

@@ -233,6 +233,11 @@ async function paymentSessionRequest(request: Request) {
   if (request.method === "POST") {
     const payload = await request.json();
     const email = String(payload.email || "").trim().toLowerCase();
+    if (payload.action === "reset") {
+      const redirectTo = `${window.location.origin}${import.meta.env.BASE_URL}`;
+      const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+      return error ? errorResponse(error.message, 400) : json({ sent: true });
+    }
     const password = String(payload.password || "");
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error || !data.session) return errorResponse(error?.message || "Could not sign in", 401);
