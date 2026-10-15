@@ -1198,12 +1198,6 @@ function PaymentStudio({ setToast, canManage }: { setToast: (value: string) => v
   ];
   const emptyForm = (): PaymentForm => ({ amount: "", reference: "", customerName: "", description: "" });
   const [forms, setForms] = useState<Record<PaymentProvider, PaymentForm>>({ atome: emptyForm(), payex: emptyForm() });
-  const [email, setEmail] = useState("joslyn.drsmile@gmail.com");
-  const [password, setPassword] = useState("");
-  const [authenticated, setAuthenticated] = useState(false);
-  const [sessionLoaded, setSessionLoaded] = useState(false);
-  const [loginBusy, setLoginBusy] = useState(false);
-  const [loginError, setLoginError] = useState("");
   const [busyProvider, setBusyProvider] = useState<PaymentProvider | null>(null);
   const [errors, setErrors] = useState<Record<PaymentProvider, string>>({ atome: "", payex: "" });
   const [results, setResults] = useState<Record<PaymentProvider, Record<string, unknown> | null>>({ atome: null, payex: null });
@@ -1239,54 +1233,9 @@ function PaymentStudio({ setToast, canManage }: { setToast: (value: string) => v
   }
 
   useEffect(() => {
-    fetch("/api/payment-session", { cache: "no-store" })
-      .then((response) => response.json())
-      .then((payload) => {
-        setAuthenticated(!!payload.authenticated);
-        if (payload.email) setEmail(payload.email);
-      })
-      .finally(() => setSessionLoaded(true));
+    void loadPayments("atome");
+    void loadPayments("payex");
   }, []);
-
-  useEffect(() => {
-    if (authenticated) {
-      void loadPayments("atome");
-      void loadPayments("payex");
-    }
-  }, [authenticated]);
-
-  async function signIn(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setLoginBusy(true);
-    setLoginError("");
-    const response = await fetch("/api/payment-session", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email, password }) });
-    const payload = await response.json().catch(() => ({}));
-    if (!response.ok) setLoginError(String(payload.error || "Could not sign in."));
-    else {
-      setAuthenticated(true);
-      setPassword("");
-      setToast("Payment tools unlocked");
-    }
-    setLoginBusy(false);
-  }
-
-  async function signOutPayment() {
-    await fetch("/api/payment-session", { method: "DELETE" });
-    setAuthenticated(false);
-    setPayments({ atome: [], payex: [] });
-    setResults({ atome: null, payex: null });
-  }
-
-  async function resetPaymentPassword() {
-    if (!email.trim()) return setLoginError("Enter your team email first.");
-    setLoginBusy(true);
-    setLoginError("");
-    const response = await fetch("/api/payment-session", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "reset", email }) });
-    const payload = await response.json().catch(() => ({}));
-    if (!response.ok) setLoginError(String(payload.error || "Could not send the password email."));
-    else setToast("Password setup email sent");
-    setLoginBusy(false);
-  }
 
   async function createLink(event: FormEvent<HTMLFormElement>, provider: PaymentProvider) {
     event.preventDefault();
@@ -1314,23 +1263,10 @@ function PaymentStudio({ setToast, canManage }: { setToast: (value: string) => v
     setBusyProvider(null);
   }
 
-  if (!sessionLoaded) return <div className="payment-studio payment-login"><div><p className="eyebrow">Secure payment tools</p><h2>Checking access…</h2></div></div>;
-
-  if (!authenticated) return (
-    <form className="payment-studio payment-login" onSubmit={signIn}>
-      <div><p className="eyebrow">Secure payment tools</p><h2>Sign in before creating a link</h2><span>The rest of the Dashboard stays shared. Only Atome and Payex creation requires your team account.</span></div>
-      <label><span>Team email</span><input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required /></label>
-      <label><span>Password</span><input type="password" value={password} onChange={(event) => setPassword(event.target.value)} required minLength={8} /></label>
-      <div className="studio-actions"><button className="studio-primary" disabled={loginBusy}>{loginBusy ? "Please wait…" : "Unlock payment tools"}</button><button type="button" onClick={resetPaymentPassword} disabled={loginBusy}>Set / forgot password</button></div>
-      {loginError && <p className="payment-error">{loginError}</p>}
-    </form>
-  );
-
   return (
     <div className="payment-workspace">
       <div className="payment-page-intro">
         <div><p className="eyebrow">Payments</p><h2>Choose a payment provider</h2><span>Atome and Payex are separated so the team always uses the correct checkout.</span></div>
-        <button type="button" onClick={signOutPayment}>Lock payment tools</button>
       </div>
       <div className="payment-provider-list">
         {providers.map((provider) => {

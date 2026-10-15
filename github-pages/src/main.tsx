@@ -8,11 +8,10 @@ import { AuthGate } from "./auth-gate";
 
 installSupabaseApiAdapter();
 
-const previewMode = import.meta.env.VITE_PREVIEW_MODE === "true";
 const dashboard = <Dashboard />;
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    {previewMode ? <><div className="preview-badge">Shared mode · login temporarily disabled</div>{dashboard}</> : <AuthGate>{dashboard}</AuthGate>}
+    <AuthGate>{dashboard}</AuthGate>
   </StrictMode>,
 );

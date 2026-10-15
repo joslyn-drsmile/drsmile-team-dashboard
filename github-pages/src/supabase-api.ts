@@ -7,7 +7,9 @@ type PermissionRow = { member_id: string; menu: string; can_view: boolean; can_a
 type RecordRow = { id: number; section: string; title: string; subtitle: string; data: Record<string, string>; updated_at?: string };
 
 const menuKeys = ["products", "promotions", "points", "pharmacies", "payments", "faq", "calendar", "broadcasts"];
-const previewMode = import.meta.env.VITE_PREVIEW_MODE === "true";
+// Shared preview mode is only allowed during local development. Production
+// always uses the signed-in Supabase user and their saved menu permissions.
+const previewMode = import.meta.env.DEV && import.meta.env.VITE_PREVIEW_MODE === "true";
 const defaultCategories = ["牙粉", "完整美白疗程", "漱口水", "加购产品", "包包"];
 const defaultPayments = [
   { section: "payments", title: "Bank Transfer", subtitle: "Manual payment", data: { details: "Add bank name and account number", link: "", qrUrl: "", status: "Available" } },

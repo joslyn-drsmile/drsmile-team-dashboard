@@ -45,15 +45,6 @@ export function AuthGate({ children }: { children: ReactNode }) {
     setBusy(false);
   }
 
-  async function resetPassword() {
-    if (!email.trim()) return setMessage("Enter your email first.");
-    setBusy(true);
-    const redirectTo = `${window.location.origin}${import.meta.env.BASE_URL}`;
-    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo });
-    setMessage(error ? error.message : "Password setup link sent. Please check your email.");
-    setBusy(false);
-  }
-
   if (!loaded) return <AuthScreen title="Loading your workspace…" />;
   if (session && !recovery) return <div className="supabase-session"><button className="supabase-signout" onClick={() => supabase.auth.signOut()}>Sign out</button>{children}</div>;
 
@@ -70,8 +61,8 @@ export function AuthGate({ children }: { children: ReactNode }) {
           {recovery && <label><span>Confirm password</span><input type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} required minLength={8} autoComplete="new-password" /></label>}
           <button className="primary-button" disabled={busy}>{busy ? "Please wait…" : recovery ? "Save password" : "Sign in"}</button>
         </form>
-        {!recovery && <button className="auth-link" type="button" onClick={resetPassword} disabled={busy}>Set / forgot password</button>}
         {message && <div className="auth-message">{message}</div>}
+        {!recovery && <p className="auth-help">Use the same login details as the DrSmile Expo Dashboard.</p>}
       </div>
     </div>
   );
