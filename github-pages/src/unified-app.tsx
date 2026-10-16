@@ -212,6 +212,14 @@ function DrSmileWorkspace({ page, hidden = false }: { page: DrSmilePage; hidden?
   const frame = useRef<HTMLIFrameElement>(null);
   const sendPage = () => frame.current?.contentWindow?.postMessage({ type: "drsmile:navigate", page }, window.location.origin);
   useEffect(sendPage, [page]);
+  useEffect(() => {
+    const onReady = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin || event.source !== frame.current?.contentWindow || event.data?.type !== "drsmile:ready") return;
+      sendPage();
+    };
+    window.addEventListener("message", onReady);
+    return () => window.removeEventListener("message", onReady);
+  }, [page]);
   return <iframe ref={frame} className="drsmile-workspace-frame" src="/?embed=drsmile" title="DrSmile workspace" onLoad={sendPage} style={{ display: hidden ? "none" : "block" }} aria-hidden={hidden} />;
 }
 

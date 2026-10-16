@@ -431,6 +431,11 @@ export default function Home({ embedded = false }: { embedded?: boolean }) {
   }, [access, embedded]);
 
   useEffect(() => {
+    if (!embedded || !accessLoaded || !access) return;
+    window.parent.postMessage({ type: "drsmile:ready" }, window.location.origin);
+  }, [access, accessLoaded, embedded]);
+
+  useEffect(() => {
     fetch("/api/me")
       .then(async (response) => {
         if (!response.ok) throw new Error("No access");
