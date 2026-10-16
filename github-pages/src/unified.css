@@ -17,11 +17,11 @@
 .workspace-embed { height:calc(100vh - 72px); padding:0 !important; overflow:hidden; }
 .drsmile-workspace-frame { width:100%; height:100%; display:block; border:0; background:#fcf8e7; }
 .shared-settings.permissions-frame { height:100%; }
-.settings-tabs { display:flex; gap:7px; padding:20px 34px 0; }
+.settings-tabs { display:flex; gap:7px; padding:20px 34px 0; margin-bottom:24px; }
 .settings-tabs button { min-height:38px; display:inline-flex; align-items:center; gap:7px; padding:0 13px; border:1px solid #dfe5ef; border-radius:9px; color:#657086; background:#fff; font-size:10px; font-weight:750; }
 .settings-tabs button.active { border-color:#1c4283; color:#fff; background:#1c4283; }
 .settings-tabs svg { width:15px; height:15px; }
-.permissions-frame .settings-tabs { position:absolute; z-index:4; right:24px; top:88px; padding:0; }
+.permissions-frame .settings-tabs { position:absolute; z-index:4; right:24px; top:88px; padding:0; margin-bottom:0; }
 .permissions-frame .drsmile-workspace-frame { height:100%; }
 .settings-access-note { min-height:calc(100vh - 72px); display:grid; place-content:center; justify-items:center; padding:30px; text-align:center; }
 .settings-access-note>svg { width:34px; height:34px; color:#315c9d; }
@@ -30,7 +30,7 @@
 
 @media (max-width:760px) {
   .workspace-toggle { grid-template-columns:1fr 1fr; }
-  .settings-tabs { padding:14px 18px 0; overflow:auto; }
-  .permissions-frame .settings-tabs { position:static; padding:14px 18px; }
+  .settings-tabs { padding:14px 18px 0; margin-bottom:20px; overflow:auto; }
+  .permissions-frame .settings-tabs { position:static; padding:14px 18px; margin-bottom:0; }
   .workspace-embed { height:calc(100vh - 64px); }
 }
