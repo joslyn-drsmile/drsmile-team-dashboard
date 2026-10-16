@@ -181,7 +181,7 @@ function UnifiedShell({ userId, userEmail }: { userId: string; userEmail: string
 
   return <div className="app-shell unified-shell">
     <aside className="sidebar">
-      <div className="brand-lockup"><img className="brand-logo" src="/drsmile-expo-logo.jpeg" alt="DRSMILE — From Yellow to Hello" /><span>Expo workspace</span></div>
+      <div className="brand-lockup"><img className="brand-logo" src="/drsmile-expo-logo.jpeg" alt="DRSMILE — From Yellow to Hello" /></div>
       <p className="workspace-label">Workspace</p>
       <div className="workspace-toggle" role="group" aria-label="Choose workspace"><button className={workspace === "drsmile" ? "active" : ""} onClick={() => chooseWorkspace("drsmile")}>DrSmile</button><button className={workspace === "expo" ? "active" : ""} onClick={() => chooseWorkspace("expo")}>Expo</button></div>
       <nav>{activeNav.map((item) => <button key={item.key} className={!settingsOpen && activePage === item.key ? "active" : ""} onClick={() => workspace === "drsmile" ? chooseDrSmilePage(item.key as DrSmilePage) : chooseExpoPage(item.key as ExpoPage)}>{item.icon}<span>{item.label}</span>{workspace === "expo" && item.key === "appointments" && <i>{appointmentCount}</i>}</button>)}</nav>
