@@ -394,7 +394,7 @@ function importRows(section: ImportableSection, text: string): Omit<RecordItem, 
   });
 }
 
-export default function Home() {
+export default function Home({ embedded = false }: { embedded?: boolean }) {
   const [active, setActive] = useState<"home" | Section | "settings">("home");
   const [access, setAccess] = useState<CurrentAccess | null>(null);
   const [accessLoaded, setAccessLoaded] = useState(false);
@@ -415,6 +415,20 @@ export default function Home() {
   const [calendarMonth, setCalendarMonth] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
   const [broadcastMonth, setBroadcastMonth] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
   const [broadcastChannel, setBroadcastChannel] = useState("All");
+
+  useEffect(() => {
+    if (!embedded) return;
+    const onMessage = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin || event.data?.type !== "drsmile:navigate") return;
+      const next = event.data.page as "home" | Section | "settings";
+      if (next === "settings" && !access?.member.isOwner) return;
+      if (next !== "home" && next !== "settings" && !access?.permissions[next]?.view) return;
+      setActive(next);
+      setQuery("");
+    };
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, [access, embedded]);
 
   useEffect(() => {
     fetch("/api/me")
@@ -629,8 +643,8 @@ export default function Home() {
 
   const visibleMenus = menus.filter((menu) => menu.id === "home" || allowed(menu.id, "view"));
   return (
-    <div className="app-shell">
-      <aside className={`sidebar ${mobileMenu ? "is-open" : ""}`}>
+    <div className={embedded ? "app-shell embedded-workspace" : "app-shell"}>
+      {!embedded && <aside className={`sidebar ${mobileMenu ? "is-open" : ""}`}>
         <button className="brand" onClick={() => navigate("home")} aria-label="DrSmile dashboard home">
           <img src={`${import.meta.env.BASE_URL || "/"}drsmile-logo.png`} alt="DrSmile Whitening" />
         </button>
@@ -653,10 +667,10 @@ export default function Home() {
           <a href="https://drsmile.my/" target="_blank" rel="noreferrer"><span>↗</span> View DrSmile website</a>
           <p><span className="status-dot" />Team data synced</p>
         </div>
-      </aside>
+      </aside>}
 
-      <main>
-        <header className="topbar">
+      <main className={embedded ? "embedded-main" : ""}>
+        {!embedded && <header className="topbar">
           <button className="menu-toggle" onClick={() => setMobileMenu((value) => !value)} aria-label="Toggle menu">☰</button>
           <label className="search">
             <span>⌕</span>
@@ -668,7 +682,7 @@ export default function Home() {
             <div className="avatar">DS</div>
             <div className="profile"><strong>{access.member.name}</strong><small>{access.member.role || "Team member"}</small></div>
           </div>
-        </header>
+        </header>}
 
         {active === "home" ? (
           <Overview records={records} navigate={navigate} setToast={setToast} permissions={access.permissions} />
@@ -831,7 +845,7 @@ export default function Home() {
         />
       )}
       {toast && <div className="toast"><span>✓</span>{toast}</div>}
-      {mobileMenu && <button className="menu-backdrop" onClick={() => setMobileMenu(false)} aria-label="Close menu" />}
+      {!embedded && mobileMenu && <button className="menu-backdrop" onClick={() => setMobileMenu(false)} aria-label="Close menu" />}
     </div>
   );
 }

@@ -19,7 +19,7 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./github-pages/src/expo/*"]
     }
   },
   "include": [

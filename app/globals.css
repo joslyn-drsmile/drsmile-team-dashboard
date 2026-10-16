@@ -44,6 +44,9 @@ nav button.active em { background: rgba(255,255,255,.18); }
 .status-dot { display: inline-block; width: 6px; height: 6px; margin-right: 7px; border-radius: 50%; background: #2e86de; box-shadow: 0 0 0 4px rgba(46,134,222,.12); }
 
 main { min-height: 100vh; margin-left: 252px; }
+.embedded-workspace { min-height:100vh; }
+.embedded-main { min-height:100vh; margin-left:0; }
+.embedded-main > .page { width:min(1420px,100%); }
 .topbar { position: sticky; top: 0; z-index: 10; height: 74px; display: flex; align-items: center; gap: 22px; padding: 0 34px; background: rgba(255,255,255,.92); border-bottom: 1px solid var(--line); backdrop-filter: blur(14px); }
 .menu-toggle { display: none; border: 0; background: transparent; font-size: 20px; cursor: pointer; }
 .search { width: min(530px, 52vw); height: 40px; display: flex; align-items: center; gap: 10px; padding: 0 13px; border: 1px solid #dbe7f3; border-radius: 9px; background: #f5f9fe; }

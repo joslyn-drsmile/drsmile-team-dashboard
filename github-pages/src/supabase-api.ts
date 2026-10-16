@@ -79,9 +79,35 @@ async function currentAccess() {
   const email = userData.user?.email?.toLowerCase();
   if (!email) return null;
   const { data: member, error } = await supabase.from("members").select("*").eq("email", email).eq("active", true).maybeSingle();
-  if (error || !member) return null;
-  const { data: permissions } = await supabase.from("menu_permissions").select("*").eq("member_id", member.id);
-  return memberOutput(member as MemberRow, (permissions || []) as PermissionRow[]);
+  if (!error && member) {
+    const { data: permissions } = await supabase.from("menu_permissions").select("*").eq("member_id", member.id);
+    return memberOutput(member as MemberRow, (permissions || []) as PermissionRow[]);
+  }
+
+  // Users are created in the shared Expo user manager. Until a DrSmile-specific
+  // permission row is saved for them, give approved team members the documented
+  // default (view access), while shared admins can manage both workspaces.
+  const { data: sharedUser, error: sharedUserError } = await supabase
+    .from("expo_allowed_users")
+    .select("display_name, role, active")
+    .eq("email", email)
+    .eq("active", true)
+    .maybeSingle();
+  if (sharedUserError || !sharedUser) return null;
+  const isAdmin = sharedUser.role === "admin";
+  const permissions = isAdmin
+    ? fullPermissions()
+    : Object.fromEntries(menuKeys.map((menu) => [menu, { view: true, add: false, edit: false, delete: false }])) as Record<string, Permission>;
+  return {
+    id: `shared-${email}`,
+    name: sharedUser.display_name?.trim() || email.split("@")[0],
+    role: String(sharedUser.role || "Team member").replaceAll("_", " "),
+    email,
+    active: true,
+    isOwner: isAdmin,
+    updatedAt: new Date().toISOString(),
+    permissions,
+  };
 }
 
 async function recordsRequest(request: Request, url: URL) {

@@ -1,17 +1,20 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import Dashboard from "../../app/page";
-import "../../app/globals.css";
-import "./pages.css";
 import { installSupabaseApiAdapter } from "./supabase-api";
-import { AuthGate } from "./auth-gate";
 
 installSupabaseApiAdapter();
 
-const dashboard = <Dashboard />;
+async function start() {
+  const embedded = new URLSearchParams(window.location.search).get("embed") === "drsmile";
+  if (embedded) {
+    await import("../../app/globals.css");
+    const { default: Dashboard } = await import("../../app/page");
+    createRoot(document.getElementById("root")!).render(<StrictMode><Dashboard embedded /></StrictMode>);
+    return;
+  }
+  await Promise.all([import("./expo/expo.css"), import("./unified.css")]);
+  const { UnifiedAuthGate } = await import("./unified-app");
+  createRoot(document.getElementById("root")!).render(<StrictMode><UnifiedAuthGate /></StrictMode>);
+}
 
-createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <AuthGate>{dashboard}</AuthGate>
-  </StrictMode>,
-);
+void start();
