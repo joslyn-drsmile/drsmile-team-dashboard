@@ -101,7 +101,6 @@ async function createPayex(request: ApiRequest, response: ApiResponse, authoriza
   if (!Number.isFinite(amount) || amount < 1 || amount > 30000) {
     return response.status(400).json({ error: "Payex amount must be between RM1 and RM30,000." });
   }
-  if (!customerName) return response.status(400).json({ error: "Enter the customer name for Payex." });
   if (reference.length > 40) return response.status(400).json({ error: "Order reference must be 40 characters or fewer." });
 
   const tokenResponse = await fetch(`${PAYEX_API}/api/Auth/Token`, {
@@ -121,7 +120,7 @@ async function createPayex(request: ApiRequest, response: ApiResponse, authoriza
     body: JSON.stringify([{
       amount: Math.round(amount * 100),
       currency: "MYR",
-      customer_name: customerName.slice(0, 50),
+      ...(customerName ? { customer_name: customerName.slice(0, 50) } : {}),
       description: description.slice(0, 200),
       reference_number: reference.slice(0, 40),
       send_email: false,

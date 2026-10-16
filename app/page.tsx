@@ -1245,7 +1245,6 @@ function PaymentStudio({ setToast, canManage }: { setToast: (value: string) => v
     const numericAmount = Number(form.amount);
     if (!Number.isFinite(numericAmount) || numericAmount <= 0) return setErrors((current) => ({ ...current, [provider]: "Enter a valid payment amount." }));
     if (provider === "atome" && numericAmount < 10) return setErrors((current) => ({ ...current, atome: "Atome requires a minimum payment of RM10." }));
-    if (provider === "payex" && !form.customerName.trim()) return setErrors((current) => ({ ...current, payex: "Enter the customer name for Payex." }));
     setBusyProvider(provider);
     const response = await fetch(`/api/payment-links?provider=${provider}`, {
       method: "POST",
@@ -1286,7 +1285,7 @@ function PaymentStudio({ setToast, canManage }: { setToast: (value: string) => v
               <form onSubmit={(event) => createLink(event, provider.id)}>
                 <label><span>Payment amount</span><div className="amount-input"><b>RM</b><input inputMode="decimal" value={form.amount} onChange={(event) => updateForm(provider.id, "amount", event.target.value)} placeholder="0.00" required /></div><small>Minimum {provider.minimum}</small></label>
                 <label><span>Order ID · optional</span><input value={form.reference} onChange={(event) => updateForm(provider.id, "reference", event.target.value)} placeholder="e.g. RSVP-1026-001" maxLength={40} /></label>
-                <label><span>Customer name {provider.id === "payex" ? "· required" : "· optional"}</span><input value={form.customerName} onChange={(event) => updateForm(provider.id, "customerName", event.target.value)} placeholder="Customer name" maxLength={50} required={provider.id === "payex"} /></label>
+                <label><span>Customer name · optional</span><input value={form.customerName} onChange={(event) => updateForm(provider.id, "customerName", event.target.value)} placeholder="Customer name" maxLength={50} /></label>
                 <label><span>Description · optional</span><input value={form.description} onChange={(event) => updateForm(provider.id, "description", event.target.value)} placeholder="Order or package details" maxLength={200} /></label>
                 {canManage && <button className="provider-generate" disabled={busyProvider !== null}>{busyProvider === provider.id ? "Creating…" : `Generate ${gatewayName} link`}</button>}
                 {errors[provider.id] && <p className="payment-error">{errors[provider.id]}</p>}
