@@ -178,6 +178,7 @@ function UnifiedShell({ userId, userEmail }: { userId: string; userEmail: string
   const activePage = workspace === "drsmile" ? drsmilePage : expoPage;
   const pageLabel = settingsOpen ? "Settings" : activeNav.find((item) => item.key === activePage)?.label || "Dashboard";
   const appointmentCount = store.data.appointments.filter((row) => row.expoId === activeExpoId && row.state === "Booked").length;
+  const showDrSmileWorkspace = !settingsOpen && workspace === "drsmile";
 
   return <div className="app-shell unified-shell">
     <aside className="sidebar">
@@ -189,8 +190,9 @@ function UnifiedShell({ userId, userEmail }: { userId: string; userEmail: string
     </aside>
     <main className="main-area">
       <div className="topbar"><div className="breadcrumbs"><span>{workspace === "drsmile" ? "DRSMILE" : "EXPO"}</span><b>/</b><strong>{pageLabel}</strong></div><div className="profile-wrap"><button className="profile-button" onClick={() => setProfileOpen((current) => !current)}><span>{profile.initials}</span><div><strong>{profile.name}</strong><small>{profile.role}</small></div><ChevronDown /></button>{profileOpen && <div className="profile-menu unified-profile-menu"><strong>Signed in</strong><p>{profile.email}</p></div>}</div></div>
-      <div className={`page-content ${workspace === "drsmile" || (settingsOpen && settingsPage === "permissions") ? "workspace-embed" : ""}`}>
-        {settingsOpen ? <SettingsHub isAdmin={profile.isAdmin} page={settingsPage} setPage={setSettingsPage} /> : workspace === "drsmile" ? <DrSmileWorkspace page={drsmilePage} /> : <ExpoWorkspace page={expoPage} store={store} expoId={activeExpoId} setExpoId={setExpoId} setExpoPage={chooseExpoPage} />}
+      <div className={`page-content ${showDrSmileWorkspace || (settingsOpen && settingsPage === "permissions") ? "workspace-embed" : ""}`}>
+        <DrSmileWorkspace page={drsmilePage} hidden={!showDrSmileWorkspace} />
+        {settingsOpen ? <SettingsHub isAdmin={profile.isAdmin} page={settingsPage} setPage={setSettingsPage} /> : workspace === "expo" ? <ExpoWorkspace page={expoPage} store={store} expoId={activeExpoId} setExpoId={setExpoId} setExpoPage={chooseExpoPage} /> : null}
       </div>
     </main>
   </div>;
@@ -206,11 +208,11 @@ function ExpoWorkspace({ page, store, expoId, setExpoId, setExpoPage }: { page: 
   return <Blacklist data={store.data} onAdd={store.addBlacklist} onToggle={store.toggleBlacklist} />;
 }
 
-function DrSmileWorkspace({ page }: { page: DrSmilePage }) {
+function DrSmileWorkspace({ page, hidden = false }: { page: DrSmilePage; hidden?: boolean }) {
   const frame = useRef<HTMLIFrameElement>(null);
   const sendPage = () => frame.current?.contentWindow?.postMessage({ type: "drsmile:navigate", page }, window.location.origin);
   useEffect(sendPage, [page]);
-  return <iframe ref={frame} className="drsmile-workspace-frame" src="/?embed=drsmile" title="DrSmile workspace" onLoad={sendPage} />;
+  return <iframe ref={frame} className="drsmile-workspace-frame" src="/?embed=drsmile" title="DrSmile workspace" onLoad={sendPage} style={{ display: hidden ? "none" : "block" }} aria-hidden={hidden} />;
 }
 
 function SettingsHub({ isAdmin, page, setPage }: { isAdmin: boolean; page: SettingsPage; setPage: (page: SettingsPage) => void }) {
