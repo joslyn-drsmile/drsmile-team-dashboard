@@ -584,6 +584,7 @@ main { margin-left: 194px; }
 .payment-provider-card.payex .provider-logo { color:white; background:linear-gradient(145deg,#1a3d70,#2a66ad); }
 .provider-heading small { display:flex; align-items:center; gap:5px; color:#3d806a; font-size:7px; font-weight:900; letter-spacing:.5px; text-transform:uppercase; }
 .provider-heading small i { width:7px; height:7px; border-radius:50%; background:#46bd8c; box-shadow:0 0 0 5px rgba(70,189,140,.11); }
+.provider-heading small.setup-required { color:#a06a2c; }.provider-heading small.setup-required i { background:#e0a64d; box-shadow:0 0 0 5px rgba(224,166,77,.13); }
 .provider-heading h2 { margin:4px 0 1px; color:#162d4b; font-size:17px; font-weight:500; }
 .provider-heading p { margin:0; color:#8a99aa; font-size:8px; font-weight:600; }
 .provider-facts { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
@@ -604,6 +605,7 @@ main { margin-left: 194px; }
 .provider-generate { grid-column:1/-1; height:45px; border:0; border-radius:11px; color:white; background:#1c477e; cursor:pointer; font:inherit; font-size:10px; font-weight:850; box-shadow:0 8px 18px rgba(28,71,126,.14); }.payment-provider-card.atome .provider-generate { background:#173f73; }.payment-provider-card.payex .provider-generate { background:#245c9f; }.provider-generate:disabled { opacity:.58; cursor:wait; }
 .provider-create .payment-error { grid-column:1/-1; }
 .provider-create .payment-result { grid-template-columns:1fr auto auto; margin-top:16px; padding:12px 14px; box-shadow:none; }
+.provider-share-message { max-width:720px; margin:7px 0 0; color:#496b86; font-size:9px; font-weight:600; line-height:1.5; text-transform:none; letter-spacing:0; white-space:pre-line; overflow-wrap:anywhere; }
 .provider-history { grid-column:1/-1; padding:18px 24px 22px; border-top:1px solid rgba(180,205,224,.45); background:rgba(242,248,252,.44); }
 .provider-history > div:first-child { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; color:#4e6b83; font-size:8px; font-weight:850; text-transform:uppercase; letter-spacing:.45px; }
 .provider-history > div:first-child button { padding:6px 9px; border:0; border-radius:8px; color:#456c88; background:#e1eff8; cursor:pointer; font:inherit; font-size:7px; font-weight:850; }

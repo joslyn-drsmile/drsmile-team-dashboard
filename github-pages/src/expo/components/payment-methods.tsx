@@ -13,6 +13,8 @@ type TrackedPayment = {
   createdByName: string; createdAt: string; statusUpdatedAt: string;
 };
 
+const PAYMENT_OUTLET = "DRSMILE WHITENING";
+
 export function PaymentMethods() {
   const [amount, setAmount] = useState("");
   const [orderId, setOrderId] = useState("");
@@ -70,7 +72,7 @@ export function PaymentMethods() {
 
   async function copyLink() {
     if (!result) return;
-    const message = `Pay ${result.amountFormatted} using Atome to ${result.outletName} by clicking on\n${result.paymentLink}`;
+    const message = `Pay ${result.amountFormatted} using Atome to ${PAYMENT_OUTLET} by clicking on\n${result.paymentLink}`;
     await navigator.clipboard.writeText(message);
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1800);
@@ -82,7 +84,7 @@ export function PaymentMethods() {
 
   async function copyTracked(payment: TrackedPayment) {
     if (!payment.paymentLink) return;
-    await navigator.clipboard.writeText(`Pay ${payment.amount.toFixed(2)} MYR using Atome to ${payment.outletName} by clicking on\n${payment.paymentLink}`);
+    await navigator.clipboard.writeText(`Pay ${payment.amount.toFixed(2)} MYR using Atome to ${PAYMENT_OUTLET} by clicking on\n${payment.paymentLink}`);
     setHistoryCopied(payment.paymentId);
     window.setTimeout(() => setHistoryCopied(""), 1800);
   }
@@ -115,8 +117,8 @@ export function PaymentMethods() {
           <button className="button primary payment-generate" disabled={busy} onClick={() => void generate()}>{busy ? <><span className="payment-spinner" /> Creating secure link…</> : <><Link2 /> Generate Atome link</>}</button>
         </> : <div className="payment-success">
           <span className="payment-success-icon"><Check /></span><span className="payment-success-kicker">Payment link ready</span>
-          <h2>{result.amountFormatted}</h2><p>{result.outletName} · Expires {result.expiryTimeFormatted}</p>
-          <div className="payment-share-copy"><p>Pay {result.amountFormatted} using Atome to {result.outletName} by clicking on</p><div className="payment-link-box"><Link2 /><span>{result.paymentLink}</span></div></div>
+          <h2>{result.amountFormatted}</h2><p>{PAYMENT_OUTLET} · Expires {result.expiryTimeFormatted}</p>
+          <div className="payment-share-copy"><p>Pay {result.amountFormatted} using Atome to {PAYMENT_OUTLET} by clicking on</p><div className="payment-link-box"><Link2 /><span>{result.paymentLink}</span></div></div>
           <div className="payment-success-actions">
             <button className="button primary" onClick={() => void copyLink()}>{copied ? <><Check /> Message copied</> : <><Copy /> Copy payment message</>}</button>
             <a className="button secondary" href={result.paymentLink} target="_blank" rel="noreferrer"><ExternalLink /> Open link</a>

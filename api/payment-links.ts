@@ -72,6 +72,7 @@ async function proxyAtome(request: ApiRequest, response: ApiResponse, authorizat
 
 async function payexHistory(response: ApiResponse, authorization: string) {
   const user = await approvedUser(authorization);
+  const connected = Boolean(process.env.PAYEX_MERCHANT_EMAIL?.trim() && process.env.PAYEX_API_SECRET?.trim());
   const query = "provider=eq.payex&select=*&order=created_at.desc&limit=100";
   const result = await fetch(`${SUPABASE_URL}/rest/v1/team_payment_links?${query}`, {
     headers: user.headers,
@@ -79,7 +80,7 @@ async function payexHistory(response: ApiResponse, authorization: string) {
   });
   const rows = await result.json().catch(() => []);
   if (!result.ok) return response.status(502).json({ error: "Unable to load saved Payex links." });
-  return response.status(200).json({ payments: rows });
+  return response.status(200).json({ payments: rows, connected });
 }
 
 async function createPayex(request: ApiRequest, response: ApiResponse, authorization: string) {
@@ -97,6 +98,7 @@ async function createPayex(request: ApiRequest, response: ApiResponse, authoriza
   const amount = Number(body.amount);
   const reference = String(body.orderId || body.reference || "").trim();
   const customerName = String(body.customerName || "").trim();
+  const payexCustomerName = customerName || "DRSMILE Customer";
   const description = String(body.description || "").trim();
   if (!Number.isFinite(amount) || amount < 1 || amount > 30000) {
     return response.status(400).json({ error: "Payex amount must be between RM1 and RM30,000." });
@@ -120,7 +122,7 @@ async function createPayex(request: ApiRequest, response: ApiResponse, authoriza
     body: JSON.stringify([{
       amount: Math.round(amount * 100),
       currency: "MYR",
-      ...(customerName ? { customer_name: customerName.slice(0, 50) } : {}),
+      customer_name: payexCustomerName.slice(0, 50),
       description: description.slice(0, 200),
       reference_number: reference.slice(0, 40),
       send_email: false,
@@ -139,7 +141,7 @@ async function createPayex(request: ApiRequest, response: ApiResponse, authoriza
 
   const record = {
     provider: "payex", external_id: externalId, payment_link: paymentLink, amount,
-    currency: "MYR", reference, customer_name: customerName, description,
+    currency: "MYR", reference, customer_name: payexCustomerName, description,
     status: "PENDING", created_by: user.id, created_by_email: user.email,
   };
   const saveResponse = await fetch(`${SUPABASE_URL}/rest/v1/team_payment_links`, {

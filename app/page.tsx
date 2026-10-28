@@ -1211,6 +1211,7 @@ function CardMenu({ item, setEditing, removeItem, canEdit, canDelete }: { item: 
 function PaymentStudio({ setToast, canManage }: { setToast: (value: string) => void; canManage: boolean }) {
   type PaymentProvider = "atome" | "payex";
   type PaymentForm = { amount: string; reference: string; customerName: string; description: string };
+  const paymentOutlet = "DRSMILE WHITENING";
   const providers: Array<{ id: PaymentProvider; name: string; short: string; subtitle: string; minimum: string; validity: string }> = [
     { id: "atome", name: "Atome", short: "A", subtitle: "Buy now, pay later", minimum: "RM10", validity: "12 hours" },
     { id: "payex", name: "Payex", short: "PX", subtitle: "Card & online banking", minimum: "RM1", validity: "Secure checkout" },
@@ -1221,9 +1222,21 @@ function PaymentStudio({ setToast, canManage }: { setToast: (value: string) => v
   const [errors, setErrors] = useState<Record<PaymentProvider, string>>({ atome: "", payex: "" });
   const [results, setResults] = useState<Record<PaymentProvider, Record<string, unknown> | null>>({ atome: null, payex: null });
   const [payments, setPayments] = useState<Record<PaymentProvider, Array<Record<string, unknown>>>>({ atome: [], payex: [] });
+  const [connections, setConnections] = useState<Record<PaymentProvider, boolean | null>>({ atome: true, payex: null });
 
   function linkOf(item: Record<string, unknown>) {
     return String(item.paymentLink || item.payment_link || "");
+  }
+
+  function amountOf(item: Record<string, unknown>, fallback = "") {
+    const raw = item.amount ?? item.amountFormatted ?? item.amount_formatted ?? fallback;
+    const amount = typeof raw === "number" ? raw : Number(String(raw).replace(/[^0-9.-]/g, ""));
+    return Number.isFinite(amount) ? amount : 0;
+  }
+
+  function paymentMessage(provider: PaymentProvider, item: Record<string, unknown>, fallbackAmount = "") {
+    const providerName = provider === "atome" ? "Atome" : "Payex";
+    return `Pay ${amountOf(item, fallbackAmount).toFixed(2)} MYR using ${providerName} to ${paymentOutlet} by clicking on\n${linkOf(item)}`;
   }
 
   function referenceOf(item: Record<string, unknown>) {
@@ -1248,6 +1261,7 @@ function PaymentStudio({ setToast, canManage }: { setToast: (value: string) => v
       return;
     }
     setPayments((current) => ({ ...current, [provider]: Array.isArray(payload.payments) ? payload.payments : [] }));
+    if (provider === "payex" && typeof payload.connected === "boolean") setConnections((current) => ({ ...current, payex: payload.connected }));
     setErrors((current) => ({ ...current, [provider]: String(payload.syncWarning || "") }));
   }
 
@@ -1292,9 +1306,10 @@ function PaymentStudio({ setToast, canManage }: { setToast: (value: string) => v
           const result = results[provider.id];
           const history = payments[provider.id];
           const gatewayName = provider.name;
+          const connected = connections[provider.id] !== false;
           return <section className={`payment-provider-card ${provider.id}`} key={provider.id}>
             <aside className="provider-summary">
-              <div className="provider-heading"><span className="provider-logo">{provider.short}</span><div><small><i /> Team access unlocked</small><h2>{gatewayName} Payment Link</h2><p>{provider.subtitle}</p></div></div>
+              <div className="provider-heading"><span className="provider-logo">{provider.short}</span><div><small className={connected ? "" : "setup-required"}><i /> {connected ? "Team access unlocked" : "Setup required"}</small><h2>{gatewayName} Payment Link</h2><p>{provider.subtitle}</p></div></div>
               <div className="provider-facts"><div><span>Currency</span><strong>MYR</strong></div><div><span>Minimum</span><strong>{provider.minimum}</strong></div><div><span>{provider.id === "atome" ? "Valid for" : "Checkout"}</span><strong>{provider.validity}</strong></div></div>
               <div className="provider-security"><b>Secure team access</b><span>{gatewayName} credentials stay on the server and are never shown in this browser.</span></div>
             </aside>
@@ -1306,13 +1321,13 @@ function PaymentStudio({ setToast, canManage }: { setToast: (value: string) => v
                 <label><span>Order ID · optional</span><input value={form.reference} onChange={(event) => updateForm(provider.id, "reference", event.target.value)} placeholder="e.g. RSVP-1026-001" maxLength={40} /></label>
                 <label><span>Customer name · optional</span><input value={form.customerName} onChange={(event) => updateForm(provider.id, "customerName", event.target.value)} placeholder="Customer name" maxLength={50} /></label>
                 <label><span>Description · optional</span><input value={form.description} onChange={(event) => updateForm(provider.id, "description", event.target.value)} placeholder="Order or package details" maxLength={200} /></label>
-                {canManage && <button className="provider-generate" disabled={busyProvider !== null}>{busyProvider === provider.id ? "Creating…" : `Generate ${gatewayName} link`}</button>}
+                {canManage && <button className="provider-generate" disabled={busyProvider !== null || !connected}>{busyProvider === provider.id ? "Creating…" : connected ? `Generate ${gatewayName} link` : "Connect Payex API to continue"}</button>}
                 {errors[provider.id] && <p className="payment-error">{errors[provider.id]}</p>}
               </form>
 
               {result && linkOf(result) && <div className="payment-result">
-                <div><span>Ready to send</span><strong>{gatewayName} · RM {Number(result.amount || form.amount).toFixed(2)}</strong><small>{referenceOf(result)}</small></div>
-                <button onClick={() => copyText(linkOf(result), `${gatewayName} payment link`, setToast)}>Copy link</button>
+                <div><span>Ready to send</span><strong>{gatewayName} · RM {amountOf(result, form.amount).toFixed(2)}</strong><small>{referenceOf(result)}</small><p className="provider-share-message">{paymentMessage(provider.id, result, form.amount)}</p></div>
+                <button onClick={() => copyText(paymentMessage(provider.id, result, form.amount), `${gatewayName} payment message`, setToast)}>Copy payment message</button>
                 <a href={linkOf(result)} target="_blank" rel="noreferrer">Open payment page ↗</a>
               </div>}
             </div>
@@ -1320,9 +1335,9 @@ function PaymentStudio({ setToast, canManage }: { setToast: (value: string) => v
             <div className="provider-history">
               <div><span>Recent {gatewayName} links</span><button onClick={() => void loadPayments(provider.id)}>Refresh</button></div>
               {history.length ? <div className="payment-history-list">{history.slice(0, 6).map((item, index) => <article key={String(item.paymentId || item.payment_id || item.id || index)}>
-                <div><strong>RM {Number(item.amount || 0).toFixed(2)}</strong><span>{referenceOf(item)}</span><small>{createdAtOf(item)}</small></div>
+                <div><strong>RM {amountOf(item).toFixed(2)}</strong><span>{referenceOf(item)}</span><small>{createdAtOf(item)}</small></div>
                 <span className="status-chip">{String(item.status || "PENDING")}</span>
-                {linkOf(item) ? <><button onClick={() => copyText(linkOf(item), `${gatewayName} payment link`, setToast)}>Copy link</button><a href={linkOf(item)} target="_blank" rel="noreferrer">Open ↗</a></> : <small>Link syncing…</small>}
+                {linkOf(item) ? <><button onClick={() => copyText(paymentMessage(provider.id, item), `${gatewayName} payment message`, setToast)}>Copy message</button><a href={linkOf(item)} target="_blank" rel="noreferrer">Open ↗</a></> : <small>Link syncing…</small>}
               </article>)}</div> : <div className="payment-empty">No {gatewayName} links created yet.</div>}
             </div>
           </section>;
